@@ -1,0 +1,9 @@
+{
+    "cmake.configureOnOpen": false,
+    "rust-analyzer.showUnlinkedFileNotification": false,
+    "rust-analyzer.server.extraEnv": {
+        "OPENSSL_DIR": "Q:\\code\\~repos\\vcpkg\\installed\\x64-windows-static",
+        "VCPKG_ROOT": "Q:\\code\\~repos\\vcpkg",
+        "VCPKGRS_DYNAMIC": "1"
+    }
+}

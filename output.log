@@ -1,0 +1,288 @@
+2024-05-08T18:24:01.199209Z DEBUG bambu_watcher: src/main.rs:48: topic = /device/01P00A381000745/report
+2024-05-08T18:24:08.863458Z DEBUG bambu_watcher: src/main.rs:48: topic = /device/01P00A381000745/report
+2024-05-08T18:28:25.870635Z DEBUG bambu_watcher: src/main.rs:28: addr = mqtts://192.168.0.192:8883
+2024-05-08T18:28:40.663347Z DEBUG bambu_watcher: src/main.rs:28: addr = mqtt://192.168.0.192:8883
+2024-05-08T18:28:48.921779Z DEBUG bambu_watcher: src/main.rs:28: addr = 192.168.0.192:8883
+2024-05-08T18:28:55.571207Z DEBUG bambu_watcher: src/main.rs:28: addr = mqtt://192.168.0.192
+2024-05-08T18:29:56.258825Z DEBUG bambu_watcher: src/main.rs:28: addr = 192.168.0.192
+2024-05-08T18:29:56.259301Z DEBUG bambu_watcher: src/main.rs:34: broker = ("192.168.0.192", 8883)
+2024-05-08T19:07:29.963266Z DEBUG bambu_watcher: src/main.rs:29: addr = 192.168.0.192
+2024-05-08T19:07:29.963924Z DEBUG bambu_watcher: src/main.rs:35: broker = ("192.168.0.192", 8883)
+2024-05-08T19:16:46.356118Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
+2024-05-08T19:17:54.539023Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
+2024-05-08T19:17:54.539545Z DEBUG bambu_watcher: src/main.rs:37: creating client
+2024-05-08T19:17:54.542194Z DEBUG bambu_watcher: src/main.rs:41: getting stream
+2024-05-08T19:17:54.542720Z DEBUG bambu_watcher: src/main.rs:49: connecting
+2024-05-08T19:22:21.850100Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
+2024-05-08T19:22:21.850661Z DEBUG bambu_watcher: src/main.rs:37: creating client
+2024-05-08T19:22:21.853314Z DEBUG bambu_watcher: src/main.rs:55: connecting
+2024-05-08T19:22:22.926799Z DEBUG bambu_watcher: src/main.rs:57: connected
+2024-05-08T19:22:22.927275Z DEBUG bambu_watcher: src/main.rs:59: subscribing
+2024-05-08T19:22:22.927841Z DEBUG bambu_watcher: src/main.rs:61: topic = /device/01P00A381000745/report
+2024-05-08T19:22:22.928363Z DEBUG bambu_watcher: src/main.rs:63: subscribed
+2024-05-08T19:22:22.928897Z DEBUG bambu_watcher: src/main.rs:65: Waiting for messages...
+2024-05-08T19:22:22.956793Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x19564bc8d30    
+2024-05-08T19:27:04.830245Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
+2024-05-08T19:27:04.830677Z DEBUG bambu_watcher: src/main.rs:37: creating client
+2024-05-08T19:27:04.833244Z DEBUG bambu_watcher: src/main.rs:55: connecting
+2024-05-08T19:27:05.939656Z DEBUG bambu_watcher: src/main.rs:57: connected
+2024-05-08T19:27:05.940191Z DEBUG bambu_watcher: src/main.rs:59: subscribing
+2024-05-08T19:27:05.940709Z DEBUG bambu_watcher: src/main.rs:61: topic = /device/01P00A381000745/report
+2024-05-08T19:27:05.941086Z DEBUG bambu_watcher: src/main.rs:63: subscribed
+2024-05-08T19:27:05.941453Z DEBUG bambu_watcher: src/main.rs:65: Waiting for messages...
+2024-05-08T19:27:05.967649Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1d66053e900    
+2024-05-08T19:29:05.333033Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:29:06.440295Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x22415450130    
+2024-05-08T19:31:14.922485Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:31:14.923046Z DEBUG bambu_watcher::client: src\client.rs:99: connecting
+2024-05-08T19:31:15.924646Z DEBUG bambu_watcher::client: src\client.rs:103: connected
+2024-05-08T19:31:15.925184Z DEBUG bambu_watcher::client: src\client.rs:119: subscribing to topic: /device/01P00A381000745/report
+2024-05-08T19:31:15.933934Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1e8bad88c20    
+2024-05-08T19:31:56.200149Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:31:56.200665Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:31:56.201021Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:31:56.203537Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:31:56.203996Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
+2024-05-08T19:31:57.235072Z DEBUG bambu_watcher::client: src\client.rs:106: connected
+2024-05-08T19:31:57.235576Z DEBUG bambu_watcher::client: src\client.rs:122: subscribing to topic: /device/01P00A381000745/report
+2024-05-08T19:31:57.256025Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1c19643c4d0    
+2024-05-08T19:32:13.604291Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtt://192.168.0.192:8883
+2024-05-08T19:32:13.604858Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:32:13.605302Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:32:13.607808Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:32:13.608261Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
+2024-05-08T19:35:02.185720Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtt://192.168.0.192:8883
+2024-05-08T19:35:02.186080Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:35:02.186438Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:35:02.188477Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:35:02.188897Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
+2024-05-08T19:35:49.572409Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtt://192.168.0.192:8883
+2024-05-08T19:35:49.572908Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:35:49.573413Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:35:49.576004Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:35:49.576460Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
+2024-05-08T19:37:40.907579Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:37:40.908060Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:37:40.908387Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:37:40.910984Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:37:40.911436Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
+2024-05-08T19:38:28.764137Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:38:28.764685Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:38:28.765097Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:38:28.767647Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:38:28.768090Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
+2024-05-08T19:38:29.815815Z DEBUG bambu_watcher::client: src\client.rs:107: connected
+2024-05-08T19:38:29.816332Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
+2024-05-08T19:38:29.828092Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1a7cbf0dd80    
+2024-05-08T19:44:03.090050Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:44:03.090589Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:44:03.092165Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:44:03.095243Z DEBUG bambu_watcher: src/main.rs:32: running
+2024-05-08T19:44:03.095734Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
+2024-05-08T19:44:04.273513Z DEBUG bambu_watcher::client: src\client.rs:107: connected
+2024-05-08T19:44:04.273812Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
+2024-05-08T19:44:04.306550Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1b5e2279e20    
+2024-05-08T19:47:23.548997Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:47:23.549368Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:47:23.549801Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:47:23.552243Z DEBUG bambu_watcher: src/main.rs:33: running
+2024-05-08T19:47:23.552676Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
+2024-05-08T19:47:25.145689Z DEBUG bambu_watcher::client: src\client.rs:107: connected
+2024-05-08T19:47:25.146234Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
+2024-05-08T19:47:25.152221Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x296527cd670    
+2024-05-08T19:47:47.223389Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:47:47.223856Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:47:47.224283Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:47:47.226502Z DEBUG bambu_watcher: src/main.rs:33: running
+2024-05-08T19:47:47.227082Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
+2024-05-08T19:47:48.280390Z DEBUG bambu_watcher::client: src\client.rs:107: connected
+2024-05-08T19:47:48.280785Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
+2024-05-08T19:47:48.298361Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1c712e41f30    
+2024-05-08T19:48:49.209672Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:48:49.210238Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:48:49.210578Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:48:49.213342Z DEBUG bambu_watcher: src/main.rs:33: running
+2024-05-08T19:48:49.213897Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
+2024-05-08T19:48:50.269763Z DEBUG bambu_watcher::client: src\client.rs:107: connected
+2024-05-08T19:48:50.270297Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: device/01P00A381000745/report
+2024-05-08T19:48:50.873186Z DEBUG bambu_watcher::client: src\client.rs:72: got message: Message { cmsg: MQTTAsync_message { struct_id: [77, 81, 84, 77], struct_version: 1, payloadlen: 146, payload: 0x1e403c03bc0, qos: 0, retained: 0, dup: 0, msgid: 0, properties: MQTTProperties { count: 0, max_count: 0, length: 0, array: 0x0 } }, data: MessageData { topic: "device/01P00A381000745/report", payload: [123, 34, 112, 114, 105, 110, 116, 34, 58, 123, 34, 110, 111, 122, 122, 108, 101, 95, 116, 101, 109, 112, 101, 114, 34, 58, 50, 50, 53, 46, 48, 54, 50, 53, 44, 34, 119, 105, 102, 105, 95, 115, 105, 103, 110, 97, 108, 34, 58, 34, 45, 52, 49, 100, 66, 109, 34, 44, 34, 109, 99, 95, 112, 114, 105, 110, 116, 95, 108, 105, 110, 101, 95, 110, 117, 109, 98, 101, 114, 34, 58, 34, 49, 54, 48, 52, 52, 57, 53, 34, 44, 34, 99, 111, 109, 109, 97, 110, 100, 34, 58, 34, 112, 117, 115, 104, 95, 115, 116, 97, 116, 117, 115, 34, 44, 34, 109, 115, 103, 34, 58, 49, 44, 34, 115, 101, 113, 117, 101, 110, 99, 101, 95, 105, 100, 34, 58, 34, 52, 50, 57, 53, 48, 34, 125, 125], props: Properties { cprops: MQTTProperties { count: 0, max_count: 0, length: 0, array: 0x0 } } } }
+2024-05-08T19:51:38.840654Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:51:38.841303Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:51:38.841703Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:51:38.845071Z DEBUG bambu_watcher: src/main.rs:33: running
+2024-05-08T19:51:38.845657Z DEBUG bambu_watcher::client: src\client.rs:107: connecting
+2024-05-08T19:51:39.877092Z DEBUG bambu_watcher::client: src\client.rs:111: connected
+2024-05-08T19:51:39.877584Z DEBUG bambu_watcher::client: src\client.rs:127: subscribing to topic: device/01P00A381000745/report
+2024-05-08T19:53:46.715484Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:53:46.716053Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:53:46.716345Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:53:46.720036Z DEBUG bambu_watcher: src/main.rs:33: running
+2024-05-08T19:53:46.720594Z DEBUG bambu_watcher::client: src\client.rs:107: connecting
+2024-05-08T19:53:47.709905Z DEBUG bambu_watcher::client: src\client.rs:111: connected
+2024-05-08T19:53:47.710419Z DEBUG bambu_watcher::client: src\client.rs:127: subscribing to topic: device/01P00A381000745/report
+2024-05-08T19:53:51.279049Z DEBUG bambu_watcher::client: src\client.rs:75: got message: Print(
+    Print {
+        print: PrintData {
+            upload: None,
+            nozzle_temper: Some(
+                225.03125,
+            ),
+            nozzle_target_temper: None,
+            bed_temper: None,
+            bed_target_temper: None,
+            chamber_temper: None,
+            mc_print_stage: None,
+            heatbreak_fan_speed: None,
+            cooling_fan_speed: None,
+            big_fan1_speed: None,
+            big_fan2_speed: None,
+            mc_percent: None,
+            mc_remaining_time: None,
+            ams_status: None,
+            ams_rfid_status: None,
+            hw_switch_state: None,
+            spd_mag: None,
+            spd_lvl: None,
+            print_error: None,
+            lifecycle: None,
+            wifi_signal: Some(
+                "-40dBm",
+            ),
+            gcode_state: None,
+            gcode_file_prepare_percent: None,
+            queue_number: None,
+            queue_total: None,
+            queue_est: None,
+            queue_sts: None,
+            project_id: None,
+            profile_id: None,
+            task_id: None,
+            subtask_id: None,
+            subtask_name: None,
+            gcode_file: None,
+            stg: None,
+            stg_cur: None,
+            print_type: None,
+            home_flag: None,
+            mc_print_line_number: Some(
+                "1640399",
+            ),
+            mc_print_sub_stage: None,
+            sdcard: None,
+            force_upgrade: None,
+            mess_production_state: None,
+            layer_num: None,
+            total_layer_num: None,
+            s_obj: None,
+            fan_gear: None,
+            hms: None,
+            online: None,
+            ams: None,
+            ipcam: None,
+            vt_tray: None,
+            lights_report: None,
+            upgrade_state: None,
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                1,
+            ),
+            sequence_id: Some(
+                "43060",
+            ),
+        },
+    },
+)
+2024-05-08T19:53:51.735909Z DEBUG bambu_watcher: src/main.rs:44: idling
+2024-05-08T19:57:03.991480Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:57:03.991874Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:57:03.992153Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:57:03.994492Z DEBUG bambu_watcher: src/main.rs:33: running
+2024-05-08T19:57:03.994804Z DEBUG bambu_watcher::client: src\client.rs:107: connecting
+2024-05-08T19:57:05.037071Z DEBUG bambu_watcher::client: src\client.rs:111: connected
+2024-05-08T19:57:05.037679Z DEBUG bambu_watcher::client: src\client.rs:127: subscribing to topic: device/01P00A381000745/report
+2024-05-08T19:58:00.531083Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
+2024-05-08T19:58:00.531606Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
+2024-05-08T19:58:00.531852Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
+2024-05-08T19:58:00.534480Z DEBUG bambu_watcher: src/main.rs:33: running
+2024-05-08T19:58:00.535089Z DEBUG bambu_watcher::client: src\client.rs:108: connecting
+2024-05-08T19:58:02.921823Z DEBUG bambu_watcher::client: src\client.rs:112: connected
+2024-05-08T19:58:02.922343Z DEBUG bambu_watcher::client: src\client.rs:128: subscribing to topic: device/01P00A381000745/report
+2024-05-08T19:58:05.550327Z DEBUG bambu_watcher: src/main.rs:44: idling
+2024-05-08T19:58:06.437242Z DEBUG bambu_watcher::client: src\client.rs:75: got message: Print(
+    Print {
+        print: PrintData {
+            upload: None,
+            nozzle_temper: Some(
+                224.9375,
+            ),
+            nozzle_target_temper: None,
+            bed_temper: Some(
+                59.90625,
+            ),
+            bed_target_temper: None,
+            chamber_temper: None,
+            mc_print_stage: None,
+            heatbreak_fan_speed: None,
+            cooling_fan_speed: None,
+            big_fan1_speed: None,
+            big_fan2_speed: None,
+            mc_percent: None,
+            mc_remaining_time: None,
+            ams_status: None,
+            ams_rfid_status: None,
+            hw_switch_state: None,
+            spd_mag: None,
+            spd_lvl: None,
+            print_error: None,
+            lifecycle: None,
+            wifi_signal: Some(
+                "-41dBm",
+            ),
+            gcode_state: None,
+            gcode_file_prepare_percent: None,
+            queue_number: None,
+            queue_total: None,
+            queue_est: None,
+            queue_sts: None,
+            project_id: None,
+            profile_id: None,
+            task_id: None,
+            subtask_id: None,
+            subtask_name: None,
+            gcode_file: None,
+            stg: None,
+            stg_cur: None,
+            print_type: None,
+            home_flag: None,
+            mc_print_line_number: Some(
+                "1669433",
+            ),
+            mc_print_sub_stage: None,
+            sdcard: None,
+            force_upgrade: None,
+            mess_production_state: None,
+            layer_num: None,
+            total_layer_num: None,
+            s_obj: None,
+            fan_gear: None,
+            hms: None,
+            online: None,
+            ams: None,
+            ipcam: None,
+            vt_tray: None,
+            lights_report: None,
+            upgrade_state: None,
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                1,
+            ),
+            sequence_id: Some(
+                "43153",
+            ),
+        },
+    },
+)
