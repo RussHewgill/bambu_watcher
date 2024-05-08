@@ -6,9 +6,11 @@
 #![allow(unused_labels)]
 #![allow(unexpected_cfgs)]
 
-pub mod client;
+// pub mod client;
+pub mod app;
+pub mod config;
 pub mod logging;
-pub mod mqtt_types;
+// pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
@@ -17,35 +19,103 @@ use futures::StreamExt;
 // use rumqttc::{Client, MqttOptions, QoS};
 use std::{env, time::Duration};
 
-#[tokio::main]
+use bambulab::{Command, Message};
+
+use app::AppEvent;
+
+/// config test
+#[cfg(feature = "nope")]
+fn main() -> Result<()> {
+    dotenv::dotenv()?;
+    logging::init_logs();
+
+    let path = "config.yaml";
+
+    // let printer0 = config::PrinterConfig {
+    //     name: "bambu".to_string(),
+    //     host: env::var("BAMBU_IP")?,
+    //     access_code: env::var("BAMBU_ACCESS_CODE")?,
+    //     serial: env::var("BAMBU_IDENT")?,
+    // };
+
+    // let config = config::Configs { printers: vec![printer0] };
+
+    // serde_yaml::to_writer(std::fs::File::create(path)?, &config)?;
+
+    let config: config::Configs = serde_yaml::from_reader(std::fs::File::open(path)?)?;
+
+    debug!("config = {:#?}", config);
+
+    Ok(())
+}
+
 // #[cfg(feature = "nope")]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
     dotenv::dotenv()?;
 
     logging::init_logs();
 
-    let host = env::var("BAMBU_IP")?;
-    let access_code = env::var("BAMBU_ACCESS_CODE")?;
-    let serial = env::var("BAMBU_IDENT")?;
+    let event_loop = winit::event_loop::EventLoop::<AppEvent>::with_user_event().build()?;
 
-    let mut client = crate::client::Client::new(host, access_code, serial);
+    let (tx, rx) = tokio::sync::broadcast::channel::<Message>(25);
 
-    debug!("running");
-    // client.run().await.unwrap();
+    let mut state = app::State::new(rx);
 
-    tokio::try_join!(
-        tokio::spawn(async move {
-            client.run().await.unwrap();
-            debug!("finished running");
-        }),
-        tokio::spawn(async move {
-            loop {
-                tokio::time::sleep(Duration::from_secs(5)).await;
-                debug!("idling");
+    let proxy = event_loop.create_proxy();
+
+    /// event listener thread
+    std::thread::spawn(move || {
+        loop {
+            if let Ok(event) = tray_icon::TrayIconEvent::receiver().try_recv() {
+                // println!("tray event: {:?}", event);
+                proxy.send_event(AppEvent::TrayEvent(event)).unwrap();
             }
-        }),
-    )?;
 
+            if let Ok(event) = tray_icon::menu::MenuEvent::receiver().try_recv() {
+                // println!("menu event: {:?}", event);
+                proxy.send_event(AppEvent::MenuEvent(event)).unwrap();
+            }
+        }
+    });
+
+    event_loop.run_app(&mut state)?;
+
+    Ok(())
+}
+
+#[cfg(feature = "nope")]
+fn main() -> Result<()> {
+    dotenv::dotenv()?;
+
+    logging::init_logs();
+
+    let event_loop = winit::event_loop::EventLoop::builder().build()?;
+
+    let (tx, rx) = tokio::sync::broadcast::channel::<Message>(25);
+
+    let mut state = app::State::new(rx);
+
+    std::thread::spawn(|| {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async move {
+            let host = env::var("BAMBU_IP").unwrap();
+            let access_code = env::var("BAMBU_ACCESS_CODE").unwrap();
+            let serial = env::var("BAMBU_IDENT").unwrap();
+
+            start_printer_listener(tx, &host, &access_code, &serial)
+                .await
+                .unwrap();
+        });
+    });
+
+    event_loop.run_app(&mut state)?;
+
+    Ok(())
+}
+
+async fn start_printer_listener(tx: tokio::sync::broadcast::Sender<Message>, host: &str, access_code: &str, serial: &str) -> Result<()> {
+    let mut client = bambulab::Client::new(host, access_code, serial, tx);
+    client.run().await.unwrap();
     Ok(())
 }
 
@@ -53,12 +123,6 @@ async fn main() -> Result<()> {
 // #[tokio::main]
 #[cfg(feature = "nope")]
 async fn main() -> Result<()> {
-    dotenv::dotenv()?;
-
-    logging::init_logs();
-
-    use bambulab::{Command, Message};
-
     let host = env::var("BAMBU_IP")?;
     let access_code = env::var("BAMBU_ACCESS_CODE")?;
     let serial = env::var("BAMBU_IDENT")?;
@@ -75,11 +139,11 @@ async fn main() -> Result<()> {
         tokio::spawn(async move {
             loop {
                 let message = rx.recv().await.unwrap();
-                println!("received: {message:?}");
+                debug!("received: {:#?}", message);
 
-                // if message == Message::Connected {
-                //     client_clone.publish(Command::PushAll).await.unwrap();
-                // }
+                if message == Message::Connected {
+                    client_clone.publish(Command::PushAll).await.unwrap();
+                }
             }
         }),
     )?;

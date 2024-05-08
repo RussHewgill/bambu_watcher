@@ -286,3 +286,38 @@
         },
     },
 )
+2024-05-08T21:06:15.015835Z DEBUG bambu_watcher::app: src\app.rs:91: init
+2024-05-08T21:06:15.671020Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
+2024-05-08T21:07:40.880820Z DEBUG bambu_watcher::app: src\app.rs:91: init
+2024-05-08T21:07:41.683994Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
+2024-05-08T21:08:33.950627Z DEBUG bambu_watcher::app: src\app.rs:91: init
+2024-05-08T21:08:34.643333Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
+2024-05-08T21:09:08.290176Z DEBUG bambu_watcher::app: src\app.rs:91: init
+2024-05-08T21:09:08.966861Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
+2024-05-08T21:09:23.444114Z DEBUG bambu_watcher::app: src\app.rs:91: init
+2024-05-08T21:09:23.484838Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
+2024-05-08T21:15:13.761995Z DEBUG bambu_watcher::app: src\app.rs:102: init
+2024-05-08T21:15:14.678581Z DEBUG bambu_watcher::app: src\app.rs:74: resumed
+2024-05-08T21:15:46.989869Z DEBUG bambu_watcher::app: src\app.rs:96: got event: MenuEvent(MenuEvent { id: MenuId("1004") })
+2024-05-08T21:22:31.994100Z DEBUG bambu_watcher::app: src\app.rs:127: init
+2024-05-08T21:22:32.763390Z DEBUG bambu_watcher::app: src\app.rs:84: resumed
+2024-05-08T21:34:12.894936Z DEBUG bambu_watcher: src/main.rs:45: config = Configs {
+    printers: [
+        PrinterConfig {
+            name: "calvin",
+            host: "192.168.0.147",
+            access_code: "23672419",
+            serial: "01P00A380200510",
+        },
+        PrinterConfig {
+            name: "hobbes",
+            host: "192.168.0.192",
+            access_code: "62894087",
+            serial: "01P00A381000745",
+        },
+    ],
+}
+2024-05-08T21:40:43.031163Z DEBUG bambu_watcher::app: src\app.rs:137: init
+2024-05-08T21:40:43.749058Z DEBUG bambu_watcher::app: src\app.rs:92: resumed
+2024-05-08T21:40:49.013727Z DEBUG bambu_watcher::app: src\app.rs:117: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1588.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1581.0, y: 1040.0 } }, click_type: Right }
+2024-05-08T21:40:50.179198Z DEBUG bambu_watcher::app: src\app.rs:128: unknown menu event: MenuEvent { id: MenuId("1003") }

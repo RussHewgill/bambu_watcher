@@ -1,0 +1,9 @@
+printers:
+- name: printer1
+  host: 192.168.0.XXX
+  access_code: 12341234
+  serial: XXXXXXXXXXXXXXX
+- name: printer2
+  host: 192.168.0.XXX
+  access_code: 56785678
+  serial: XXXXXXXXXXXXXXX
