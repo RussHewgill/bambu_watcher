@@ -11,10 +11,12 @@ pub mod app_types;
 pub mod client;
 pub mod config;
 pub mod logging;
+pub mod status;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use app_types::AppEvent;
+use client::{PrinterConnCmd, PrinterConnManager, PrinterConnMsg};
 use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
@@ -49,19 +51,101 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-// #[cfg(feature = "nope")]
+enum TestMessage {
+    Quit,
+    ChangeIcon,
+    Hello,
+}
+
+enum Icon {
+    Red,
+    Green,
+}
+
+impl Icon {
+    fn resource(&self) -> tray_item::IconSource {
+        match self {
+            Self::Red => tray_item::IconSource::Resource("test-icon"),
+            Self::Green => tray_item::IconSource::Resource("green-icon"),
+        }
+    }
+}
+
+fn main() {
+    use std::sync::mpsc;
+    use tray_item::TrayItem;
+
+    let mut tray = TrayItem::new("Tray Example", Icon::Green.resource()).unwrap();
+
+    let label_id = tray.inner_mut().add_label_with_id("Tray Label").unwrap();
+
+    tray.inner_mut().add_separator().unwrap();
+
+    let (tx, rx) = mpsc::sync_channel(1);
+
+    let hello_tx = tx.clone();
+    tray.add_menu_item("Hello!", move || {
+        hello_tx.send(TestMessage::Hello).unwrap();
+    })
+    .unwrap();
+
+    let color_tx = tx.clone();
+    let color_id = tray
+        .inner_mut()
+        .add_menu_item_with_id("Change to Red", move || {
+            color_tx.send(TestMessage::ChangeIcon).unwrap();
+        })
+        .unwrap();
+    let mut current_icon = Icon::Green;
+
+    tray.inner_mut().add_separator().unwrap();
+
+    let quit_tx = tx.clone();
+    tray.add_menu_item("Quit", move || {
+        quit_tx.send(TestMessage::Quit).unwrap();
+    })
+    .unwrap();
+
+    loop {
+        match rx.recv() {
+            Ok(TestMessage::Quit) => {
+                println!("Quit");
+                break;
+            }
+            Ok(TestMessage::ChangeIcon) => {
+                let (next_icon, next_message) = match current_icon {
+                    Icon::Red => (Icon::Green, "Change to Red"),
+                    Icon::Green => (Icon::Red, "Change to Green"),
+                };
+                current_icon = next_icon;
+
+                tray.inner_mut()
+                    .set_menu_item_label(next_message, color_id)
+                    .unwrap();
+                tray.set_icon(current_icon.resource()).unwrap();
+            }
+            Ok(TestMessage::Hello) => {
+                tray.inner_mut().set_label("Hi there!", label_id).unwrap();
+            }
+            _ => {}
+        }
+    }
+    //
+}
+
+#[cfg(feature = "nope")]
 fn main() -> Result<()> {
     dotenv::dotenv()?;
     logging::init_logs();
 
     let event_loop = winit::event_loop::EventLoop::<AppEvent>::with_user_event().build()?;
 
-    let (msg_tx, msg_rx) = tokio::sync::broadcast::channel::<Message>(25);
-    // let (cmd_tx, cmd_rx) = tokio::sync::broadcast::channel::<Message>(25);
+    let (msg_tx, mut msg_rx) = tokio::sync::mpsc::channel::<PrinterConnMsg>(25);
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(25);
 
     let config = serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()).unwrap();
 
-    let mut state = app_types::State::new(&config, msg_rx);
+    let mut state = app_types::State::new(&config, cmd_tx);
 
     let proxy = event_loop.create_proxy();
 
@@ -77,14 +161,23 @@ fn main() -> Result<()> {
                 // println!("menu event: {:?}", event);
                 proxy.send_event(AppEvent::MenuEvent(event)).unwrap();
             }
+
+            if let Ok(msg) = msg_rx.try_recv() {
+                // println!("msg: {:?}", msg);
+                proxy.send_event(AppEvent::ConnMsg(msg)).unwrap();
+            }
         }
     });
 
+    #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async move {
-            //
+            let mut manager = PrinterConnManager::new(config, cmd_rx, msg_tx);
+
+            debug!("running PrinterConnManager");
+            manager.run().await.unwrap();
         });
     });
 
@@ -127,6 +220,9 @@ fn main() -> Result<()> {
 // #[tokio::main]
 #[cfg(feature = "nope")]
 async fn main() -> Result<()> {
+    dotenv::dotenv()?;
+    logging::init_logs();
+
     let host = env::var("BAMBU_IP")?;
     let access_code = env::var("BAMBU_ACCESS_CODE")?;
     let serial = env::var("BAMBU_IDENT")?;

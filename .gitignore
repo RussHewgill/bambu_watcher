@@ -4,3 +4,5 @@ tasks.json
 certs*
 *.png
 config.yaml
+example.ron
+*.log

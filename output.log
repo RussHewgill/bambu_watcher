@@ -1,347 +1,99 @@
-2024-05-08T18:24:01.199209Z DEBUG bambu_watcher: src/main.rs:48: topic = /device/01P00A381000745/report
-2024-05-08T18:24:08.863458Z DEBUG bambu_watcher: src/main.rs:48: topic = /device/01P00A381000745/report
-2024-05-08T18:28:25.870635Z DEBUG bambu_watcher: src/main.rs:28: addr = mqtts://192.168.0.192:8883
-2024-05-08T18:28:40.663347Z DEBUG bambu_watcher: src/main.rs:28: addr = mqtt://192.168.0.192:8883
-2024-05-08T18:28:48.921779Z DEBUG bambu_watcher: src/main.rs:28: addr = 192.168.0.192:8883
-2024-05-08T18:28:55.571207Z DEBUG bambu_watcher: src/main.rs:28: addr = mqtt://192.168.0.192
-2024-05-08T18:29:56.258825Z DEBUG bambu_watcher: src/main.rs:28: addr = 192.168.0.192
-2024-05-08T18:29:56.259301Z DEBUG bambu_watcher: src/main.rs:34: broker = ("192.168.0.192", 8883)
-2024-05-08T19:07:29.963266Z DEBUG bambu_watcher: src/main.rs:29: addr = 192.168.0.192
-2024-05-08T19:07:29.963924Z DEBUG bambu_watcher: src/main.rs:35: broker = ("192.168.0.192", 8883)
-2024-05-08T19:16:46.356118Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
-2024-05-08T19:17:54.539023Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
-2024-05-08T19:17:54.539545Z DEBUG bambu_watcher: src/main.rs:37: creating client
-2024-05-08T19:17:54.542194Z DEBUG bambu_watcher: src/main.rs:41: getting stream
-2024-05-08T19:17:54.542720Z DEBUG bambu_watcher: src/main.rs:49: connecting
-2024-05-08T19:22:21.850100Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
-2024-05-08T19:22:21.850661Z DEBUG bambu_watcher: src/main.rs:37: creating client
-2024-05-08T19:22:21.853314Z DEBUG bambu_watcher: src/main.rs:55: connecting
-2024-05-08T19:22:22.926799Z DEBUG bambu_watcher: src/main.rs:57: connected
-2024-05-08T19:22:22.927275Z DEBUG bambu_watcher: src/main.rs:59: subscribing
-2024-05-08T19:22:22.927841Z DEBUG bambu_watcher: src/main.rs:61: topic = /device/01P00A381000745/report
-2024-05-08T19:22:22.928363Z DEBUG bambu_watcher: src/main.rs:63: subscribed
-2024-05-08T19:22:22.928897Z DEBUG bambu_watcher: src/main.rs:65: Waiting for messages...
-2024-05-08T19:22:22.956793Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x19564bc8d30    
-2024-05-08T19:27:04.830245Z DEBUG bambu_watcher: src/main.rs:27: addr = mqtts://192.168.0.192:8883
-2024-05-08T19:27:04.830677Z DEBUG bambu_watcher: src/main.rs:37: creating client
-2024-05-08T19:27:04.833244Z DEBUG bambu_watcher: src/main.rs:55: connecting
-2024-05-08T19:27:05.939656Z DEBUG bambu_watcher: src/main.rs:57: connected
-2024-05-08T19:27:05.940191Z DEBUG bambu_watcher: src/main.rs:59: subscribing
-2024-05-08T19:27:05.940709Z DEBUG bambu_watcher: src/main.rs:61: topic = /device/01P00A381000745/report
-2024-05-08T19:27:05.941086Z DEBUG bambu_watcher: src/main.rs:63: subscribed
-2024-05-08T19:27:05.941453Z DEBUG bambu_watcher: src/main.rs:65: Waiting for messages...
-2024-05-08T19:27:05.967649Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1d66053e900    
-2024-05-08T19:29:05.333033Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:29:06.440295Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x22415450130    
-2024-05-08T19:31:14.922485Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:31:14.923046Z DEBUG bambu_watcher::client: src\client.rs:99: connecting
-2024-05-08T19:31:15.924646Z DEBUG bambu_watcher::client: src\client.rs:103: connected
-2024-05-08T19:31:15.925184Z DEBUG bambu_watcher::client: src\client.rs:119: subscribing to topic: /device/01P00A381000745/report
-2024-05-08T19:31:15.933934Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1e8bad88c20    
-2024-05-08T19:31:56.200149Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:31:56.200665Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:31:56.201021Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:31:56.203537Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:31:56.203996Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
-2024-05-08T19:31:57.235072Z DEBUG bambu_watcher::client: src\client.rs:106: connected
-2024-05-08T19:31:57.235576Z DEBUG bambu_watcher::client: src\client.rs:122: subscribing to topic: /device/01P00A381000745/report
-2024-05-08T19:31:57.256025Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1c19643c4d0    
-2024-05-08T19:32:13.604291Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtt://192.168.0.192:8883
-2024-05-08T19:32:13.604858Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:32:13.605302Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:32:13.607808Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:32:13.608261Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
-2024-05-08T19:35:02.185720Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtt://192.168.0.192:8883
-2024-05-08T19:35:02.186080Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:35:02.186438Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:35:02.188477Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:35:02.188897Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
-2024-05-08T19:35:49.572409Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtt://192.168.0.192:8883
-2024-05-08T19:35:49.572908Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:35:49.573413Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:35:49.576004Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:35:49.576460Z DEBUG bambu_watcher::client: src\client.rs:102: connecting
-2024-05-08T19:37:40.907579Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:37:40.908060Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:37:40.908387Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:37:40.910984Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:37:40.911436Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
-2024-05-08T19:38:28.764137Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:38:28.764685Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:38:28.765097Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:38:28.767647Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:38:28.768090Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
-2024-05-08T19:38:29.815815Z DEBUG bambu_watcher::client: src\client.rs:107: connected
-2024-05-08T19:38:29.816332Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
-2024-05-08T19:38:29.828092Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1a7cbf0dd80    
-2024-05-08T19:44:03.090050Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:44:03.090589Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:44:03.092165Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:44:03.095243Z DEBUG bambu_watcher: src/main.rs:32: running
-2024-05-08T19:44:03.095734Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
-2024-05-08T19:44:04.273513Z DEBUG bambu_watcher::client: src\client.rs:107: connected
-2024-05-08T19:44:04.273812Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
-2024-05-08T19:44:04.306550Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1b5e2279e20    
-2024-05-08T19:47:23.548997Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:47:23.549368Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:47:23.549801Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:47:23.552243Z DEBUG bambu_watcher: src/main.rs:33: running
-2024-05-08T19:47:23.552676Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
-2024-05-08T19:47:25.145689Z DEBUG bambu_watcher::client: src\client.rs:107: connected
-2024-05-08T19:47:25.146234Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
-2024-05-08T19:47:25.152221Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x296527cd670    
-2024-05-08T19:47:47.223389Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:47:47.223856Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:47:47.224283Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:47:47.226502Z DEBUG bambu_watcher: src/main.rs:33: running
-2024-05-08T19:47:47.227082Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
-2024-05-08T19:47:48.280390Z DEBUG bambu_watcher::client: src\client.rs:107: connected
-2024-05-08T19:47:48.280785Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: /device/01P00A381000745/report
-2024-05-08T19:47:48.298361Z  WARN paho_mqtt::async_client: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\paho-mqtt-0.12.3\src\async_client.rs:273: Connection lost. Client: 0x1c712e41f30    
-2024-05-08T19:48:49.209672Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:48:49.210238Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:48:49.210578Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:48:49.213342Z DEBUG bambu_watcher: src/main.rs:33: running
-2024-05-08T19:48:49.213897Z DEBUG bambu_watcher::client: src\client.rs:103: connecting
-2024-05-08T19:48:50.269763Z DEBUG bambu_watcher::client: src\client.rs:107: connected
-2024-05-08T19:48:50.270297Z DEBUG bambu_watcher::client: src\client.rs:123: subscribing to topic: device/01P00A381000745/report
-2024-05-08T19:48:50.873186Z DEBUG bambu_watcher::client: src\client.rs:72: got message: Message { cmsg: MQTTAsync_message { struct_id: [77, 81, 84, 77], struct_version: 1, payloadlen: 146, payload: 0x1e403c03bc0, qos: 0, retained: 0, dup: 0, msgid: 0, properties: MQTTProperties { count: 0, max_count: 0, length: 0, array: 0x0 } }, data: MessageData { topic: "device/01P00A381000745/report", payload: [123, 34, 112, 114, 105, 110, 116, 34, 58, 123, 34, 110, 111, 122, 122, 108, 101, 95, 116, 101, 109, 112, 101, 114, 34, 58, 50, 50, 53, 46, 48, 54, 50, 53, 44, 34, 119, 105, 102, 105, 95, 115, 105, 103, 110, 97, 108, 34, 58, 34, 45, 52, 49, 100, 66, 109, 34, 44, 34, 109, 99, 95, 112, 114, 105, 110, 116, 95, 108, 105, 110, 101, 95, 110, 117, 109, 98, 101, 114, 34, 58, 34, 49, 54, 48, 52, 52, 57, 53, 34, 44, 34, 99, 111, 109, 109, 97, 110, 100, 34, 58, 34, 112, 117, 115, 104, 95, 115, 116, 97, 116, 117, 115, 34, 44, 34, 109, 115, 103, 34, 58, 49, 44, 34, 115, 101, 113, 117, 101, 110, 99, 101, 95, 105, 100, 34, 58, 34, 52, 50, 57, 53, 48, 34, 125, 125], props: Properties { cprops: MQTTProperties { count: 0, max_count: 0, length: 0, array: 0x0 } } } }
-2024-05-08T19:51:38.840654Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:51:38.841303Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:51:38.841703Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:51:38.845071Z DEBUG bambu_watcher: src/main.rs:33: running
-2024-05-08T19:51:38.845657Z DEBUG bambu_watcher::client: src\client.rs:107: connecting
-2024-05-08T19:51:39.877092Z DEBUG bambu_watcher::client: src\client.rs:111: connected
-2024-05-08T19:51:39.877584Z DEBUG bambu_watcher::client: src\client.rs:127: subscribing to topic: device/01P00A381000745/report
-2024-05-08T19:53:46.715484Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:53:46.716053Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:53:46.716345Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:53:46.720036Z DEBUG bambu_watcher: src/main.rs:33: running
-2024-05-08T19:53:46.720594Z DEBUG bambu_watcher::client: src\client.rs:107: connecting
-2024-05-08T19:53:47.709905Z DEBUG bambu_watcher::client: src\client.rs:111: connected
-2024-05-08T19:53:47.710419Z DEBUG bambu_watcher::client: src\client.rs:127: subscribing to topic: device/01P00A381000745/report
-2024-05-08T19:53:51.279049Z DEBUG bambu_watcher::client: src\client.rs:75: got message: Print(
-    Print {
-        print: PrintData {
-            upload: None,
-            nozzle_temper: Some(
-                225.03125,
-            ),
-            nozzle_target_temper: None,
-            bed_temper: None,
-            bed_target_temper: None,
-            chamber_temper: None,
-            mc_print_stage: None,
-            heatbreak_fan_speed: None,
-            cooling_fan_speed: None,
-            big_fan1_speed: None,
-            big_fan2_speed: None,
-            mc_percent: None,
-            mc_remaining_time: None,
-            ams_status: None,
-            ams_rfid_status: None,
-            hw_switch_state: None,
-            spd_mag: None,
-            spd_lvl: None,
-            print_error: None,
-            lifecycle: None,
-            wifi_signal: Some(
-                "-40dBm",
-            ),
-            gcode_state: None,
-            gcode_file_prepare_percent: None,
-            queue_number: None,
-            queue_total: None,
-            queue_est: None,
-            queue_sts: None,
-            project_id: None,
-            profile_id: None,
-            task_id: None,
-            subtask_id: None,
-            subtask_name: None,
-            gcode_file: None,
-            stg: None,
-            stg_cur: None,
-            print_type: None,
-            home_flag: None,
-            mc_print_line_number: Some(
-                "1640399",
-            ),
-            mc_print_sub_stage: None,
-            sdcard: None,
-            force_upgrade: None,
-            mess_production_state: None,
-            layer_num: None,
-            total_layer_num: None,
-            s_obj: None,
-            fan_gear: None,
-            hms: None,
-            online: None,
-            ams: None,
-            ipcam: None,
-            vt_tray: None,
-            lights_report: None,
-            upgrade_state: None,
-            command: Some(
-                "push_status",
-            ),
-            msg: Some(
-                1,
-            ),
-            sequence_id: Some(
-                "43060",
-            ),
-        },
-    },
-)
-2024-05-08T19:53:51.735909Z DEBUG bambu_watcher: src/main.rs:44: idling
-2024-05-08T19:57:03.991480Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:57:03.991874Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:57:03.992153Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:57:03.994492Z DEBUG bambu_watcher: src/main.rs:33: running
-2024-05-08T19:57:03.994804Z DEBUG bambu_watcher::client: src\client.rs:107: connecting
-2024-05-08T19:57:05.037071Z DEBUG bambu_watcher::client: src\client.rs:111: connected
-2024-05-08T19:57:05.037679Z DEBUG bambu_watcher::client: src\client.rs:127: subscribing to topic: device/01P00A381000745/report
-2024-05-08T19:58:00.531083Z DEBUG bambu_watcher::client: src\client.rs:27: host = mqtts://192.168.0.192:8883
-2024-05-08T19:58:00.531606Z DEBUG bambu_watcher::client: src\client.rs:29: access_code = 62894087
-2024-05-08T19:58:00.531852Z DEBUG bambu_watcher::client: src\client.rs:31: serial = 01P00A381000745
-2024-05-08T19:58:00.534480Z DEBUG bambu_watcher: src/main.rs:33: running
-2024-05-08T19:58:00.535089Z DEBUG bambu_watcher::client: src\client.rs:108: connecting
-2024-05-08T19:58:02.921823Z DEBUG bambu_watcher::client: src\client.rs:112: connected
-2024-05-08T19:58:02.922343Z DEBUG bambu_watcher::client: src\client.rs:128: subscribing to topic: device/01P00A381000745/report
-2024-05-08T19:58:05.550327Z DEBUG bambu_watcher: src/main.rs:44: idling
-2024-05-08T19:58:06.437242Z DEBUG bambu_watcher::client: src\client.rs:75: got message: Print(
-    Print {
-        print: PrintData {
-            upload: None,
-            nozzle_temper: Some(
-                224.9375,
-            ),
-            nozzle_target_temper: None,
-            bed_temper: Some(
-                59.90625,
-            ),
-            bed_target_temper: None,
-            chamber_temper: None,
-            mc_print_stage: None,
-            heatbreak_fan_speed: None,
-            cooling_fan_speed: None,
-            big_fan1_speed: None,
-            big_fan2_speed: None,
-            mc_percent: None,
-            mc_remaining_time: None,
-            ams_status: None,
-            ams_rfid_status: None,
-            hw_switch_state: None,
-            spd_mag: None,
-            spd_lvl: None,
-            print_error: None,
-            lifecycle: None,
-            wifi_signal: Some(
-                "-41dBm",
-            ),
-            gcode_state: None,
-            gcode_file_prepare_percent: None,
-            queue_number: None,
-            queue_total: None,
-            queue_est: None,
-            queue_sts: None,
-            project_id: None,
-            profile_id: None,
-            task_id: None,
-            subtask_id: None,
-            subtask_name: None,
-            gcode_file: None,
-            stg: None,
-            stg_cur: None,
-            print_type: None,
-            home_flag: None,
-            mc_print_line_number: Some(
-                "1669433",
-            ),
-            mc_print_sub_stage: None,
-            sdcard: None,
-            force_upgrade: None,
-            mess_production_state: None,
-            layer_num: None,
-            total_layer_num: None,
-            s_obj: None,
-            fan_gear: None,
-            hms: None,
-            online: None,
-            ams: None,
-            ipcam: None,
-            vt_tray: None,
-            lights_report: None,
-            upgrade_state: None,
-            command: Some(
-                "push_status",
-            ),
-            msg: Some(
-                1,
-            ),
-            sequence_id: Some(
-                "43153",
-            ),
-        },
-    },
-)
-2024-05-08T21:06:15.015835Z DEBUG bambu_watcher::app: src\app.rs:91: init
-2024-05-08T21:06:15.671020Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
-2024-05-08T21:07:40.880820Z DEBUG bambu_watcher::app: src\app.rs:91: init
-2024-05-08T21:07:41.683994Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
-2024-05-08T21:08:33.950627Z DEBUG bambu_watcher::app: src\app.rs:91: init
-2024-05-08T21:08:34.643333Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
-2024-05-08T21:09:08.290176Z DEBUG bambu_watcher::app: src\app.rs:91: init
-2024-05-08T21:09:08.966861Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
-2024-05-08T21:09:23.444114Z DEBUG bambu_watcher::app: src\app.rs:91: init
-2024-05-08T21:09:23.484838Z DEBUG bambu_watcher::app: src\app.rs:68: resumed
-2024-05-08T21:15:13.761995Z DEBUG bambu_watcher::app: src\app.rs:102: init
-2024-05-08T21:15:14.678581Z DEBUG bambu_watcher::app: src\app.rs:74: resumed
-2024-05-08T21:15:46.989869Z DEBUG bambu_watcher::app: src\app.rs:96: got event: MenuEvent(MenuEvent { id: MenuId("1004") })
-2024-05-08T21:22:31.994100Z DEBUG bambu_watcher::app: src\app.rs:127: init
-2024-05-08T21:22:32.763390Z DEBUG bambu_watcher::app: src\app.rs:84: resumed
-2024-05-08T21:34:12.894936Z DEBUG bambu_watcher: src/main.rs:45: config = Configs {
-    printers: [
-        PrinterConfig {
-            name: "calvin",
-            host: "192.168.0.147",
-            access_code: "23672419",
-            serial: "01P00A380200510",
-        },
-        PrinterConfig {
-            name: "hobbes",
-            host: "192.168.0.192",
-            access_code: "62894087",
-            serial: "01P00A381000745",
-        },
-    ],
-}
-2024-05-08T21:40:43.031163Z DEBUG bambu_watcher::app: src\app.rs:137: init
-2024-05-08T21:40:43.749058Z DEBUG bambu_watcher::app: src\app.rs:92: resumed
-2024-05-08T21:40:49.013727Z DEBUG bambu_watcher::app: src\app.rs:117: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1588.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1581.0, y: 1040.0 } }, click_type: Right }
-2024-05-08T21:40:50.179198Z DEBUG bambu_watcher::app: src\app.rs:128: unknown menu event: MenuEvent { id: MenuId("1003") }
-2024-05-09T16:04:58.035040Z DEBUG bambu_watcher::app: src\app.rs:139: init
-2024-05-09T16:04:59.175072Z DEBUG bambu_watcher::app: src\app.rs:94: resumed
-2024-05-09T16:05:02.869119Z DEBUG bambu_watcher::app: src\app.rs:119: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1564.0, y: 1065.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:05:03.417804Z DEBUG bambu_watcher::app: src\app.rs:126: quit
-2024-05-09T16:16:10.146505Z DEBUG bambu_watcher::app: src\app.rs:112: init
-2024-05-09T16:16:11.285187Z DEBUG bambu_watcher::app: src\app.rs:67: resumed
-2024-05-09T16:16:18.922871Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1557.0, y: 1064.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:16:20.821278Z DEBUG bambu_watcher::app: src\app.rs:103: unknown menu event: MenuEvent { id: MenuId("01P00A380200510") }
-2024-05-09T16:16:23.099278Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1572.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:16:29.205360Z DEBUG bambu_watcher::app: src\app.rs:99: quit
-2024-05-09T16:17:33.646902Z DEBUG bambu_watcher::app: src\app.rs:112: init
-2024-05-09T16:17:34.769093Z DEBUG bambu_watcher::app: src\app.rs:67: resumed
-2024-05-09T16:17:37.582915Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1567.0, y: 1056.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:17:41.497564Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1568.0, y: 1059.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:17:42.079339Z DEBUG bambu_watcher::app: src\app.rs:99: quit
-2024-05-09T16:28:15.597003Z DEBUG bambu_watcher::app: src\app.rs:148: init
-2024-05-09T16:28:16.674945Z DEBUG bambu_watcher::app: src\app.rs:103: resumed
-2024-05-09T16:28:16.787104Z DEBUG bambu_watcher::app: src\app.rs:128: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1570.0, y: 1064.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:32:02.784312Z DEBUG bambu_watcher::app: src\app.rs:128: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1573.0, y: 1059.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:32:03.170569Z DEBUG bambu_watcher::app: src\app.rs:135: quit
-2024-05-09T16:32:11.839470Z DEBUG bambu_watcher::app: src\app.rs:158: init
-2024-05-09T16:32:12.968513Z DEBUG bambu_watcher::app: src\app.rs:113: resumed
-2024-05-09T16:32:13.600951Z DEBUG bambu_watcher::app: src\app.rs:138: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1571.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
-2024-05-09T16:32:16.064455Z DEBUG bambu_watcher::app: src\app.rs:145: quit
+2024-05-09T17:54:46.586983Z DEBUG bambu_watcher::app: src\app.rs:173: init
+2024-05-09T17:54:47.898781Z DEBUG bambu_watcher::app: src\app.rs:127: resumed
+2024-05-09T17:54:50.664023Z DEBUG bambu_watcher::app: src\app.rs:152: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1566.0, y: 1063.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T17:54:51.255486Z DEBUG bambu_watcher::app: src\app.rs:156: reload
+2024-05-09T17:54:54.984188Z DEBUG bambu_watcher::app: src\app.rs:152: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1573.0, y: 1056.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T17:54:55.416733Z DEBUG bambu_watcher::app: src\app.rs:160: quit
+2024-05-09T18:01:19.111816Z DEBUG bambu_watcher::app: src\app.rs:173: init
+2024-05-09T18:01:20.207486Z DEBUG bambu_watcher::app: src\app.rs:127: resumed
+2024-05-09T18:02:58.818102Z DEBUG bambu_watcher::app: src\app.rs:173: init
+2024-05-09T18:02:59.936513Z DEBUG bambu_watcher::app: src\app.rs:127: resumed
+2024-05-09T18:13:28.773644Z DEBUG bambu_watcher::app: src\app.rs:177: init
+2024-05-09T18:13:28.775066Z DEBUG bambu_watcher: src/main.rs:97: running PrinterConnManager
+2024-05-09T18:13:28.779528Z DEBUG bambu_watcher::client: src\client.rs:69: got printer_msg, id = "01P00A380200510" = Connecting
+2024-05-09T18:13:29.813812Z DEBUG bambu_watcher::client: src\client.rs:69: got printer_msg, id = "01P00A380200510" = Connected
+2024-05-09T18:13:29.855361Z DEBUG bambu_watcher::app: src\app.rs:128: resumed
+2024-05-09T18:13:30.380463Z DEBUG bambu_watcher::client: src\client.rs:69: got printer_msg, id = "01P00A380200510" = Print(Print { print: PrintData { upload: None, nozzle_temper: Some(220.8125), nozzle_target_temper: None, bed_temper: Some(60.375), bed_target_temper: None, chamber_temper: None, mc_print_stage: None, heatbreak_fan_speed: None, cooling_fan_speed: None, big_fan1_speed: None, big_fan2_speed: None, mc_percent: None, mc_remaining_time: None, ams_status: None, ams_rfid_status: None, hw_switch_state: None, spd_mag: None, spd_lvl: None, print_error: None, lifecycle: None, wifi_signal: None, gcode_state: None, gcode_file_prepare_percent: None, queue_number: None, queue_total: None, queue_est: None, queue_sts: None, project_id: None, profile_id: None, task_id: None, subtask_id: None, subtask_name: None, gcode_file: None, stg: None, stg_cur: None, print_type: None, home_flag: None, mc_print_line_number: None, mc_print_sub_stage: None, sdcard: None, force_upgrade: None, mess_production_state: None, layer_num: None, total_layer_num: None, s_obj: None, fan_gear: None, hms: None, online: None, ams: None, ipcam: None, vt_tray: None, lights_report: None, upgrade_state: None, command: Some("push_status"), msg: Some(1), sequence_id: Some("62281") } })
+2024-05-09T18:13:31.765293Z DEBUG bambu_watcher::app: src\app.rs:153: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1565.0, y: 1063.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T18:13:32.528835Z DEBUG bambu_watcher::app: src\app.rs:161: quit
+2024-05-09T18:16:19.680452Z DEBUG bambu_watcher::app: src\app.rs:194: init
+2024-05-09T18:16:19.681652Z DEBUG bambu_watcher: src/main.rs:97: running PrinterConnManager
+2024-05-09T18:16:19.684903Z DEBUG bambu_watcher::client: src\client.rs:90: printer connecting: "01P00A380200510"
+2024-05-09T18:16:20.483693Z DEBUG bambu_watcher::app: src\app.rs:129: resumed
+2024-05-09T18:16:20.676359Z  INFO bambu_watcher::client: src\client.rs:92: printer connected: "01P00A380200510"
+2024-05-09T18:16:20.981875Z DEBUG bambu_watcher::app: src\app.rs:170: conn msg: StatusReport("01P00A380200510", PrinterStatusReport { status: Idle, nozzle_temper: Some(220.9375), nozzle_target_temper: Some(220), bed_temper: Some(60.125), bed_target_temper: Some(60), mc_percent: 21, mc_remaining_time: 29280s, print_error: Some(None), print_type: Some("cloud"), subtask_name: Some("Baby Gemstone v7"), layer_num: Some(14), total_layer_num: Some(133), heatbreak_fan_speed: Some("15"), cooling_fan_speed: Some("0"), aux_fan_speed: Some("0"), chamber_fan_speed: Some("0") })
+2024-05-09T18:16:20.982684Z DEBUG bambu_watcher::app: src\app.rs:173: got status report from printer: "01P00A380200510"
+2024-05-09T18:16:26.658321Z DEBUG bambu_watcher::app: src\app.rs:162: quit
+2024-05-09T18:17:48.340160Z DEBUG bambu_watcher::app: src\app.rs:194: init
+2024-05-09T18:17:48.341261Z DEBUG bambu_watcher: src/main.rs:97: running PrinterConnManager
+2024-05-09T18:17:48.344392Z DEBUG bambu_watcher::client: src\client.rs:90: printer connecting: "01P00A380200510"
+2024-05-09T18:17:49.186193Z DEBUG bambu_watcher::app: src\app.rs:129: resumed
+2024-05-09T18:17:50.248264Z  INFO bambu_watcher::client: src\client.rs:92: printer connected: "01P00A380200510"
+2024-05-09T18:17:50.437529Z DEBUG bambu_watcher::app: src\app.rs:170: conn msg: StatusReport("01P00A380200510", PrinterStatusReport { status: Idle, nozzle_temper: Some(219.46875), nozzle_target_temper: Some(220), bed_temper: Some(60.21875), bed_target_temper: Some(60), mc_percent: 21, mc_remaining_time: Some(29220s), print_error: Some(None), print_type: Some("cloud"), subtask_name: Some("Baby Gemstone v7"), layer_num: Some(14), total_layer_num: Some(133), heatbreak_fan_speed: Some("15"), cooling_fan_speed: Some("15"), aux_fan_speed: Some("10"), chamber_fan_speed: Some("12") })
+2024-05-09T18:17:50.438386Z DEBUG bambu_watcher::app: src\app.rs:173: got status report from printer: "01P00A380200510"
+2024-05-09T18:42:05.613078Z DEBUG bambu_watcher::app: src\app.rs:221: init
+2024-05-09T18:42:05.613464Z DEBUG bambu_watcher::app: src\app.rs:155: resumed
+2024-05-09T18:42:05.614180Z DEBUG bambu_watcher: src/main.rs:97: running PrinterConnManager
+2024-05-09T18:42:05.617400Z DEBUG bambu_watcher::client: src\client.rs:90: printer connecting: "01P00A380200510"
+2024-05-09T18:42:06.660961Z  INFO bambu_watcher::client: src\client.rs:92: printer connected: "01P00A380200510"
+2024-05-09T18:42:06.744280Z DEBUG bambu_watcher::app: src\app.rs:196: conn msg: StatusReport("01P00A380200510", PrinterStatusReport { status: Idle, nozzle_temper: Some(219.96875), nozzle_target_temper: Some(220), bed_temper: Some(59.6875), bed_target_temper: Some(60), mc_percent: 25, mc_remaining_time: Some(27720s), print_error: Some(None), print_type: Some("cloud"), subtask_name: Some("Baby Gemstone v7"), layer_num: Some(16), total_layer_num: Some(133), heatbreak_fan_speed: Some("15"), cooling_fan_speed: Some("15"), aux_fan_speed: Some("10"), chamber_fan_speed: Some("12") })
+2024-05-09T18:42:06.744938Z DEBUG bambu_watcher::app: src\app.rs:199: got status report from printer: "01P00A380200510"
+2024-05-09T18:56:58.318589Z DEBUG bambu_watcher::app: src\app.rs:259: init
+2024-05-09T18:58:56.479891Z DEBUG bambu_watcher::app: src\app.rs:264: init
+2024-05-09T18:58:57.339994Z DEBUG bambu_watcher::app: src\app.rs:196: resumed
+2024-05-09T19:00:58.709911Z DEBUG bambu_watcher::app: src\app.rs:221: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1560.0, y: 1061.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:01:00.211313Z DEBUG bambu_watcher::app: src\app.rs:229: quit
+2024-05-09T19:03:16.051120Z DEBUG bambu_watcher::app: src\app.rs:273: init
+2024-05-09T19:03:16.748775Z DEBUG bambu_watcher::app: src\app.rs:199: resumed
+2024-05-09T19:03:20.249635Z DEBUG bambu_watcher::app: src\app.rs:224: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1570.0, y: 1059.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:03:23.269373Z DEBUG bambu_watcher::app: src\app.rs:224: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1570.0, y: 1071.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Left }
+2024-05-09T19:03:24.010979Z DEBUG bambu_watcher::app: src\app.rs:224: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1570.0, y: 1070.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:03:24.572708Z DEBUG bambu_watcher::app: src\app.rs:238: quit
+2024-05-09T19:03:43.518372Z DEBUG bambu_watcher::app: src\app.rs:274: init
+2024-05-09T19:03:44.396578Z DEBUG bambu_watcher::app: src\app.rs:199: resumed
+2024-05-09T19:03:45.617567Z DEBUG bambu_watcher::app: src\app.rs:224: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1571.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:05:04.190890Z DEBUG bambu_watcher::app: src\app.rs:272: init
+2024-05-09T19:05:05.023182Z DEBUG bambu_watcher::app: src\app.rs:198: resumed
+2024-05-09T19:05:48.437276Z DEBUG bambu_watcher::app: src\app.rs:223: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1564.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:05:48.437891Z DEBUG bambu_watcher::app: src\app.rs:226: setting printer status: "01P00A380200510" = Instant { t: 2265818.7438567s }
+2024-05-09T19:05:50.277955Z DEBUG bambu_watcher::app: src\app.rs:241: unknown menu event: MenuEvent { id: MenuId("01P00A380200510") }
+2024-05-09T19:05:51.688829Z DEBUG bambu_watcher::app: src\app.rs:223: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1569.0, y: 1058.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:05:51.689289Z DEBUG bambu_watcher::app: src\app.rs:226: setting printer status: "01P00A380200510" = Instant { t: 2265821.9952613s }
+2024-05-09T19:05:52.575523Z DEBUG bambu_watcher::app: src\app.rs:223: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1569.0, y: 1065.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:05:52.575984Z DEBUG bambu_watcher::app: src\app.rs:226: setting printer status: "01P00A380200510" = Instant { t: 2265822.8819574s }
+2024-05-09T19:05:52.862792Z DEBUG bambu_watcher::app: src\app.rs:223: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1569.0, y: 1065.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:05:52.863303Z DEBUG bambu_watcher::app: src\app.rs:226: setting printer status: "01P00A380200510" = Instant { t: 2265823.1692751s }
+2024-05-09T19:07:51.313177Z DEBUG bambu_watcher::app: src\app.rs:275: init
+2024-05-09T19:07:51.314023Z DEBUG bambu_watcher::app: src\app.rs:153: no time left for printer: "01P00A380200510"
+2024-05-09T19:07:52.100752Z DEBUG bambu_watcher::app: src\app.rs:201: resumed
+2024-05-09T19:07:53.621543Z DEBUG bambu_watcher::app: src\app.rs:226: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1574.0, y: 1057.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:07:53.622216Z DEBUG bambu_watcher::app: src\app.rs:229: setting printer status: "01P00A380200510" = Instant { t: 2265943.9281789s }
+2024-05-09T19:07:56.466981Z DEBUG bambu_watcher::app: src\app.rs:244: unknown menu event: MenuEvent { id: MenuId("01P00A380200510") }
+2024-05-09T19:07:57.812719Z DEBUG bambu_watcher::app: src\app.rs:226: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1575.0, y: 1063.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:07:57.813502Z DEBUG bambu_watcher::app: src\app.rs:229: setting printer status: "01P00A380200510" = Instant { t: 2265948.1194694s }
+2024-05-09T19:07:59.233336Z DEBUG bambu_watcher::app: src\app.rs:240: quit
+2024-05-09T19:08:29.196915Z DEBUG bambu_watcher::app: src\app.rs:276: init
+2024-05-09T19:08:29.197927Z DEBUG bambu_watcher::app: src\app.rs:154: no time left for printer: "01P00A380200510"
+2024-05-09T19:08:29.985240Z DEBUG bambu_watcher::app: src\app.rs:202: resumed
+2024-05-09T19:08:31.424585Z DEBUG bambu_watcher::app: src\app.rs:227: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1573.0, y: 1062.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Left }
+2024-05-09T19:08:31.425233Z DEBUG bambu_watcher::app: src\app.rs:230: setting printer status: "01P00A380200510" = Instant { t: 2265981.7312007s }
+2024-05-09T19:08:31.425703Z DEBUG bambu_watcher::app: src\app.rs:147: setting time left for printer: "01P00A380200510"
+2024-05-09T19:08:34.201512Z DEBUG bambu_watcher::app: src\app.rs:227: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1572.0, y: 1061.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:08:34.202028Z DEBUG bambu_watcher::app: src\app.rs:230: setting printer status: "01P00A380200510" = Instant { t: 2265984.5079971s }
+2024-05-09T19:08:34.202664Z DEBUG bambu_watcher::app: src\app.rs:147: setting time left for printer: "01P00A380200510"
+2024-05-09T19:08:36.226335Z DEBUG bambu_watcher::app: src\app.rs:241: quit
+2024-05-09T19:09:56.370852Z DEBUG bambu_watcher::app: src\app.rs:280: init
+2024-05-09T19:09:56.371717Z DEBUG bambu_watcher::app: src\app.rs:155: no time left for printer: "01P00A380200510"
+2024-05-09T19:09:57.186185Z DEBUG bambu_watcher::app: src\app.rs:203: resumed
+2024-05-09T19:10:22.469171Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1574.0, y: 1065.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:10:22.469716Z DEBUG bambu_watcher::app: src\app.rs:231: setting printer status: "01P00A380200510" = Instant { t: 2266092.7756851s }
+2024-05-09T19:10:22.470300Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:10:23.829057Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1571.0, y: 1063.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:10:23.829654Z DEBUG bambu_watcher::app: src\app.rs:231: setting printer status: "01P00A380200510" = Instant { t: 2266094.1356258s }
+2024-05-09T19:10:23.830269Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:10:24.381482Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1571.0, y: 1061.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Left }
+2024-05-09T19:10:24.382027Z DEBUG bambu_watcher::app: src\app.rs:231: setting printer status: "01P00A380200510" = Instant { t: 2266094.6879996s }
+2024-05-09T19:10:24.382910Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:10:24.900530Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1571.0, y: 1056.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:10:24.901042Z DEBUG bambu_watcher::app: src\app.rs:231: setting printer status: "01P00A380200510" = Instant { t: 2266095.2070153s }
+2024-05-09T19:10:24.901323Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
