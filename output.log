@@ -321,3 +321,27 @@
 2024-05-08T21:40:43.749058Z DEBUG bambu_watcher::app: src\app.rs:92: resumed
 2024-05-08T21:40:49.013727Z DEBUG bambu_watcher::app: src\app.rs:117: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1588.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1581.0, y: 1040.0 } }, click_type: Right }
 2024-05-08T21:40:50.179198Z DEBUG bambu_watcher::app: src\app.rs:128: unknown menu event: MenuEvent { id: MenuId("1003") }
+2024-05-09T16:04:58.035040Z DEBUG bambu_watcher::app: src\app.rs:139: init
+2024-05-09T16:04:59.175072Z DEBUG bambu_watcher::app: src\app.rs:94: resumed
+2024-05-09T16:05:02.869119Z DEBUG bambu_watcher::app: src\app.rs:119: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1564.0, y: 1065.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:05:03.417804Z DEBUG bambu_watcher::app: src\app.rs:126: quit
+2024-05-09T16:16:10.146505Z DEBUG bambu_watcher::app: src\app.rs:112: init
+2024-05-09T16:16:11.285187Z DEBUG bambu_watcher::app: src\app.rs:67: resumed
+2024-05-09T16:16:18.922871Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1557.0, y: 1064.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:16:20.821278Z DEBUG bambu_watcher::app: src\app.rs:103: unknown menu event: MenuEvent { id: MenuId("01P00A380200510") }
+2024-05-09T16:16:23.099278Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1572.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:16:29.205360Z DEBUG bambu_watcher::app: src\app.rs:99: quit
+2024-05-09T16:17:33.646902Z DEBUG bambu_watcher::app: src\app.rs:112: init
+2024-05-09T16:17:34.769093Z DEBUG bambu_watcher::app: src\app.rs:67: resumed
+2024-05-09T16:17:37.582915Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1567.0, y: 1056.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:17:41.497564Z DEBUG bambu_watcher::app: src\app.rs:92: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1568.0, y: 1059.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:17:42.079339Z DEBUG bambu_watcher::app: src\app.rs:99: quit
+2024-05-09T16:28:15.597003Z DEBUG bambu_watcher::app: src\app.rs:148: init
+2024-05-09T16:28:16.674945Z DEBUG bambu_watcher::app: src\app.rs:103: resumed
+2024-05-09T16:28:16.787104Z DEBUG bambu_watcher::app: src\app.rs:128: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1570.0, y: 1064.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:32:02.784312Z DEBUG bambu_watcher::app: src\app.rs:128: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1573.0, y: 1059.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:32:03.170569Z DEBUG bambu_watcher::app: src\app.rs:135: quit
+2024-05-09T16:32:11.839470Z DEBUG bambu_watcher::app: src\app.rs:158: init
+2024-05-09T16:32:12.968513Z DEBUG bambu_watcher::app: src\app.rs:113: resumed
+2024-05-09T16:32:13.600951Z DEBUG bambu_watcher::app: src\app.rs:138: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1571.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T16:32:16.064455Z DEBUG bambu_watcher::app: src\app.rs:145: quit

@@ -6,13 +6,15 @@
 #![allow(unused_labels)]
 #![allow(unexpected_cfgs)]
 
-// pub mod client;
 pub mod app;
+pub mod app_types;
+pub mod client;
 pub mod config;
 pub mod logging;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use app_types::AppEvent;
 use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
@@ -20,8 +22,6 @@ use futures::StreamExt;
 use std::{env, time::Duration};
 
 use bambulab::{Command, Message};
-
-use app::AppEvent;
 
 /// config test
 #[cfg(feature = "nope")]
@@ -52,14 +52,16 @@ fn main() -> Result<()> {
 // #[cfg(feature = "nope")]
 fn main() -> Result<()> {
     dotenv::dotenv()?;
-
     logging::init_logs();
 
     let event_loop = winit::event_loop::EventLoop::<AppEvent>::with_user_event().build()?;
 
-    let (tx, rx) = tokio::sync::broadcast::channel::<Message>(25);
+    let (msg_tx, msg_rx) = tokio::sync::broadcast::channel::<Message>(25);
+    // let (cmd_tx, cmd_rx) = tokio::sync::broadcast::channel::<Message>(25);
 
-    let mut state = app::State::new(rx);
+    let config = serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()).unwrap();
+
+    let mut state = app_types::State::new(&config, msg_rx);
 
     let proxy = event_loop.create_proxy();
 
@@ -76,6 +78,14 @@ fn main() -> Result<()> {
                 proxy.send_event(AppEvent::MenuEvent(event)).unwrap();
             }
         }
+    });
+
+    /// tokio thread
+    std::thread::spawn(|| {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async move {
+            //
+        });
     });
 
     event_loop.run_app(&mut state)?;
@@ -110,12 +120,6 @@ fn main() -> Result<()> {
 
     event_loop.run_app(&mut state)?;
 
-    Ok(())
-}
-
-async fn start_printer_listener(tx: tokio::sync::broadcast::Sender<Message>, host: &str, access_code: &str, serial: &str) -> Result<()> {
-    let mut client = bambulab::Client::new(host, access_code, serial, tx);
-    client.run().await.unwrap();
     Ok(())
 }
 

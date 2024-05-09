@@ -1,135 +1,129 @@
-use std::{env, time::Duration};
+use std::{collections::HashMap, time::Duration};
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use bambulab::Message;
 use tracing::{debug, error, info, trace, warn};
 
-use futures::StreamExt;
-use tracing_subscriber::field::debug;
+use tokio::sync::broadcast::{Receiver, Sender};
 
-#[derive(Clone)]
-pub struct Client {
-    pub host: String,
-    pub access_code: String,
-    pub serial: String,
+use crate::config::{Configs, PrinterConfig};
 
-    client: paho_mqtt::AsyncClient,
-    stream: paho_mqtt::AsyncReceiver<Option<paho_mqtt::Message>>,
+/// The serial number of a printer
+pub type PrinterId = String;
+
+#[derive(Debug, Clone)]
+pub enum PrinterStatus {
+    Idle,
+    Printing(Duration),
+    Error(String),
 }
 
-impl Client {
-    /// Creates a new Bambu printer MQTT client.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the MQTT client cannot be created.
-    pub fn new<S: Into<String>>(ip: S, access_code: S, serial: S) -> Self {
-        let host = format!("mqtts://{}:8883", ip.into());
-        debug!("host = {}", host);
-        let access_code = access_code.into();
-        debug!("access_code = {}", access_code);
-        let serial = serial.into();
-        debug!("serial = {}", serial);
+/// messages from PrinterConnManager to UI
+#[derive(Debug, Clone)]
+pub enum PrinterConnMsg {
+    /// The current status of a printer
+    StatusReport(PrinterId, PrinterStatus),
+}
 
-        let client_id = "bambu_watcher";
+/// messages from UI to PrinterConnManager
+#[derive(Debug, Clone)]
+pub enum PrinterConnCmd {
+    /// get the status of a printer
+    ReportStatus(PrinterId),
+}
 
-        // let create_opts = paho_mqtt::CreateOptionsBuilder::new()
-        let create_opts = paho_mqtt::CreateOptionsBuilder::new_v3()
-            .server_uri(&host)
-            .client_id(client_id)
-            .max_buffered_messages(25)
-            .finalize();
+pub struct PrinterConnManager {
+    config: Configs,
+    // printer_rx: HashMap<PrinterId, Receiver<Message>>,
+    cmd_rx: Receiver<PrinterConnCmd>,
+    msg_tx: Sender<PrinterConnMsg>,
+}
 
-        let mut client = paho_mqtt::AsyncClient::new(create_opts).expect("Failed to create client");
-        let stream = client.get_stream(25);
-
+impl PrinterConnManager {
+    pub fn new(config: Configs, cmd_rx: Receiver<PrinterConnCmd>, msg_tx: Sender<PrinterConnMsg>) -> Self {
         Self {
-            host,
-            access_code,
-            serial,
-            // topic_device_request: format!("device/{}/request", &serial),
-            // topic_device_report: format!("device/{}/report", &serial),
-            client,
-            stream,
-            // tx,
+            config,
+            // printer_rx: HashMap::new(),
+            cmd_rx,
+            msg_tx,
         }
     }
 
-    /// Polls for a message from the MQTT event loop.
-    /// You need to poll periodically to receive messages
-    /// and to keep the connection alive.
-    /// This function also handles reconnects.
-    ///
-    /// **NOTE** Don't block this while iterating
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if there was a problem polling for a message or parsing the event.
-    async fn poll(&mut self) -> Result<()> {
-        let msg_opt = self.stream.next().await.flatten();
-
-        if let Some(msg) = msg_opt {
-            // self.tx.send(parse_message(&msg))?;
-
-            let msg: crate::mqtt_types::Message = serde_json::from_slice(msg.payload())?;
-
-            debug!("got message: {:#?}", msg);
-            panic!();
-        } else {
-            warn!("Lost connection.");
-            // self.tx.send(Message::Disconnected)?;
-
-            while (self.client.reconnect().await).is_err() {
-                tokio::time::sleep(Duration::from_secs(1)).await;
-                debug!("attempting to reconnect");
-                // self.tx.send(Message::Reconnecting)?;
-            }
-
-            // self.tx.send(Message::Connected)?;
-        }
-
-        Ok(())
-    }
-
-    async fn connect(&self) -> Result<()> {
-        let ssl_opts = paho_mqtt::SslOptionsBuilder::new()
-            .disable_default_trust_store(true)
-            .enable_server_cert_auth(false)
-            .verify(false)
-            .finalize();
-
-        let conn_opts = paho_mqtt::ConnectOptionsBuilder::new()
-            .ssl_options(ssl_opts)
-            .keep_alive_interval(Duration::from_secs(5))
-            .connect_timeout(Duration::from_secs(3))
-            .user_name("bblp")
-            .password(&self.access_code)
-            .finalize();
-
-        debug!("connecting");
-        // self.tx.send(Message::Connecting)?;
-        self.client.connect(conn_opts).await?;
-        // self.tx.send(Message::Connected)?;
-        debug!("connected");
-
-        Ok(())
-    }
-
-    /// Runs the Bambu MQTT client.
-    /// You should run this in a tokio task.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if there was a problem connecting to the MQTT broker
-    /// or subscribing to the device report topic.
     pub async fn run(&mut self) -> Result<()> {
-        self.connect().await?;
-        // self.subscibe_to_device_report();
-        let topic = format!("device/{}/report", env::var("BAMBU_IDENT")?);
-        debug!("subscribing to topic: {}", topic);
-        self.client.subscribe(topic, paho_mqtt::QOS_0);
+        let (tx, mut rx) = tokio::sync::broadcast::channel::<(PrinterId, Message)>(25);
+
+        for printer in self.config.printers.iter() {
+            Self::start_printer_listener(tx.clone(), printer).await?;
+        }
 
         loop {
-            Self::poll(self).await?;
+            tokio::select! {
+                Ok(cmd) = self.cmd_rx.recv() => {
+                    debug!("got cmd = {:?}", cmd);
+                }
+                Ok(printer_msg) = rx.recv() => {
+                    debug!("got printer_msg, id = {:?} = {:?}", printer_msg.0, printer_msg.1);
+                }
+            }
+            // break;
         }
+
+        // Ok(())
+    }
+
+    async fn start_printer_listener(
+        // tx: tokio::sync::broadcast::Sender<Message>,
+        msg_tx: tokio::sync::broadcast::Sender<(PrinterId, Message)>,
+        printer: &PrinterConfig,
+    ) -> Result<()> {
+        let (tx, mut rx) = tokio::sync::broadcast::channel::<Message>(25);
+        let mut client = bambulab::Client::new(&printer.host, &printer.access_code, &printer.serial, tx);
+        tokio::spawn(async move {
+            client.run().await.unwrap();
+        });
+        let serial = printer.serial.clone();
+        tokio::spawn(async move {
+            loop {
+                let message = rx.recv().await.unwrap();
+                msg_tx.send((serial.clone(), message)).unwrap();
+            }
+        });
+        Ok(())
+    }
+}
+
+#[cfg(feature = "nope")]
+mod old {
+
+    pub struct PrinterConnManager {
+        // pub printers: HashMap<String, PrinterConn>,
+        pub printers_chans: HashMap<String, Sender<PrinterConnCmd>>,
+        pub cmd_rx: Receiver<PrinterConnCmd>,
+    }
+
+    pub struct PrinterConn {
+        msg_rx: tokio::sync::broadcast::Receiver<Message>,
+    }
+
+    impl PrinterConnManager {
+        pub fn new() -> Self {
+            Self { printers: vec![] }
+        }
+
+        pub async fn run(&mut self) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    #[cfg(feature = "nope")]
+    async fn start_printer_listener(
+        tx: tokio::sync::broadcast::Sender<Message>,
+        host: &str,
+        access_code: &str,
+        serial: &str,
+    ) -> Result<()> {
+        let mut client = bambulab::Client::new(host, access_code, serial, tx);
+        client.run().await.unwrap();
+        Ok(())
     }
 }

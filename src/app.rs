@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use bambulab::Message;
 use image::Rgba;
 use tray_icon::{
-    menu::{AboutMetadata, Menu, MenuEvent, MenuId, MenuItem, PredefinedMenuItem},
+    menu::{AboutMetadata, IconMenuItem, Menu, MenuEvent, MenuId, MenuItem, PredefinedMenuItem},
     TrayIcon, TrayIconBuilder, TrayIconEvent,
 };
 use winit::{
@@ -15,66 +15,83 @@ use winit::{
     window::Window,
 };
 
-use crate::config::Configs;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum StatusIcon {
-    Idle,
-    PrintingNormally,
-    PrintingError,
-    Disconnected,
-}
-
-pub struct State {
-    tray_icon: Option<TrayIcon>,
-    icons: HashMap<StatusIcon, tray_icon::Icon>,
-    rx: tokio::sync::broadcast::Receiver<Message>,
-
-    menu_ids: HashMap<MenuId, AppCommand>,
-
-    config: Configs,
-}
-
-#[derive(Debug, Clone)]
-pub enum AppCommand {
-    Reload,
-    Quit,
-}
-
-#[derive(Debug, Clone)]
-pub enum AppEvent {
-    // Quit,
-    TrayEvent(TrayIconEvent),
-    MenuEvent(MenuEvent),
-}
+use crate::{
+    app_types::{AppCommand, AppEvent, PrinterMenu, State, StatusIcon},
+    config::{Configs, PrinterConfig},
+};
 
 impl State {
-    pub fn new(rx: tokio::sync::broadcast::Receiver<Message>) -> Self {
-        let mut icons = HashMap::new();
-
-        let (base, width, height) = _load_icon(std::path::Path::new("icon.png"));
-
-        let idle = tray_icon::Icon::from_rgba(base.clone().into_raw(), width, height).unwrap();
-        icons.insert(StatusIcon::Idle, idle);
-
-        let printing = imageproc::drawing::draw_filled_circle(&base.clone(), (8, 8), 6, Rgba([0, 255, 0, 255]));
-        let printing = tray_icon::Icon::from_rgba(printing.into_raw(), width, height).unwrap();
-        icons.insert(StatusIcon::PrintingNormally, printing);
-
-        let error = imageproc::drawing::draw_filled_circle(&base.clone(), (8, 8), 6, Rgba([255, 0, 0, 255]));
-        let error = tray_icon::Icon::from_rgba(error.into_raw(), width, height).unwrap();
-        icons.insert(StatusIcon::PrintingError, error);
-
-        let config = serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()).unwrap();
+    pub fn new(config: &Configs, rx: tokio::sync::broadcast::Receiver<Message>) -> Self {
+        let icons = Self::make_icons();
 
         Self {
             tray_icon: None,
             icons,
-            rx,
+            // msg_rx: rx,
+            config: config.clone(),
 
-            config,
+            printers: vec![],
+
             menu_ids: HashMap::new(),
         }
+    }
+
+    fn make_icons() -> HashMap<StatusIcon, (tray_icon::Icon, tray_icon::menu::Icon)> {
+        let mut icons = HashMap::new();
+
+        let (base, width, height) = _load_icon(std::path::Path::new("icon.png"));
+
+        let center = (8, 8);
+        let radius = 6;
+
+        icons.insert(StatusIcon::Idle, Self::make_icon(&base, None, center, radius).unwrap());
+
+        icons.insert(
+            StatusIcon::PrintingNormally,
+            Self::make_icon(&base, Some(Rgba([0, 255, 0, 255])), center, radius).unwrap(),
+        );
+
+        icons.insert(
+            StatusIcon::PrintingError,
+            Self::make_icon(&base, Some(Rgba([255, 0, 0, 255])), center, radius).unwrap(),
+        );
+
+        icons.insert(
+            StatusIcon::Disconnected,
+            Self::make_icon(&base, Some(Rgba([255, 255, 0, 255])), center, radius).unwrap(),
+        );
+
+        icons
+    }
+
+    fn make_icon(
+        base: &image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
+        color: Option<Rgba<u8>>,
+        pos: (i32, i32),
+        radius: i32,
+    ) -> Result<(tray_icon::Icon, tray_icon::menu::Icon)> {
+        let (width, height) = base.dimensions();
+
+        let base = if let Some(color) = color {
+            imageproc::drawing::draw_filled_circle(&base.clone(), pos, radius, color)
+        } else {
+            base.clone()
+        };
+
+        let icon1 = image::ImageBuffer::<Rgba<u8>, Vec<u8>>::new(width, height);
+        let color = color.unwrap_or(Rgba([0, 0, 0, 0]));
+        let icon1 = imageproc::drawing::draw_filled_circle(
+            &icon1,
+            (width as i32 / 2, height as i32 / 2),
+            width as i32 / 2,
+            color,
+        );
+        let icon1 = tray_icon::menu::Icon::from_rgba(icon1.into_raw(), width, height)?;
+
+        // let rgba = base.clone().into_raw();
+        let icon0 = tray_icon::Icon::from_rgba(base.clone().into_raw(), width, height)?;
+        // let icon1 = tray_icon::menu::Icon::from_rgba(base.clone().into_raw(), width, height)?;
+        Ok((icon0, icon1))
     }
 
     pub fn set_icon(&self, state: StatusIcon) {
@@ -82,7 +99,7 @@ impl State {
         self.tray_icon
             .as_ref()
             .unwrap()
-            .set_icon(Some(icon.clone()))
+            .set_icon(Some(icon.0.clone()))
             .unwrap();
     }
 }
@@ -150,11 +167,21 @@ impl ApplicationHandler<AppEvent> for State {
             menu.append(&PredefinedMenuItem::separator()).unwrap();
 
             for printer in &self.config.printers {
-                let item = MenuItem::new(&printer.name, true, None);
+                let printer_menu = PrinterMenu::new(printer);
+
+                let icon = self.icons.get(&StatusIcon::Disconnected).unwrap().clone();
+                let item = IconMenuItem::with_id(&printer_menu.id, &printer.name, true, Some(icon.1), None);
+
+                let item_time_left = MenuItem::with_id(&printer_menu.id_time_left, "--:--:--", false, None);
+                let item_eta = MenuItem::with_id(&printer_menu.id_time_left, "--:--:--", false, None);
+
                 menu.append(&item).unwrap();
+                menu.append(&item_time_left).unwrap();
+                menu.append(&item_eta).unwrap();
+
+                menu.append(&PredefinedMenuItem::separator()).unwrap();
             }
 
-            menu.append(&PredefinedMenuItem::separator()).unwrap();
             let quit = MenuItem::new("Quit", true, None);
             self.menu_ids.insert(quit.id().clone(), AppCommand::Quit);
             menu.append(&quit).unwrap();
@@ -165,13 +192,23 @@ impl ApplicationHandler<AppEvent> for State {
                 TrayIconBuilder::new()
                     .with_menu(Box::new(menu))
                     .with_tooltip("winit - awesome windowing lib")
-                    .with_icon(icon)
+                    .with_icon(icon.0)
                     .with_title("x")
                     .build()
                     .unwrap(),
             );
 
             //
+        }
+    }
+}
+
+impl PrinterMenu {
+    pub fn new(cfg: &PrinterConfig) -> Self {
+        Self {
+            id: cfg.serial.clone(),
+            id_time_left: format!("{}_time_left", cfg.serial),
+            id_eta: format!("{}_eta", cfg.serial),
         }
     }
 }
