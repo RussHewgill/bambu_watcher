@@ -553,3 +553,1466 @@
 2024-05-10T18:20:49.934879Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
 2024-05-10T18:21:02.978072Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
 2024-05-10T18:21:46.388403Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:32:37.209076Z DEBUG bambu_watcher: src/main.rs:305: received: Connecting
+2024-05-10T18:32:38.272239Z DEBUG bambu_watcher: src/main.rs:305: received: Connected
+2024-05-10T18:32:38.756383Z DEBUG bambu_watcher: src/main.rs:305: received: Print(
+    Print {
+        print: PrintData {
+            upload: Some(
+                PrintUpload {
+                    status: "idle",
+                    progress: 0,
+                    message: "",
+                },
+            ),
+            nozzle_temper: Some(
+                215.03125,
+            ),
+            nozzle_target_temper: Some(
+                215,
+            ),
+            bed_temper: Some(
+                60.125,
+            ),
+            bed_target_temper: Some(
+                60,
+            ),
+            chamber_temper: Some(
+                5,
+            ),
+            mc_print_stage: Some(
+                "2",
+            ),
+            heatbreak_fan_speed: Some(
+                "15",
+            ),
+            cooling_fan_speed: Some(
+                "15",
+            ),
+            big_fan1_speed: Some(
+                "10",
+            ),
+            big_fan2_speed: Some(
+                "13",
+            ),
+            mc_percent: Some(
+                27,
+            ),
+            mc_remaining_time: Some(
+                484,
+            ),
+            ams_status: Some(
+                768,
+            ),
+            ams_rfid_status: Some(
+                2,
+            ),
+            hw_switch_state: Some(
+                1,
+            ),
+            spd_mag: Some(
+                100,
+            ),
+            spd_lvl: Some(
+                2,
+            ),
+            print_error: Some(
+                0,
+            ),
+            lifecycle: Some(
+                "product",
+            ),
+            wifi_signal: Some(
+                "-67dBm",
+            ),
+            gcode_state: Some(
+                "RUNNING",
+            ),
+            gcode_file_prepare_percent: Some(
+                "100",
+            ),
+            queue_number: Some(
+                0,
+            ),
+            queue_total: Some(
+                0,
+            ),
+            queue_est: Some(
+                0,
+            ),
+            queue_sts: Some(
+                0,
+            ),
+            project_id: Some(
+                "77889755",
+            ),
+            profile_id: Some(
+                "76155449",
+            ),
+            task_id: Some(
+                "153759692",
+            ),
+            subtask_id: Some(
+                "153759693",
+            ),
+            subtask_name: Some(
+                "Baby Bamboo",
+            ),
+            gcode_file: Some(
+                "Baby Bamboo.3mf",
+            ),
+            stg: Some(
+                [
+                    Number(2),
+                    Number(14),
+                    Number(1),
+                ],
+            ),
+            stg_cur: Some(
+                0,
+            ),
+            print_type: Some(
+                "cloud",
+            ),
+            home_flag: Some(
+                2114871,
+            ),
+            mc_print_line_number: Some(
+                "1153463",
+            ),
+            mc_print_sub_stage: Some(
+                0,
+            ),
+            sdcard: Some(
+                true,
+            ),
+            force_upgrade: Some(
+                false,
+            ),
+            mess_production_state: Some(
+                "active",
+            ),
+            layer_num: Some(
+                18,
+            ),
+            total_layer_num: Some(
+                155,
+            ),
+            s_obj: Some(
+                [],
+            ),
+            fan_gear: Some(
+                15119103,
+            ),
+            hms: Some(
+                [],
+            ),
+            online: Some(
+                PrintOnline {
+                    ahb: false,
+                    rfid: false,
+                    version: 567943845,
+                },
+            ),
+            ams: Some(
+                PrintAms {
+                    ams: Some(
+                        [
+                            PrintAmsData {
+                                id: "0",
+                                humidity: "4",
+                                temp: "0.0",
+                                tray: [
+                                    PrintTray {
+                                        id: "0",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.029999999329447743,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL99",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "F9A846FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "1",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.02500000037252903,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL99",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "FFFFFFFF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "2",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.02500000037252903,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL00",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "161616FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "3",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.02500000037252903,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL99",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "F73CA0FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                ],
+                            },
+                        ],
+                    ),
+                    ams_exist_bits: Some(
+                        "1",
+                    ),
+                    tray_exist_bits: Some(
+                        "f",
+                    ),
+                    tray_is_bbl_bits: Some(
+                        "f",
+                    ),
+                    tray_tar: Some(
+                        "3",
+                    ),
+                    tray_now: Some(
+                        "3",
+                    ),
+                    tray_pre: Some(
+                        "3",
+                    ),
+                    tray_read_done_bits: Some(
+                        "f",
+                    ),
+                    tray_reading_bits: Some(
+                        "0",
+                    ),
+                    version: Some(
+                        251,
+                    ),
+                    insert_flag: Some(
+                        false,
+                    ),
+                    power_on_flag: Some(
+                        false,
+                    ),
+                },
+            ),
+            ipcam: Some(
+                PrintIpcam {
+                    ipcam_dev: Some(
+                        "1",
+                    ),
+                    ipcam_record: Some(
+                        "enable",
+                    ),
+                    timelapse: Some(
+                        "enable",
+                    ),
+                    mode_bits: Some(
+                        3,
+                    ),
+                },
+            ),
+            vt_tray: Some(
+                PrintVtTray {
+                    id: "254",
+                    tag_uid: "0000000000000000",
+                    tray_id_name: "",
+                    tray_info_idx: "",
+                    tray_type: "",
+                    tray_sub_brands: "",
+                    tray_color: "00000000",
+                    tray_weight: "0",
+                    tray_diameter: "0.00",
+                    tray_temp: "0",
+                    tray_time: "0",
+                    bed_temp_type: "0",
+                    bed_temp: "0",
+                    nozzle_temp_max: "0",
+                    nozzle_temp_min: "0",
+                    xcam_info: "000000000000000000000000",
+                    tray_uuid: "00000000000000000000000000000000",
+                    remain: 0,
+                    k: 0.019999999552965164,
+                    n: 1,
+                },
+            ),
+            lights_report: Some(
+                [
+                    PrintLightsReport {
+                        node: "chamber_light",
+                        mode: "on",
+                    },
+                ],
+            ),
+            upgrade_state: Some(
+                PrintUpgradeState {
+                    sequence_id: Some(
+                        0,
+                    ),
+                    progress: Some(
+                        "",
+                    ),
+                    status: Some(
+                        "",
+                    ),
+                    consistency_request: Some(
+                        false,
+                    ),
+                    dis_state: Some(
+                        0,
+                    ),
+                    err_code: Some(
+                        0,
+                    ),
+                    force_upgrade: Some(
+                        false,
+                    ),
+                    message: Some(
+                        "0%, 0B/s",
+                    ),
+                    module: Some(
+                        "",
+                    ),
+                    new_version_state: Some(
+                        2,
+                    ),
+                    new_ver_list: Some(
+                        [],
+                    ),
+                },
+            ),
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                0,
+            ),
+            sequence_id: Some(
+                "29480",
+            ),
+        },
+    },
+)
+2024-05-10T18:32:38.800909Z DEBUG bambu_watcher: src/main.rs:314: done
+2024-05-10T18:38:59.467783Z DEBUG bambu_watcher: src/main.rs:305: received: Connecting
+2024-05-10T18:39:01.796512Z DEBUG bambu_watcher: src/main.rs:305: received: Connected
+2024-05-10T18:39:01.963742Z DEBUG bambu_watcher: src/main.rs:305: received: Print(
+    Print {
+        print: PrintData {
+            upload: Some(
+                PrintUpload {
+                    status: "idle",
+                    progress: 0,
+                    message: "",
+                },
+            ),
+            nozzle_temper: Some(
+                215.0625,
+            ),
+            nozzle_target_temper: Some(
+                215,
+            ),
+            bed_temper: Some(
+                59.875,
+            ),
+            bed_target_temper: Some(
+                60,
+            ),
+            chamber_temper: Some(
+                5,
+            ),
+            mc_print_stage: Some(
+                "2",
+            ),
+            heatbreak_fan_speed: Some(
+                "15",
+            ),
+            cooling_fan_speed: Some(
+                "15",
+            ),
+            big_fan1_speed: Some(
+                "10",
+            ),
+            big_fan2_speed: Some(
+                "13",
+            ),
+            mc_percent: Some(
+                28,
+            ),
+            mc_remaining_time: Some(
+                478,
+            ),
+            ams_status: Some(
+                768,
+            ),
+            ams_rfid_status: Some(
+                2,
+            ),
+            hw_switch_state: Some(
+                1,
+            ),
+            spd_mag: Some(
+                100,
+            ),
+            spd_lvl: Some(
+                2,
+            ),
+            print_error: Some(
+                0,
+            ),
+            lifecycle: Some(
+                "product",
+            ),
+            wifi_signal: Some(
+                "-64dBm",
+            ),
+            gcode_state: Some(
+                "RUNNING",
+            ),
+            gcode_file_prepare_percent: Some(
+                "100",
+            ),
+            queue_number: Some(
+                0,
+            ),
+            queue_total: Some(
+                0,
+            ),
+            queue_est: Some(
+                0,
+            ),
+            queue_sts: Some(
+                0,
+            ),
+            project_id: Some(
+                "77889755",
+            ),
+            profile_id: Some(
+                "76155449",
+            ),
+            task_id: Some(
+                "153759692",
+            ),
+            subtask_id: Some(
+                "153759693",
+            ),
+            subtask_name: Some(
+                "Baby Bamboo",
+            ),
+            gcode_file: Some(
+                "Baby Bamboo.3mf",
+            ),
+            stg: Some(
+                [
+                    Number(2),
+                    Number(14),
+                    Number(1),
+                ],
+            ),
+            stg_cur: Some(
+                0,
+            ),
+            print_type: Some(
+                "cloud",
+            ),
+            home_flag: Some(
+                2114871,
+            ),
+            mc_print_line_number: Some(
+                "1205313",
+            ),
+            mc_print_sub_stage: Some(
+                0,
+            ),
+            sdcard: Some(
+                true,
+            ),
+            force_upgrade: Some(
+                false,
+            ),
+            mess_production_state: Some(
+                "active",
+            ),
+            layer_num: Some(
+                19,
+            ),
+            total_layer_num: Some(
+                155,
+            ),
+            s_obj: Some(
+                [],
+            ),
+            fan_gear: Some(
+                15119103,
+            ),
+            hms: Some(
+                [],
+            ),
+            online: Some(
+                PrintOnline {
+                    ahb: false,
+                    rfid: false,
+                    version: 567943845,
+                },
+            ),
+            ams: Some(
+                PrintAms {
+                    ams: Some(
+                        [
+                            PrintAmsData {
+                                id: "0",
+                                humidity: "4",
+                                temp: "0.0",
+                                tray: [
+                                    PrintTray {
+                                        id: "0",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.029999999329447743,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL99",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "F9A846FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "1",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.02500000037252903,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL99",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "FFFFFFFF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "2",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.02500000037252903,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL00",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "161616FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "3",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.02500000037252903,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL99",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "F73CA0FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                ],
+                            },
+                        ],
+                    ),
+                    ams_exist_bits: Some(
+                        "1",
+                    ),
+                    tray_exist_bits: Some(
+                        "f",
+                    ),
+                    tray_is_bbl_bits: Some(
+                        "f",
+                    ),
+                    tray_tar: Some(
+                        "3",
+                    ),
+                    tray_now: Some(
+                        "3",
+                    ),
+                    tray_pre: Some(
+                        "3",
+                    ),
+                    tray_read_done_bits: Some(
+                        "f",
+                    ),
+                    tray_reading_bits: Some(
+                        "0",
+                    ),
+                    version: Some(
+                        251,
+                    ),
+                    insert_flag: Some(
+                        false,
+                    ),
+                    power_on_flag: Some(
+                        false,
+                    ),
+                },
+            ),
+            ipcam: Some(
+                PrintIpcam {
+                    ipcam_dev: Some(
+                        "1",
+                    ),
+                    ipcam_record: Some(
+                        "enable",
+                    ),
+                    timelapse: Some(
+                        "enable",
+                    ),
+                    mode_bits: Some(
+                        3,
+                    ),
+                },
+            ),
+            vt_tray: Some(
+                PrintVtTray {
+                    id: "254",
+                    tag_uid: "0000000000000000",
+                    tray_id_name: "",
+                    tray_info_idx: "",
+                    tray_type: "",
+                    tray_sub_brands: "",
+                    tray_color: "00000000",
+                    tray_weight: "0",
+                    tray_diameter: "0.00",
+                    tray_temp: "0",
+                    tray_time: "0",
+                    bed_temp_type: "0",
+                    bed_temp: "0",
+                    nozzle_temp_max: "0",
+                    nozzle_temp_min: "0",
+                    xcam_info: "000000000000000000000000",
+                    tray_uuid: "00000000000000000000000000000000",
+                    remain: 0,
+                    k: 0.019999999552965164,
+                    n: 1,
+                },
+            ),
+            lights_report: Some(
+                [
+                    PrintLightsReport {
+                        node: "chamber_light",
+                        mode: "on",
+                    },
+                ],
+            ),
+            upgrade_state: Some(
+                PrintUpgradeState {
+                    sequence_id: Some(
+                        0,
+                    ),
+                    progress: Some(
+                        "",
+                    ),
+                    status: Some(
+                        "",
+                    ),
+                    consistency_request: Some(
+                        false,
+                    ),
+                    dis_state: Some(
+                        0,
+                    ),
+                    err_code: Some(
+                        0,
+                    ),
+                    force_upgrade: Some(
+                        false,
+                    ),
+                    message: Some(
+                        "0%, 0B/s",
+                    ),
+                    module: Some(
+                        "",
+                    ),
+                    new_version_state: Some(
+                        2,
+                    ),
+                    new_ver_list: Some(
+                        [],
+                    ),
+                },
+            ),
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                0,
+            ),
+            sequence_id: Some(
+                "29621",
+            ),
+        },
+    },
+)
+2024-05-10T18:39:03.887977Z DEBUG bambu_watcher: src/main.rs:305: received: Print(
+    Print {
+        print: PrintData {
+            upload: None,
+            nozzle_temper: Some(
+                215.125,
+            ),
+            nozzle_target_temper: None,
+            bed_temper: None,
+            bed_target_temper: None,
+            chamber_temper: None,
+            mc_print_stage: None,
+            heatbreak_fan_speed: None,
+            cooling_fan_speed: None,
+            big_fan1_speed: None,
+            big_fan2_speed: None,
+            mc_percent: None,
+            mc_remaining_time: Some(
+                477,
+            ),
+            ams_status: None,
+            ams_rfid_status: None,
+            hw_switch_state: None,
+            spd_mag: None,
+            spd_lvl: None,
+            print_error: None,
+            lifecycle: None,
+            wifi_signal: None,
+            gcode_state: None,
+            gcode_file_prepare_percent: None,
+            queue_number: None,
+            queue_total: None,
+            queue_est: None,
+            queue_sts: None,
+            project_id: None,
+            profile_id: None,
+            task_id: None,
+            subtask_id: None,
+            subtask_name: None,
+            gcode_file: None,
+            stg: None,
+            stg_cur: None,
+            print_type: None,
+            home_flag: None,
+            mc_print_line_number: Some(
+                "1205824",
+            ),
+            mc_print_sub_stage: None,
+            sdcard: None,
+            force_upgrade: None,
+            mess_production_state: None,
+            layer_num: None,
+            total_layer_num: None,
+            s_obj: None,
+            fan_gear: None,
+            hms: None,
+            online: None,
+            ams: None,
+            ipcam: None,
+            vt_tray: None,
+            lights_report: None,
+            upgrade_state: None,
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                1,
+            ),
+            sequence_id: Some(
+                "29622",
+            ),
+        },
+    },
+)
+2024-05-10T18:39:05.986096Z DEBUG bambu_watcher: src/main.rs:305: received: Print(
+    Print {
+        print: PrintData {
+            upload: None,
+            nozzle_temper: Some(
+                215.09375,
+            ),
+            nozzle_target_temper: None,
+            bed_temper: Some(
+                59.90625,
+            ),
+            bed_target_temper: None,
+            chamber_temper: None,
+            mc_print_stage: None,
+            heatbreak_fan_speed: None,
+            cooling_fan_speed: None,
+            big_fan1_speed: None,
+            big_fan2_speed: None,
+            mc_percent: None,
+            mc_remaining_time: None,
+            ams_status: None,
+            ams_rfid_status: None,
+            hw_switch_state: None,
+            spd_mag: None,
+            spd_lvl: None,
+            print_error: None,
+            lifecycle: None,
+            wifi_signal: Some(
+                "-63dBm",
+            ),
+            gcode_state: None,
+            gcode_file_prepare_percent: None,
+            queue_number: None,
+            queue_total: None,
+            queue_est: None,
+            queue_sts: None,
+            project_id: None,
+            profile_id: None,
+            task_id: None,
+            subtask_id: None,
+            subtask_name: None,
+            gcode_file: None,
+            stg: None,
+            stg_cur: None,
+            print_type: None,
+            home_flag: None,
+            mc_print_line_number: Some(
+                "1206325",
+            ),
+            mc_print_sub_stage: None,
+            sdcard: None,
+            force_upgrade: None,
+            mess_production_state: None,
+            layer_num: None,
+            total_layer_num: None,
+            s_obj: None,
+            fan_gear: None,
+            hms: None,
+            online: None,
+            ams: None,
+            ipcam: None,
+            vt_tray: None,
+            lights_report: None,
+            upgrade_state: None,
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                1,
+            ),
+            sequence_id: Some(
+                "29623",
+            ),
+        },
+    },
+)
+2024-05-10T18:39:10.038210Z DEBUG bambu_watcher: src/main.rs:305: received: Print(
+    Print {
+        print: PrintData {
+            upload: None,
+            nozzle_temper: None,
+            nozzle_target_temper: None,
+            bed_temper: None,
+            bed_target_temper: None,
+            chamber_temper: None,
+            mc_print_stage: None,
+            heatbreak_fan_speed: None,
+            cooling_fan_speed: None,
+            big_fan1_speed: None,
+            big_fan2_speed: None,
+            mc_percent: None,
+            mc_remaining_time: None,
+            ams_status: None,
+            ams_rfid_status: None,
+            hw_switch_state: None,
+            spd_mag: None,
+            spd_lvl: None,
+            print_error: None,
+            lifecycle: None,
+            wifi_signal: Some(
+                "-64dBm",
+            ),
+            gcode_state: None,
+            gcode_file_prepare_percent: None,
+            queue_number: None,
+            queue_total: None,
+            queue_est: None,
+            queue_sts: None,
+            project_id: None,
+            profile_id: None,
+            task_id: None,
+            subtask_id: None,
+            subtask_name: None,
+            gcode_file: None,
+            stg: None,
+            stg_cur: None,
+            print_type: None,
+            home_flag: None,
+            mc_print_line_number: Some(
+                "1206594",
+            ),
+            mc_print_sub_stage: None,
+            sdcard: None,
+            force_upgrade: None,
+            mess_production_state: None,
+            layer_num: None,
+            total_layer_num: None,
+            s_obj: None,
+            fan_gear: None,
+            hms: None,
+            online: None,
+            ams: None,
+            ipcam: None,
+            vt_tray: None,
+            lights_report: None,
+            upgrade_state: None,
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                1,
+            ),
+            sequence_id: Some(
+                "29624",
+            ),
+        },
+    },
+)
+2024-05-10T18:39:12.096290Z DEBUG bambu_watcher: src/main.rs:305: received: Print(
+    Print {
+        print: PrintData {
+            upload: None,
+            nozzle_temper: Some(
+                215.125,
+            ),
+            nozzle_target_temper: None,
+            bed_temper: None,
+            bed_target_temper: None,
+            chamber_temper: None,
+            mc_print_stage: None,
+            heatbreak_fan_speed: None,
+            cooling_fan_speed: None,
+            big_fan1_speed: None,
+            big_fan2_speed: None,
+            mc_percent: None,
+            mc_remaining_time: None,
+            ams_status: None,
+            ams_rfid_status: None,
+            hw_switch_state: None,
+            spd_mag: None,
+            spd_lvl: None,
+            print_error: None,
+            lifecycle: None,
+            wifi_signal: Some(
+                "-63dBm",
+            ),
+            gcode_state: None,
+            gcode_file_prepare_percent: None,
+            queue_number: None,
+            queue_total: None,
+            queue_est: None,
+            queue_sts: None,
+            project_id: None,
+            profile_id: None,
+            task_id: None,
+            subtask_id: None,
+            subtask_name: None,
+            gcode_file: None,
+            stg: None,
+            stg_cur: None,
+            print_type: None,
+            home_flag: None,
+            mc_print_line_number: Some(
+                "1206977",
+            ),
+            mc_print_sub_stage: None,
+            sdcard: None,
+            force_upgrade: None,
+            mess_production_state: None,
+            layer_num: None,
+            total_layer_num: None,
+            s_obj: None,
+            fan_gear: None,
+            hms: None,
+            online: None,
+            ams: None,
+            ipcam: None,
+            vt_tray: None,
+            lights_report: None,
+            upgrade_state: None,
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                1,
+            ),
+            sequence_id: Some(
+                "29625",
+            ),
+        },
+    },
+)
+2024-05-10T18:39:14.128534Z DEBUG bambu_watcher: src/main.rs:305: received: Print(
+    Print {
+        print: PrintData {
+            upload: None,
+            nozzle_temper: Some(
+                215.09375,
+            ),
+            nozzle_target_temper: None,
+            bed_temper: Some(
+                59.9375,
+            ),
+            bed_target_temper: None,
+            chamber_temper: None,
+            mc_print_stage: None,
+            heatbreak_fan_speed: None,
+            cooling_fan_speed: None,
+            big_fan1_speed: None,
+            big_fan2_speed: None,
+            mc_percent: None,
+            mc_remaining_time: None,
+            ams_status: None,
+            ams_rfid_status: None,
+            hw_switch_state: None,
+            spd_mag: None,
+            spd_lvl: None,
+            print_error: None,
+            lifecycle: None,
+            wifi_signal: None,
+            gcode_state: None,
+            gcode_file_prepare_percent: None,
+            queue_number: None,
+            queue_total: None,
+            queue_est: None,
+            queue_sts: None,
+            project_id: None,
+            profile_id: None,
+            task_id: None,
+            subtask_id: None,
+            subtask_name: None,
+            gcode_file: None,
+            stg: None,
+            stg_cur: None,
+            print_type: None,
+            home_flag: None,
+            mc_print_line_number: Some(
+                "1207240",
+            ),
+            mc_print_sub_stage: None,
+            sdcard: None,
+            force_upgrade: None,
+            mess_production_state: None,
+            layer_num: None,
+            total_layer_num: None,
+            s_obj: None,
+            fan_gear: None,
+            hms: None,
+            online: None,
+            ams: None,
+            ipcam: None,
+            vt_tray: None,
+            lights_report: None,
+            upgrade_state: None,
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                1,
+            ),
+            sequence_id: Some(
+                "29626",
+            ),
+        },
+    },
+)

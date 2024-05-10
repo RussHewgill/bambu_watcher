@@ -4,32 +4,35 @@ use tracing::{debug, error, info, trace, warn};
 use bambulab::PrintData;
 use std::time::{Duration, Instant};
 
-use crate::app_types::StatusIcon;
+// use crate::app_types::StatusIcon;
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct PrinterStatus {
     pub state: PrinterState,
-    pub last_report: Option<PrinterStatusReport>,
+    // pub last_report: Option<PrinterStatusReport>,
+    pub last_report: Option<Instant>,
     pub eta: Option<Instant>,
-    // pub current_file: Option<String>,
-    // pub print_percent: Option<i64>
-    // pub print_error: Option<PrintError>,
-}
 
-impl Default for PrinterStatus {
-    fn default() -> Self {
-        Self {
-            state: PrinterState::Disconnected,
-            last_report: None,
-            eta: None,
-            // current_file: None,
-            // print_percent: None,
-        }
-    }
+    pub current_file: Option<String>,
+    pub gcode_state: Option<String>,
+    pub print_percent: Option<i64>,
+    pub print_error: Option<PrintError>,
+    pub wifi_signal: Option<String>,
+    pub spd_lvl: Option<i64>,
+    // pub print_line_number: Option<String>,
+    pub layer_num: Option<i64>,
+    pub total_layer_num: Option<i64>,
 }
 
 impl PrinterStatus {
-    pub fn update(&mut self, report: PrinterStatusReport) {
+    pub fn update(&mut self, report: &bambulab::PrintData) {
+        self.last_report = Some(Instant::now());
+        // self.eta = report.mc_remaining_time.map(|t| Instant::now() + t);
+
+        // if let Some(f) = report.gcode_file.as_ref() {
+        //     self.current_file = Some(f.clone());
+        // }
+
         // self.status = report.status.clone();
         // self.last_report = Some(report);
     }
@@ -42,6 +45,12 @@ pub enum PrinterState {
     Printing(Instant),
     Error(String),
     Disconnected,
+}
+
+impl Default for PrinterState {
+    fn default() -> Self {
+        Self::Disconnected
+    }
 }
 
 impl PrinterState {
@@ -65,17 +74,18 @@ impl PrinterState {
         }
     }
 
-    pub fn to_icon(&self) -> StatusIcon {
-        match self {
-            PrinterState::Idle => StatusIcon::Idle,
-            PrinterState::Printing(_) => StatusIcon::PrintingNormally,
-            PrinterState::Error(_) => StatusIcon::PrintingError,
-            PrinterState::Paused => StatusIcon::PrintingNormally,
-            PrinterState::Disconnected => StatusIcon::Disconnected,
-        }
-    }
+    // pub fn to_icon(&self) -> StatusIcon {
+    //     match self {
+    //         PrinterState::Idle => StatusIcon::Idle,
+    //         PrinterState::Printing(_) => StatusIcon::PrintingNormally,
+    //         PrinterState::Error(_) => StatusIcon::PrintingError,
+    //         PrinterState::Paused => StatusIcon::PrintingNormally,
+    //         PrinterState::Disconnected => StatusIcon::Disconnected,
+    //     }
+    // }
 }
 
+#[cfg(feature = "nope")]
 #[derive(Debug, Clone)]
 pub struct PrinterStatusReport {
     pub status: PrinterState,
@@ -99,6 +109,7 @@ pub struct PrinterStatusReport {
     pub chamber_fan_speed: Option<String>,
 }
 
+#[cfg(feature = "nope")]
 impl PrinterStatusReport {
     pub fn from_print_data(i: &PrintData) -> Self {
         // let time_left = Duration::from_secs(i.mc_remaining_time.unwrap() as u64 * 60);

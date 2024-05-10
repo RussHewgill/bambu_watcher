@@ -2,10 +2,7 @@ use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use dashmap::DashMap;
 
-use crate::{
-    client::PrinterId,
-    status::{PrinterStatus, PrinterStatusReport},
-};
+use crate::{client::PrinterId, status::PrinterStatus};
 
 #[derive(PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum Tab {

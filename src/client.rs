@@ -9,7 +9,7 @@ use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::{
     config::{Config, PrinterConfig},
-    status::{PrinterStatus, PrinterStatusReport},
+    status::PrinterStatus,
 };
 
 /// The serial number of a printer
@@ -19,7 +19,7 @@ pub type PrinterId = String;
 #[derive(Debug, Clone)]
 pub enum PrinterConnMsg {
     /// The current status of a printer
-    StatusReport(PrinterId, PrinterStatusReport),
+    StatusReport(PrinterId, bambulab::PrintData),
 }
 
 /// messages from UI to PrinterConnManager
@@ -85,10 +85,14 @@ impl PrinterConnManager {
 
     async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
         match msg {
-            Message::Print(print) => {
-                let status = PrinterStatusReport::from_print_data(&print.print);
+            Message::Print(report) => {
+                // let report = PrinterStatusReport::from_print_data(&print.print);
+
+                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                entry.update(&report.print);
+
                 self.msg_tx
-                    .send(PrinterConnMsg::StatusReport(id, status))
+                    .send(PrinterConnMsg::StatusReport(id, report.print))
                     .await
                     .unwrap();
             }

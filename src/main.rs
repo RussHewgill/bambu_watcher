@@ -6,8 +6,8 @@
 #![allow(unused_labels)]
 #![allow(unexpected_cfgs)]
 
-pub mod app;
-pub mod app_types;
+// pub mod app;
+// pub mod app_types;
 pub mod client;
 pub mod config;
 pub mod logging;
@@ -17,8 +17,6 @@ pub mod ui_types;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use app_types::AppEvent;
-use client::{PrinterConnCmd, PrinterConnManager, PrinterConnMsg};
 use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
@@ -28,7 +26,10 @@ use std::{env, sync::Arc, time::Duration};
 
 use bambulab::{Command, Message};
 
-use crate::{client::PrinterId, status::PrinterStatus};
+use crate::{
+    client::{PrinterConnCmd, PrinterConnManager, PrinterConnMsg, PrinterId},
+    status::PrinterStatus,
+};
 
 /// config test
 #[cfg(feature = "nope")]
@@ -59,6 +60,7 @@ fn main() -> Result<()> {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
+#[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     // dotenv::dotenv().unwrap();
     logging::init_logs();
@@ -74,6 +76,7 @@ fn main() -> eframe::Result<()> {
 
     let config: config::Config =
         serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()).unwrap();
+    let config2 = config.clone();
 
     let mut _tray_icon = std::rc::Rc::new(std::cell::RefCell::new(None));
     let tray_c = _tray_icon.clone();
@@ -93,12 +96,12 @@ fn main() -> eframe::Result<()> {
         }
     }
 
-    #[cfg(feature = "nope")]
+    // #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async move {
-            let mut manager = PrinterConnManager::new(config, printer_states2, cmd_rx, msg_tx);
+            let mut manager = PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx);
 
             debug!("running PrinterConnManager");
             manager.run().await.unwrap();
@@ -278,8 +281,8 @@ fn main() -> Result<()> {
 }
 
 /// working?
-// #[tokio::main]
-#[cfg(feature = "nope")]
+#[tokio::main]
+// #[cfg(feature = "nope")]
 async fn main() -> Result<()> {
     dotenv::dotenv()?;
     logging::init_logs();
@@ -305,6 +308,13 @@ async fn main() -> Result<()> {
                 if message == Message::Connected {
                     client_clone.publish(Command::PushAll).await.unwrap();
                 }
+
+                // if matches!(message, Message::Print(_)) {
+                //     // let status = message.get_printer_status().unwrap();
+                //     // debug!("status = {:#?}", status);
+                //     // debug!("done");
+                //     break;
+                // }
             }
         }),
     )?;
