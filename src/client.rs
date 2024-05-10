@@ -1,14 +1,15 @@
-use std::{collections::HashMap, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use dashmap::DashMap;
 use tracing::{debug, error, info, trace, warn};
 
 use bambulab::{Client as BambuClient, Message};
 use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::{
-    config::{Configs, PrinterConfig},
-    status::PrinterStatusReport,
+    config::{Config, PrinterConfig},
+    status::{PrinterStatus, PrinterStatusReport},
 };
 
 /// The serial number of a printer
@@ -29,17 +30,24 @@ pub enum PrinterConnCmd {
 }
 
 pub struct PrinterConnManager {
-    config: Configs,
+    config: Config,
     printers: HashMap<PrinterId, BambuClient>,
+    printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
     cmd_rx: Receiver<PrinterConnCmd>,
     msg_tx: Sender<PrinterConnMsg>,
 }
 
 impl PrinterConnManager {
-    pub fn new(config: Configs, cmd_rx: Receiver<PrinterConnCmd>, msg_tx: Sender<PrinterConnMsg>) -> Self {
+    pub fn new(
+        config: Config,
+        printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
+        cmd_rx: Receiver<PrinterConnCmd>,
+        msg_tx: Sender<PrinterConnMsg>,
+    ) -> Self {
         Self {
             config,
             printers: HashMap::new(),
+            printer_states,
             cmd_rx,
             msg_tx,
         }
@@ -120,7 +128,8 @@ impl PrinterConnManager {
         printer: &PrinterConfig,
     ) -> Result<BambuClient> {
         let (tx, mut rx) = tokio::sync::broadcast::channel::<Message>(25);
-        let mut client = bambulab::Client::new(&printer.host, &printer.access_code, &printer.serial, tx);
+        let mut client =
+            bambulab::Client::new(&printer.host, &printer.access_code, &printer.serial, tx);
         let client_clone = client.clone();
         tokio::spawn(async move {
             client.run().await.unwrap();

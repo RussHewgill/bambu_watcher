@@ -12,6 +12,8 @@ pub mod client;
 pub mod config;
 pub mod logging;
 pub mod status;
+pub mod ui;
+pub mod ui_types;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
@@ -21,9 +23,12 @@ use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
 // use rumqttc::{Client, MqttOptions, QoS};
-use std::{env, time::Duration};
+use dashmap::DashMap;
+use std::{env, sync::Arc, time::Duration};
 
 use bambulab::{Command, Message};
+
+use crate::{client::PrinterId, status::PrinterStatus};
 
 /// config test
 #[cfg(feature = "nope")]
@@ -44,92 +49,142 @@ fn main() -> Result<()> {
 
     // serde_yaml::to_writer(std::fs::File::create(path)?, &config)?;
 
-    let config: config::Configs = serde_yaml::from_reader(std::fs::File::open(path)?)?;
+    let config: config::Config = serde_yaml::from_reader(std::fs::File::open(path)?)?;
 
     debug!("config = {:#?}", config);
 
     Ok(())
 }
 
-enum TestMessage {
-    Quit,
-    ChangeIcon,
-    Hello,
-}
+/// threads:
+///     main egui thread
+///     tokio thread, listens for messages from the printer
+fn main() -> eframe::Result<()> {
+    // dotenv::dotenv().unwrap();
+    logging::init_logs();
 
-enum Icon {
-    Red,
-    Green,
-}
+    let native_options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([800.0, 600.0])
+            .with_min_inner_size([400.0, 300.0]),
+        ..Default::default()
+    };
 
-impl Icon {
-    fn resource(&self) -> tray_item::IconSource {
-        match self {
-            Self::Red => tray_item::IconSource::Resource("test-icon"),
-            Self::Green => tray_item::IconSource::Resource("green-icon"),
+    static VISIBLE: std::sync::Mutex<bool> = std::sync::Mutex::new(true);
+
+    let config: config::Config =
+        serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()).unwrap();
+
+    let mut _tray_icon = std::rc::Rc::new(std::cell::RefCell::new(None));
+    let tray_c = _tray_icon.clone();
+
+    let (msg_tx, mut msg_rx) = tokio::sync::mpsc::channel::<PrinterConnMsg>(25);
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(25);
+
+    let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
+    let printer_states2 = printer_states.clone();
+
+    /// debug printer state
+    {
+        warn!("adding debug printer state");
+
+        for printer in config.printers.iter() {
+            printer_states.insert(printer.serial.clone(), PrinterStatus::default());
         }
     }
-}
 
-fn main() {
-    use std::sync::mpsc;
-    use tray_item::TrayItem;
+    #[cfg(feature = "nope")]
+    /// tokio thread
+    std::thread::spawn(|| {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async move {
+            let mut manager = PrinterConnManager::new(config, printer_states2, cmd_rx, msg_tx);
 
-    let mut tray = TrayItem::new("Tray Example", Icon::Green.resource()).unwrap();
+            debug!("running PrinterConnManager");
+            manager.run().await.unwrap();
+        });
+    });
 
-    let label_id = tray.inner_mut().add_label_with_id("Tray Label").unwrap();
+    eframe::run_native(
+        "Bambu Watcher",
+        native_options,
+        Box::new(move |cc| {
+            let winit::raw_window_handle::RawWindowHandle::Win32(handle) =
+                winit::raw_window_handle::HasWindowHandle::window_handle(&cc)
+                    .unwrap()
+                    .as_raw()
+            else {
+                panic!("Unsupported platform");
+            };
 
-    tray.inner_mut().add_separator().unwrap();
+            let context = cc.egui_ctx.clone();
 
-    let (tx, rx) = mpsc::sync_channel(1);
+            // tray-icon crate
+            // https://docs.rs/tray-icon/0.12.0/tray_icon/struct.TrayIconEvent.html#method.set_event_handler
+            tray_icon::TrayIconEvent::set_event_handler(Some(
+                move |event: tray_icon::TrayIconEvent| {
+                    // println!("TrayIconEvent: {:?}", event);
+                    if event.click_type != tray_icon::ClickType::Double {
+                        return;
+                    }
 
-    let hello_tx = tx.clone();
-    tray.add_menu_item("Hello!", move || {
-        hello_tx.send(TestMessage::Hello).unwrap();
-    })
-    .unwrap();
+                    // Just a static Mutex<bool>
+                    let mut visible = VISIBLE.lock().unwrap();
 
-    let color_tx = tx.clone();
-    let color_id = tray
-        .inner_mut()
-        .add_menu_item_with_id("Change to Red", move || {
-            color_tx.send(TestMessage::ChangeIcon).unwrap();
-        })
-        .unwrap();
-    let mut current_icon = Icon::Green;
+                    if *visible {
+                        debug!("hiding window");
+                        let window_handle = windows::Win32::Foundation::HWND(handle.hwnd.into());
+                        let hide = windows::Win32::UI::WindowsAndMessaging::SW_HIDE;
+                        unsafe {
+                            let _ = windows::Win32::UI::WindowsAndMessaging::ShowWindow(
+                                window_handle,
+                                hide,
+                            );
+                        }
+                        *visible = false;
+                    } else {
+                        debug!("showing window");
+                        let window_handle = windows::Win32::Foundation::HWND(handle.hwnd.into());
+                        // You can show the window in all sorts of ways:
+                        // https://learn.microsoft.com/en-gb/windows/win32/api/winuser/nf-winuser-showwindow
+                        let show = windows::Win32::UI::WindowsAndMessaging::SW_SHOWDEFAULT;
+                        unsafe {
+                            let _ = windows::Win32::UI::WindowsAndMessaging::ShowWindow(
+                                window_handle,
+                                show,
+                            );
+                        }
+                        *visible = true;
+                    }
+                },
+            ));
 
-    tray.inner_mut().add_separator().unwrap();
+            /// Icon by https://www.flaticon.com/authors/freepik
+            let icon = crate::app::load_icon(&"icon.png");
 
-    let quit_tx = tx.clone();
-    tray.add_menu_item("Quit", move || {
-        quit_tx.send(TestMessage::Quit).unwrap();
-    })
-    .unwrap();
-
-    loop {
-        match rx.recv() {
-            Ok(TestMessage::Quit) => {
-                println!("Quit");
-                break;
+            {
+                tray_c.borrow_mut().replace(
+                    tray_icon::TrayIconBuilder::new()
+                        // .with_menu(Box::new(menu))
+                        .with_menu(Box::new(tray_icon::menu::Menu::new()))
+                        .with_tooltip("winit - awesome windowing lib")
+                        .with_icon(icon)
+                        .with_title("x")
+                        .build()
+                        .unwrap(),
+                );
             }
-            Ok(TestMessage::ChangeIcon) => {
-                let (next_icon, next_message) = match current_icon {
-                    Icon::Red => (Icon::Green, "Change to Red"),
-                    Icon::Green => (Icon::Red, "Change to Green"),
-                };
-                current_icon = next_icon;
 
-                tray.inner_mut()
-                    .set_menu_item_label(next_message, color_id)
-                    .unwrap();
-                tray.set_icon(current_icon.resource()).unwrap();
-            }
-            Ok(TestMessage::Hello) => {
-                tray.inner_mut().set_label("Hi there!", label_id).unwrap();
-            }
-            _ => {}
-        }
-    }
+            // let tray_icon = tray_icon::TrayIconBuilder::new()
+            //     .build()
+            //     .unwrap();
+
+            egui_extras::install_image_loaders(&cc.egui_ctx);
+
+            Box::new(ui_types::App::new(tray_c, printer_states, config, cc))
+        }),
+    )
+
     //
 }
 
@@ -148,7 +203,13 @@ fn main() -> Result<()> {
     let mut state = app_types::State::new(&config, cmd_tx);
 
     let proxy = event_loop.create_proxy();
+    /// update timer thread
+    std::thread::spawn(move || loop {
+        proxy.send_event(AppEvent::Timer).unwrap();
+        std::thread::sleep(Duration::from_millis(1000));
+    });
 
+    let proxy = event_loop.create_proxy();
     /// event listener thread
     std::thread::spawn(move || {
         loop {

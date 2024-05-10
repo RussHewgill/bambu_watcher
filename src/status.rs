@@ -1,13 +1,42 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use bambulab::PrintData;
 use tracing::{debug, error, info, trace, warn};
 
+use bambulab::PrintData;
 use std::time::{Duration, Instant};
 
 use crate::app_types::StatusIcon;
 
 #[derive(Debug, Clone)]
-pub enum PrinterStatus {
+pub struct PrinterStatus {
+    pub state: PrinterState,
+    pub last_report: Option<PrinterStatusReport>,
+    pub eta: Option<Instant>,
+    // pub current_file: Option<String>,
+    // pub print_percent: Option<i64>
+    // pub print_error: Option<PrintError>,
+}
+
+impl Default for PrinterStatus {
+    fn default() -> Self {
+        Self {
+            state: PrinterState::Disconnected,
+            last_report: None,
+            eta: None,
+            // current_file: None,
+            // print_percent: None,
+        }
+    }
+}
+
+impl PrinterStatus {
+    pub fn update(&mut self, report: PrinterStatusReport) {
+        // self.status = report.status.clone();
+        // self.last_report = Some(report);
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum PrinterState {
     Idle,
     Paused,
     Printing(Instant),
@@ -15,21 +44,41 @@ pub enum PrinterStatus {
     Disconnected,
 }
 
-impl PrinterStatus {
+impl PrinterState {
+    pub fn to_text(&self) -> &'static str {
+        match self {
+            PrinterState::Idle => "Idle",
+            PrinterState::Printing(_) => "Printing",
+            PrinterState::Error(_) => "Error",
+            PrinterState::Paused => "Paused",
+            PrinterState::Disconnected => "Disconnected",
+        }
+    }
+
+    pub fn to_char(&self) -> &'static str {
+        match self {
+            PrinterState::Idle => "💤",
+            PrinterState::Printing(_) => "🟢",
+            PrinterState::Error(_) => "🟥️",
+            PrinterState::Paused => "🟡",
+            PrinterState::Disconnected => "🔌",
+        }
+    }
+
     pub fn to_icon(&self) -> StatusIcon {
         match self {
-            PrinterStatus::Idle => StatusIcon::Idle,
-            PrinterStatus::Printing(_) => StatusIcon::PrintingNormally,
-            PrinterStatus::Error(_) => StatusIcon::PrintingError,
-            PrinterStatus::Paused => StatusIcon::PrintingNormally,
-            PrinterStatus::Disconnected => StatusIcon::Disconnected,
+            PrinterState::Idle => StatusIcon::Idle,
+            PrinterState::Printing(_) => StatusIcon::PrintingNormally,
+            PrinterState::Error(_) => StatusIcon::PrintingError,
+            PrinterState::Paused => StatusIcon::PrintingNormally,
+            PrinterState::Disconnected => StatusIcon::Disconnected,
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct PrinterStatusReport {
-    pub status: PrinterStatus,
+    pub status: PrinterState,
     pub nozzle_temper: Option<f64>,
     pub nozzle_target_temper: Option<i64>,
     pub bed_temper: Option<f64>,
@@ -57,7 +106,7 @@ impl PrinterStatusReport {
             .mc_remaining_time
             .map(|t| Duration::from_secs(t as u64 * 60));
         Self {
-            status: PrinterStatus::Idle,
+            status: PrinterState::Idle,
             // status: match i.status.as_str() {
             //     "Idle" => PrinterStatus::Idle,
             //     // "Printing" => PrinterStatus::Printing(Duration::from_mins(i.mc_remaining_time.unwrap()),

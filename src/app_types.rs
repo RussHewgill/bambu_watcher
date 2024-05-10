@@ -8,8 +8,8 @@ use tray_icon::{
 
 use crate::{
     client::{PrinterConnMsg, PrinterId},
-    config::Configs,
-    status::PrinterStatus,
+    config::Config,
+    status::PrinterState,
 };
 
 pub struct State {
@@ -24,15 +24,16 @@ pub struct State {
     pub(super) menu_ids: HashMap<MenuId, AppCommand>,
 
     // pub(super) printers: Vec<PrinterMenu>,
-    pub(super) printer_status: HashMap<PrinterId, PrinterStatus>,
+    pub(super) printer_status: HashMap<PrinterId, PrinterState>,
 
-    pub(super) config: Configs,
+    pub(super) config: Config,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum StatusIcon {
     Idle,
     PrintingNormally,
+    PrintingPaused,
     PrintingError,
     Disconnected,
 }
@@ -49,6 +50,7 @@ pub enum AppEvent {
     TrayEvent(TrayIconEvent),
     MenuEvent(MenuEvent),
     ConnMsg(PrinterConnMsg),
+    Timer,
 }
 
 #[derive(Debug, Clone)]

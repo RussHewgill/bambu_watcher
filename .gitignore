@@ -6,3 +6,4 @@ certs*
 config.yaml
 example.ron
 *.log
+*.svg

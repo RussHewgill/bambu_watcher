@@ -23,18 +23,18 @@ use winit::{
 use crate::{
     app_types::{AppCommand, AppEvent, PrinterMenu, State, StatusIcon},
     client::{PrinterConnCmd, PrinterConnMsg},
-    config::{Configs, PrinterConfig},
-    status::PrinterStatus,
+    config::{Config, PrinterConfig},
+    status::{self, PrinterState},
 };
 
 /// init
 impl State {
-    pub fn new(config: &Configs, cmd_tx: Sender<PrinterConnCmd>) -> Self {
+    pub fn new(config: &Config, cmd_tx: Sender<PrinterConnCmd>) -> Self {
         let icons = Self::make_icons();
 
         let mut printer_status = HashMap::new();
         for printer in &config.printers {
-            printer_status.insert(printer.serial.clone(), PrinterStatus::Disconnected);
+            printer_status.insert(printer.serial.clone(), PrinterState::Disconnected);
         }
 
         Self {
@@ -56,12 +56,15 @@ impl State {
     fn make_icons() -> HashMap<StatusIcon, (tray_icon::Icon, tray_icon::menu::Icon)> {
         let mut icons = HashMap::new();
 
-        let (base, width, height) = _load_icon(std::path::Path::new("icon.png"));
+        let (base, width, height) = _load_icon("icon.png");
 
         let center = (8, 8);
         let radius = 6;
 
-        icons.insert(StatusIcon::Idle, Self::make_icon(&base, None, center, radius).unwrap());
+        icons.insert(
+            StatusIcon::Idle,
+            Self::make_icon(&base, None, center, radius).unwrap(),
+        );
 
         icons.insert(
             StatusIcon::PrintingNormally,
@@ -139,12 +142,13 @@ impl State {
             let status = self
                 .printer_status
                 .get(&printer.serial)
-                .unwrap_or(&PrinterStatus::Disconnected);
+                .unwrap_or(&PrinterState::Disconnected);
             let icon = self.icons.get(&status.to_icon()).unwrap().clone();
-            let item = IconMenuItem::with_id(&printer_menu.id, &printer.name, true, Some(icon.1), None);
+            let item =
+                IconMenuItem::with_id(&printer_menu.id, &printer.name, true, Some(icon.1), None);
 
             let item_time_left = match status {
-                PrinterStatus::Printing(done) => {
+                PrinterState::Printing(done) => {
                     debug!("setting time left for printer: {:?}", printer.serial);
                     let dt = done.checked_duration_since(Instant::now()).unwrap();
 
@@ -172,7 +176,32 @@ impl State {
         menu
     }
 
-    pub fn set_icon(&self, state: StatusIcon) {
+    pub fn set_icon(&self) {
+        let mut icon = StatusIcon::Disconnected;
+        for (id, status) in self.printer_status.iter() {
+            match status {
+                PrinterState::Idle => icon = StatusIcon::Idle,
+                PrinterState::Paused => {
+                    icon = StatusIcon::PrintingPaused;
+                    break;
+                }
+                PrinterState::Printing(_) => {
+                    if icon != StatusIcon::Idle {
+                        icon = StatusIcon::PrintingNormally;
+                    }
+                }
+                PrinterState::Error(_) => {
+                    icon = StatusIcon::PrintingError;
+                    break;
+                }
+                PrinterState::Disconnected => {}
+            }
+        }
+
+        self.set_tray_icon(icon);
+    }
+
+    pub fn set_tray_icon(&self, state: StatusIcon) {
         let icon = self.icons.get(&state).unwrap();
         self.tray_icon
             .as_ref()
@@ -226,20 +255,19 @@ impl ApplicationHandler<AppEvent> for State {
         match event {
             AppEvent::TrayEvent(ev) => {
                 debug!("tray event: {:?}", ev);
-                for (id, status) in self.printer_status.iter_mut() {
-                    let done = Instant::now() + Duration::from_secs((60 + 23) * 60);
-                    debug!("setting printer status: {:?} = {:?}", id, done);
-                    *status = PrinterStatus::Printing(done);
-                }
-                let menu = self.rebuild_menu();
-                if let Some(tray) = self.tray_icon.as_mut() {
-                    tray.set_menu(Some(Box::new(menu)));
-                }
+                // for (id, status) in self.printer_status.iter_mut() {
+                //     let done = Instant::now() + Duration::from_secs((60 + 23) * 60);
+                //     debug!("setting printer status: {:?} = {:?}", id, done);
+                //     *status = PrinterStatus::Printing(done);
+                // }
+                // let menu = self.rebuild_menu();
+                // if let Some(tray) = self.tray_icon.as_mut() {
+                //     tray.set_menu(Some(Box::new(menu)));
+                // }
             }
             AppEvent::MenuEvent(ev) => match self.menu_ids.get(ev.id()) {
                 Some(AppCommand::Reload) => {
                     debug!("reload");
-                    // self.spawn_window(event_loop);
                 }
                 Some(AppCommand::Quit) => {
                     debug!("quit");
@@ -255,20 +283,33 @@ impl ApplicationHandler<AppEvent> for State {
                     PrinterConnMsg::StatusReport(id, status) => {
                         debug!("got status report from printer: {:?}", id);
                         match status.status {
-                            PrinterStatus::Idle => {
+                            PrinterState::Idle => {
                                 // self.set_printer_icon(&id, StatusIcon::Idle);
                             }
-                            PrinterStatus::Printing(_) => {
+                            PrinterState::Printing(_) => {
                                 // self.set_printer_icon(&id, StatusIcon::PrintingNormally);
                             }
-                            PrinterStatus::Error(_) => {
+                            PrinterState::Error(_) => {
                                 // self.set_printer_icon(&id, StatusIcon::PrintingError);
                             }
-                            PrinterStatus::Paused => todo!(),
-                            PrinterStatus::Disconnected => todo!(),
+                            PrinterState::Paused => todo!(),
+                            PrinterState::Disconnected => todo!(),
                         }
                     }
                 }
+            }
+            AppEvent::Timer => {
+                // debug!("timer");
+                for (id, status) in self.printer_status.iter_mut() {
+                    let done = Instant::now() + Duration::from_secs((60 + 23) * 60);
+                    debug!("setting printer status: {:?} = {:?}", id, done);
+                    *status = PrinterState::Printing(done);
+                }
+                let menu = self.rebuild_menu();
+                if let Some(tray) = self.tray_icon.as_mut() {
+                    tray.set_menu(Some(Box::new(menu)));
+                }
+                self.set_icon();
             }
         }
         //
@@ -314,7 +355,9 @@ impl PrinterMenu {
     }
 }
 
-fn _load_icon(path: &std::path::Path) -> (image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, u32, u32) {
+pub fn _load_icon<P: AsRef<std::path::Path>>(
+    path: P,
+) -> (image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, u32, u32) {
     let image = image::open(path)
         .expect("Failed to open icon path")
         .into_rgba8();
@@ -323,7 +366,7 @@ fn _load_icon(path: &std::path::Path) -> (image::ImageBuffer<image::Rgba<u8>, Ve
     (image, width, height)
 }
 
-fn load_icon(path: &std::path::Path) -> tray_icon::Icon {
+pub fn load_icon<P: AsRef<std::path::Path>>(path: P) -> tray_icon::Icon {
     let (icon_rgba, icon_width, icon_height) = {
         let image = image::open(path)
             .expect("Failed to open icon path")

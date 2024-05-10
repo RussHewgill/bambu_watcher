@@ -97,3 +97,459 @@
 2024-05-09T19:10:24.900530Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1571.0, y: 1056.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
 2024-05-09T19:10:24.901042Z DEBUG bambu_watcher::app: src\app.rs:231: setting printer status: "01P00A380200510" = Instant { t: 2266095.2070153s }
 2024-05-09T19:10:24.901323Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:30:31.259887Z DEBUG bambu_watcher::app: src\app.rs:289: init
+2024-05-09T19:30:31.261672Z DEBUG bambu_watcher::app: src\app.rs:155: no time left for printer: "01P00A380200510"
+2024-05-09T19:30:32.176905Z DEBUG bambu_watcher::app: src\app.rs:203: resumed
+2024-05-09T19:31:11.733852Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1565.0, y: 1061.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:31:12.500543Z DEBUG bambu_watcher::app: src\app.rs:241: reload
+2024-05-09T19:31:12.500884Z DEBUG bambu_watcher::app: src\app.rs:245: setting printer status: "01P00A380200510" = Instant { t: 2267342.8068444s }
+2024-05-09T19:31:12.501270Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:31:13.443544Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1576.0, y: 1067.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:31:16.278697Z DEBUG bambu_watcher::app: src\app.rs:241: reload
+2024-05-09T19:31:16.279039Z DEBUG bambu_watcher::app: src\app.rs:245: setting printer status: "01P00A380200510" = Instant { t: 2267346.5850092s }
+2024-05-09T19:31:16.279492Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:31:17.192573Z DEBUG bambu_watcher::app: src\app.rs:228: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1564.0, y: 1059.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:31:17.576825Z DEBUG bambu_watcher::app: src\app.rs:254: quit
+2024-05-09T19:34:01.526036Z DEBUG bambu_watcher::app: src\app.rs:292: init
+2024-05-09T19:34:01.526874Z DEBUG bambu_watcher::app: src\app.rs:155: no time left for printer: "01P00A380200510"
+2024-05-09T19:34:02.382123Z DEBUG bambu_watcher::app: src\app.rs:203: resumed
+2024-05-09T19:34:02.382558Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:34:02.527037Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:34:03.527663Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:34:04.528047Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:34:05.528531Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:34:06.528740Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:34:07.528974Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:34:08.529764Z DEBUG bambu_watcher::app: src\app.rs:283: timer
+2024-05-09T19:38:46.490504Z DEBUG bambu_watcher::app: src\app.rs:317: init
+2024-05-09T19:38:46.491124Z DEBUG bambu_watcher::app: src\app.rs:155: no time left for printer: "01P00A380200510"
+2024-05-09T19:38:47.293816Z DEBUG bambu_watcher::app: src\app.rs:228: resumed
+2024-05-09T19:38:47.294308Z DEBUG bambu_watcher::app: src\app.rs:298: timer
+2024-05-09T19:38:47.294595Z DEBUG bambu_watcher::app: src\app.rs:301: setting printer status: "01P00A380200510" = Instant { t: 2267797.6005627s }
+2024-05-09T19:38:47.295289Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:38:47.491012Z DEBUG bambu_watcher::app: src\app.rs:298: timer
+2024-05-09T19:38:47.491281Z DEBUG bambu_watcher::app: src\app.rs:301: setting printer status: "01P00A380200510" = Instant { t: 2267797.7972529s }
+2024-05-09T19:38:47.491672Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:38:48.491930Z DEBUG bambu_watcher::app: src\app.rs:298: timer
+2024-05-09T19:38:48.492303Z DEBUG bambu_watcher::app: src\app.rs:301: setting printer status: "01P00A380200510" = Instant { t: 2267798.7982745s }
+2024-05-09T19:38:48.492727Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:38:49.492921Z DEBUG bambu_watcher::app: src\app.rs:298: timer
+2024-05-09T19:38:49.493197Z DEBUG bambu_watcher::app: src\app.rs:301: setting printer status: "01P00A380200510" = Instant { t: 2267799.7991693s }
+2024-05-09T19:38:49.493632Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:38:50.187117Z DEBUG bambu_watcher::app: src\app.rs:253: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1574.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:38:50.493604Z DEBUG bambu_watcher::app: src\app.rs:298: timer
+2024-05-09T19:38:50.494071Z DEBUG bambu_watcher::app: src\app.rs:301: setting printer status: "01P00A380200510" = Instant { t: 2267800.8000445s }
+2024-05-09T19:38:50.494735Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:38:51.150390Z DEBUG bambu_watcher::app: src\app.rs:253: tray event: TrayIconEvent { id: TrayIconId("1"), position: PhysicalPosition { x: 1569.0, y: 1060.0 }, icon_rect: Rect { size: PhysicalSize { width: 24, height: 40 }, position: PhysicalPosition { x: 1557.0, y: 1040.0 } }, click_type: Right }
+2024-05-09T19:38:51.494335Z DEBUG bambu_watcher::app: src\app.rs:298: timer
+2024-05-09T19:38:51.494767Z DEBUG bambu_watcher::app: src\app.rs:301: setting printer status: "01P00A380200510" = Instant { t: 2267801.8007407s }
+2024-05-09T19:38:51.495712Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-09T19:38:52.494819Z DEBUG bambu_watcher::app: src\app.rs:298: timer
+2024-05-09T19:38:52.495213Z DEBUG bambu_watcher::app: src\app.rs:301: setting printer status: "01P00A380200510" = Instant { t: 2267802.8011855s }
+2024-05-09T19:38:52.495734Z DEBUG bambu_watcher::app: src\app.rs:148: setting time left for printer: "01P00A380200510"
+2024-05-10T16:39:12.733540Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:39:15.562481Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:16.254361Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:16.256309Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:16.269451Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:16.286595Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:16.303404Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.047783Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.050357Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.053273Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.069276Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.086154Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.102626Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.119212Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.135754Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.152472Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.169037Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.185653Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.274337Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.277903Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.286132Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.303758Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.319635Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.336414Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.353124Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.370083Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.386377Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.402843Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.419318Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.441343Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:17.453606Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:39:18.217283Z  WARN bambu_watcher::ui: src\ui.rs:65: Printer not found: 01P00A380200510
+2024-05-10T16:40:27.618056Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:40:49.205638Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:42:14.498147Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:42:25.136196Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:44:09.544578Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:53:48.836878Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:58:33.435776Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T16:58:34.898231Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-10T17:03:20.049477Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:03:21.917655Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-10T17:03:56.009046Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:03:57.681996Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:58.205214Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:58.207642Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:58.212299Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.364478Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.367381Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.376404Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.393144Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.409866Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.426358Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.443130Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.459881Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.476357Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.493053Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.509863Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.526503Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.543171Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.559892Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.576474Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.593739Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.610848Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.627496Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.644879Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.660282Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.677387Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.693179Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.709853Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.727070Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.743234Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.759792Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.776597Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.793088Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.809749Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.826433Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.843109Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.859717Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.876578Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.893172Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.909835Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.926660Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.952361Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.959847Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.976535Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:03:59.993187Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.009945Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.044342Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.048106Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.059806Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.118477Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.120460Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.126270Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.357016Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.359606Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.362990Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.430852Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:00.433354Z  WARN bambu_watcher::ui: src\ui.rs:67: idx out of bounds: 2
+2024-05-10T17:04:09.555071Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:04:11.057193Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.057902Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.538342Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.539014Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.540981Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.541551Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.548267Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.548826Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.559449Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.560131Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.576271Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.577057Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.593830Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.594777Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.609614Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.610119Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.627323Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.627834Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.642611Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.643270Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.659777Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.660274Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.676147Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.676811Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.693408Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.693988Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.710553Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.711216Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.725972Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.726658Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.742754Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.743413Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.759302Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.759983Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.776170Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.776797Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.794148Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.794727Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.809347Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.809964Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.825993Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.826659Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.842534Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.843190Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.859268Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.859885Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.875896Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.876546Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.892676Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.893295Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.933951Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.934540Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.936221Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.936759Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.942400Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.943081Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.959284Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.959990Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.975949Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.976728Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:11.992713Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:11.993374Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.009329Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.009987Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.025971Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.026545Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.042661Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.043277Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.059325Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.060000Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.075954Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.076733Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.092741Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.093394Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.109328Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.109968Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.126017Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.126768Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.142605Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.143211Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.159317Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.159929Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.176035Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.176667Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.192511Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.193212Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.226268Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.226909Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.229321Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.229911Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.243289Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.244006Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.301331Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.301989Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.304085Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.304631Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.309150Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.309736Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.574243Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.574905Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.581043Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.581757Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:12.594307Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:12.594988Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.253115Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.253789Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.256568Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.257105Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.276070Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.276875Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.280581Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.281340Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.292783Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.293463Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.309452Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.310279Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.325974Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.326645Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.342934Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.343596Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.359303Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.359934Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.375943Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.376551Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.392530Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.393231Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.409396Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.410049Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.425960Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.426632Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.442621Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.443268Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.459312Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.459942Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.475942Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.476644Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.492538Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.493177Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.509248Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.509911Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.527287Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.527948Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.542664Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.543326Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.559294Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.559979Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.575933Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.576583Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.594148Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.594707Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.610855Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.611403Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.626554Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.627138Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.644641Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.645271Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.660966Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.661605Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.677140Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.677805Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.693880Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.694618Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.709370Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.710011Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.726054Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.726669Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.743295Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.743851Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.759326Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.759963Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.776086Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.776674Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.792784Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.793413Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.809391Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.809965Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.826056Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.826621Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.842891Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.843521Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.859433Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.860101Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.876085Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.876748Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.892702Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.893338Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.909443Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.910108Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.926200Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.926950Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.942833Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.943517Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.959647Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.960252Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.976024Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.976640Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:13.992724Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:13.993353Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.009409Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.010042Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.026161Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.026805Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.042821Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.043480Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.059429Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.060083Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.075936Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.076556Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.092694Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.093296Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.109457Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.110040Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.128252Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.128707Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.142724Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.143329Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.159364Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.160018Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.212352Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.212967Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:04:14.214640Z DEBUG bambu_watcher::ui: src\ui.rs:60: num_x: 3, num_y: 1
+2024-05-10T17:04:14.215111Z  WARN bambu_watcher::ui: src\ui.rs:69: idx out of bounds: 2
+2024-05-10T17:05:06.408236Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:05:07.873964Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:08.387481Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:08.389772Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:08.395162Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:08.408512Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:09.244654Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:09.247866Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:09.258567Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:09.325149Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:09.328164Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:09.341683Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.432694Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.436758Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.441736Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.458546Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.475317Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.491984Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.508448Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.525036Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.541745Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.558460Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.575789Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.591705Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.609159Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.625742Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.642923Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.659011Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.676230Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.692192Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.709076Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.725468Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.742182Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.758675Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.775772Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.791648Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.808373Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.825062Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.841671Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.858347Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.874935Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.965245Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.967320Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.975084Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:10.991725Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:11.008371Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:11.025111Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:11.041724Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:11.058316Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:05:11.132688Z DEBUG bambu_watcher::ui: src\ui.rs:61: num_x: 2, num_y: 1
+2024-05-10T17:08:21.489479Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:10:46.242204Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:12:34.820354Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:15:09.464559Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:16:32.111667Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:16:49.719514Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:17:20.368116Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:17:35.019117Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:18:23.693665Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:19:28.681225Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:20:17.646497Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:22:09.216031Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:25:16.696848Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:30:18.246038Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:30:35.757973Z  WARN bambu_watcher: src/main.rs:88: adding debug printer state
+2024-05-10T17:39:43.103002Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:40:05.614233Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:41:12.377102Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:44:00.410986Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:44:15.112803Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:46:32.275478Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:47:17.076095Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:55:07.319642Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:55:35.763151Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T17:59:33.387402Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:13:52.641473Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:14:04.439397Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:14:12.937799Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:15:27.816430Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:19:56.753708Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:20:18.776490Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:20:49.934879Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:21:02.978072Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
+2024-05-10T18:21:46.388403Z  WARN bambu_watcher: src/main.rs:89: adding debug printer state
