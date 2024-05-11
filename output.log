@@ -2016,3 +2016,938 @@
         },
     },
 )
+2024-05-10T18:56:29.352852Z DEBUG bambu_watcher: src/main.rs:108: running PrinterConnManager
+2024-05-10T18:56:29.356746Z DEBUG bambu_watcher::client: src\client.rs:102: printer connecting: "01P00A380200510"
+2024-05-10T18:56:30.369371Z  INFO bambu_watcher::client: src\client.rs:104: printer connected: "01P00A380200510"
+2024-05-10T19:01:14.826216Z DEBUG bambu_watcher: src/main.rs:108: running PrinterConnManager
+2024-05-10T19:01:14.829721Z DEBUG bambu_watcher::client: src\client.rs:103: printer connecting: "01P00A380200510"
+2024-05-10T19:01:15.871472Z  INFO bambu_watcher::client: src\client.rs:105: printer connected: "01P00A380200510"
+2024-05-10T19:01:15.953028Z DEBUG bambu_watcher::client: src\client.rs:89: got print report
+2024-05-10T19:06:16.306795Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T19:06:16.310295Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T19:06:17.343471Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-10T19:06:17.369250Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T19:07:34.337956Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T19:07:34.341589Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T19:07:35.387684Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T19:07:35.547462Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:07:37.575553Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:07:39.606048Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:07:40.913410Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-10T19:11:09.837512Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T19:11:09.840377Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T19:11:10.878964Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T19:11:11.997745Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:11:16.049320Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:21:46.581862Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T19:21:46.584536Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T19:21:47.568036Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T19:21:47.704349Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:21:49.732529Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:21:51.759483Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:21:53.782884Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:22:20.610820Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T19:22:20.613756Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T19:22:21.700372Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T19:22:21.785500Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:22:21.786035Z DEBUG bambu_watcher::status: src\status.rs:49: got t = 435
+2024-05-10T19:22:23.808120Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:23:13.020006Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T19:23:13.023195Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T19:23:14.003962Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T19:23:14.067255Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:23:14.067657Z DEBUG bambu_watcher::status: src\status.rs:49: got t = 434
+2024-05-10T19:23:14.067939Z DEBUG bambu_watcher::status: src\status.rs:52: 12:23 PM
+2024-05-10T19:23:16.083399Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:23:18.112417Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T19:23:20.134069Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:29:14.534446Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T21:29:14.539208Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T21:29:15.529579Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T21:29:15.612256Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:29:17.620933Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:29:21.658885Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:29:23.688757Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:29:57.538323Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T21:29:57.542133Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T21:29:58.568357Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T21:29:59.102567Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:30:01.124711Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:30:20.578087Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T21:30:20.582186Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T21:30:20.582619Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A381000745"
+2024-05-10T21:30:21.601867Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T21:30:21.701032Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A381000745"
+2024-05-10T21:30:22.370368Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:30:22.393647Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:30:24.360117Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:30:26.387849Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:30:26.419014Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:07.572034Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T21:31:07.576415Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T21:31:07.576835Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A381000745"
+2024-05-10T21:31:08.644810Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A381000745"
+2024-05-10T21:31:08.800656Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:09.521967Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-10T21:31:44.719198Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-10T21:31:44.722635Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A381000745"
+2024-05-10T21:31:44.723144Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-10T21:31:45.711446Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-10T21:31:45.798598Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:45.803944Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A381000745"
+2024-05-10T21:31:45.882799Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:47.814338Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:47.895378Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:49.830691Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:49.951876Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:51.855343Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-10T21:31:54.089212Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:13:52.199041Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:13:52.204164Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A381000745"
+2024-05-11T16:13:52.204592Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-11T16:13:53.196977Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-11T16:13:53.286968Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A381000745"
+2024-05-11T16:13:53.335150Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:13:53.920280Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-11T16:14:31.830722Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:14:31.835033Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-11T16:14:31.835643Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A381000745"
+2024-05-11T16:14:32.878304Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-11T16:14:33.661106Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:14:34.092438Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A381000745"
+2024-05-11T16:14:34.268116Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.278388Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.425146Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.431002Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.438659Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.486336Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.506855Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.511288Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.522287Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.538535Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.555231Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.571855Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.588468Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.605242Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.621840Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.638454Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.655101Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.671898Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.688490Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.705283Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.878524Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.881759Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:34.888318Z  WARN bambu_watcher::ui: src\ui.rs:132: idx out of bounds: 1
+2024-05-11T16:14:35.228228Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:15:29.656658Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:15:29.660044Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-11T16:15:29.660589Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A381000745"
+2024-05-11T16:15:30.726686Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A381000745"
+2024-05-11T16:15:30.862248Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:15:31.289027Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:15:31.289629Z  WARN bambu_watcher::ui: src\ui.rs:134: idx out of bounds: 1
+2024-05-11T16:15:32.112352Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:15:32.112865Z  WARN bambu_watcher::ui: src\ui.rs:134: idx out of bounds: 1
+2024-05-11T16:15:32.115960Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:15:32.116397Z  WARN bambu_watcher::ui: src\ui.rs:134: idx out of bounds: 1
+2024-05-11T16:15:32.120500Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:15:32.121150Z  WARN bambu_watcher::ui: src\ui.rs:134: idx out of bounds: 1
+2024-05-11T16:16:03.995639Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:16:03.999615Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A380200510"
+2024-05-11T16:16:04.000303Z DEBUG bambu_watcher::client: src\client.rs:108: printer connecting: "01P00A381000745"
+2024-05-11T16:16:05.025547Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A380200510"
+2024-05-11T16:16:05.229230Z  INFO bambu_watcher::client: src\client.rs:110: printer connected: "01P00A381000745"
+2024-05-11T16:16:05.389926Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:16:05.476240Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:16:05.614831Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.445084Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.452880Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.542742Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.546893Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.553114Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.763053Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.770022Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.776471Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.786504Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.803455Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.820021Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.836878Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.853333Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.870202Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.886877Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.903314Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.920040Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.936674Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:06.953264Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:07.168730Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:07.172364Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:07.186666Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:07.205170Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:07.221507Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:07.495225Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:16:07.496775Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:07.501114Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.417489Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.422426Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.436681Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.453455Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.470243Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.486576Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.503417Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.519974Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.536751Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.553437Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.570055Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.586817Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.603954Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.620090Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.636789Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.653332Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.670158Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.687327Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.703979Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.720215Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.736812Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.753431Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.770160Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.786690Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.803426Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.819963Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.836798Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.853221Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.870073Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.886700Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.903251Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.921192Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.937179Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.953321Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.970069Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:08.986727Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:09.003436Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:09.020095Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:09.418628Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:16:09.423097Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:16:46.102195Z DEBUG bambu_watcher: src/main.rs:314: received: Connecting
+2024-05-11T16:16:47.678746Z DEBUG bambu_watcher: src/main.rs:314: received: Connected
+2024-05-11T16:16:47.871019Z DEBUG bambu_watcher: src/main.rs:314: received: Print(
+    Print {
+        print: PrintData {
+            upload: Some(
+                PrintUpload {
+                    status: "idle",
+                    progress: 0,
+                    message: "",
+                },
+            ),
+            nozzle_temper: Some(
+                47.3125,
+            ),
+            nozzle_target_temper: Some(
+                42,
+            ),
+            bed_temper: Some(
+                60.0,
+            ),
+            bed_target_temper: Some(
+                60,
+            ),
+            chamber_temper: Some(
+                5,
+            ),
+            mc_print_stage: Some(
+                "3",
+            ),
+            heatbreak_fan_speed: Some(
+                "0",
+            ),
+            cooling_fan_speed: Some(
+                "0",
+            ),
+            big_fan1_speed: Some(
+                "13",
+            ),
+            big_fan2_speed: Some(
+                "0",
+            ),
+            mc_percent: Some(
+                68,
+            ),
+            mc_remaining_time: Some(
+                334,
+            ),
+            ams_status: Some(
+                261,
+            ),
+            ams_rfid_status: Some(
+                2,
+            ),
+            hw_switch_state: Some(
+                0,
+            ),
+            spd_mag: Some(
+                100,
+            ),
+            spd_lvl: Some(
+                2,
+            ),
+            print_error: Some(
+                117473286,
+            ),
+            lifecycle: Some(
+                "product",
+            ),
+            wifi_signal: Some(
+                "-46dBm",
+            ),
+            gcode_state: Some(
+                "PAUSE",
+            ),
+            gcode_file_prepare_percent: Some(
+                "100",
+            ),
+            queue_number: Some(
+                0,
+            ),
+            queue_total: Some(
+                0,
+            ),
+            queue_est: Some(
+                0,
+            ),
+            queue_sts: Some(
+                0,
+            ),
+            project_id: Some(
+                "77984801",
+            ),
+            profile_id: Some(
+                "76246031",
+            ),
+            task_id: Some(
+                "153950734",
+            ),
+            subtask_id: Some(
+                "153950735",
+            ),
+            subtask_name: Some(
+                "Baby Gemstone Back v8",
+            ),
+            gcode_file: Some(
+                "Baby Gemstone Back v8.3mf",
+            ),
+            stg: Some(
+                [
+                    Number(2),
+                    Number(14),
+                    Number(1),
+                ],
+            ),
+            stg_cur: Some(
+                0,
+            ),
+            print_type: Some(
+                "cloud",
+            ),
+            home_flag: Some(
+                2114071,
+            ),
+            mc_print_line_number: Some(
+                "3681899",
+            ),
+            mc_print_sub_stage: Some(
+                4,
+            ),
+            sdcard: Some(
+                true,
+            ),
+            force_upgrade: Some(
+                false,
+            ),
+            mess_production_state: Some(
+                "active",
+            ),
+            layer_num: Some(
+                51,
+            ),
+            total_layer_num: Some(
+                133,
+            ),
+            s_obj: Some(
+                [],
+            ),
+            fan_gear: Some(
+                52224,
+            ),
+            hms: Some(
+                [],
+            ),
+            online: Some(
+                PrintOnline {
+                    ahb: false,
+                    rfid: false,
+                    version: 402767923,
+                },
+            ),
+            ams: Some(
+                PrintAms {
+                    ams: Some(
+                        [
+                            PrintAmsData {
+                                id: "0",
+                                humidity: "5",
+                                temp: "0.0",
+                                tray: [
+                                    PrintTray {
+                                        id: "0",
+                                        remain: None,
+                                        k: None,
+                                        n: None,
+                                        tag_uid: None,
+                                        tray_id_name: None,
+                                        tray_info_idx: None,
+                                        tray_type: None,
+                                        tray_sub_brands: None,
+                                        tray_color: None,
+                                        tray_weight: None,
+                                        tray_diameter: None,
+                                        tray_temp: None,
+                                        tray_time: None,
+                                        bed_temp_type: None,
+                                        bed_temp: None,
+                                        nozzle_temp_max: None,
+                                        nozzle_temp_min: None,
+                                        xcam_info: None,
+                                        tray_uuid: None,
+                                    },
+                                    PrintTray {
+                                        id: "1",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.019999999552965164,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL00",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "FFFFFFFF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "2",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.03999999910593033,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL00",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "161616FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                    PrintTray {
+                                        id: "3",
+                                        remain: Some(
+                                            -1,
+                                        ),
+                                        k: Some(
+                                            0.019999999552965164,
+                                        ),
+                                        n: Some(
+                                            1.0,
+                                        ),
+                                        tag_uid: Some(
+                                            "0000000000000000",
+                                        ),
+                                        tray_id_name: Some(
+                                            "",
+                                        ),
+                                        tray_info_idx: Some(
+                                            "GFL99",
+                                        ),
+                                        tray_type: Some(
+                                            "PLA",
+                                        ),
+                                        tray_sub_brands: Some(
+                                            "",
+                                        ),
+                                        tray_color: Some(
+                                            "F73CA0FF",
+                                        ),
+                                        tray_weight: Some(
+                                            "0",
+                                        ),
+                                        tray_diameter: Some(
+                                            "0.00",
+                                        ),
+                                        tray_temp: Some(
+                                            "0",
+                                        ),
+                                        tray_time: Some(
+                                            "0",
+                                        ),
+                                        bed_temp_type: Some(
+                                            "0",
+                                        ),
+                                        bed_temp: Some(
+                                            "0",
+                                        ),
+                                        nozzle_temp_max: Some(
+                                            "240",
+                                        ),
+                                        nozzle_temp_min: Some(
+                                            "190",
+                                        ),
+                                        xcam_info: Some(
+                                            "000000000000000000000000",
+                                        ),
+                                        tray_uuid: Some(
+                                            "00000000000000000000000000000000",
+                                        ),
+                                    },
+                                ],
+                            },
+                        ],
+                    ),
+                    ams_exist_bits: Some(
+                        "1",
+                    ),
+                    tray_exist_bits: Some(
+                        "e",
+                    ),
+                    tray_is_bbl_bits: Some(
+                        "e",
+                    ),
+                    tray_tar: Some(
+                        "3",
+                    ),
+                    tray_now: Some(
+                        "3",
+                    ),
+                    tray_pre: Some(
+                        "1",
+                    ),
+                    tray_read_done_bits: Some(
+                        "e",
+                    ),
+                    tray_reading_bits: Some(
+                        "0",
+                    ),
+                    version: Some(
+                        2245,
+                    ),
+                    insert_flag: Some(
+                        false,
+                    ),
+                    power_on_flag: Some(
+                        false,
+                    ),
+                },
+            ),
+            ipcam: Some(
+                PrintIpcam {
+                    ipcam_dev: Some(
+                        "1",
+                    ),
+                    ipcam_record: Some(
+                        "enable",
+                    ),
+                    timelapse: Some(
+                        "enable",
+                    ),
+                    mode_bits: Some(
+                        3,
+                    ),
+                },
+            ),
+            vt_tray: Some(
+                PrintVtTray {
+                    id: "254",
+                    tag_uid: "0000000000000000",
+                    tray_id_name: "",
+                    tray_info_idx: "",
+                    tray_type: "",
+                    tray_sub_brands: "",
+                    tray_color: "00000000",
+                    tray_weight: "0",
+                    tray_diameter: "0.00",
+                    tray_temp: "0",
+                    tray_time: "0",
+                    bed_temp_type: "0",
+                    bed_temp: "0",
+                    nozzle_temp_max: "0",
+                    nozzle_temp_min: "0",
+                    xcam_info: "000000000000000000000000",
+                    tray_uuid: "00000000000000000000000000000000",
+                    remain: 0,
+                    k: 0.019999999552965164,
+                    n: 1,
+                },
+            ),
+            lights_report: Some(
+                [
+                    PrintLightsReport {
+                        node: "chamber_light",
+                        mode: "on",
+                    },
+                ],
+            ),
+            upgrade_state: Some(
+                PrintUpgradeState {
+                    sequence_id: Some(
+                        0,
+                    ),
+                    progress: Some(
+                        "",
+                    ),
+                    status: Some(
+                        "",
+                    ),
+                    consistency_request: Some(
+                        false,
+                    ),
+                    dis_state: Some(
+                        0,
+                    ),
+                    err_code: Some(
+                        0,
+                    ),
+                    force_upgrade: Some(
+                        false,
+                    ),
+                    message: Some(
+                        "0%, 0B/s",
+                    ),
+                    module: Some(
+                        "",
+                    ),
+                    new_version_state: Some(
+                        2,
+                    ),
+                    new_ver_list: Some(
+                        [],
+                    ),
+                },
+            ),
+            command: Some(
+                "push_status",
+            ),
+            msg: Some(
+                0,
+            ),
+            sequence_id: Some(
+                "62048",
+            ),
+        },
+    },
+)
+2024-05-11T16:27:48.893991Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:27:48.897936Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A380200510"
+2024-05-11T16:27:48.898489Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A381000745"
+2024-05-11T16:27:49.841882Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A380200510"
+2024-05-11T16:27:49.952868Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A381000745"
+2024-05-11T16:27:50.360027Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:27:50.536216Z  WARN bambu_watcher::ui: src\ui.rs:134: idx out of bounds: 1
+2024-05-11T16:27:50.878633Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:27:52.427430Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:27:52.894860Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:27:54.510239Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:27:54.920238Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:27:58.599621Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:27:58.957646Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:28:00.697384Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:28:01.002381Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:28:03.010577Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:28:04.824443Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:29:49.833332Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:29:49.837546Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A380200510"
+2024-05-11T16:29:49.837894Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A381000745"
+2024-05-11T16:29:50.831031Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A380200510"
+2024-05-11T16:29:50.987721Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A381000745"
+2024-05-11T16:29:51.342753Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:29:51.390142Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:29:53.413179Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:29:53.483568Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:29:55.429215Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:29:55.497363Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:46:50.176180Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:46:50.179627Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A380200510"
+2024-05-11T16:46:50.180124Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A381000745"
+2024-05-11T16:46:51.192934Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A380200510"
+2024-05-11T16:46:51.293346Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:46:51.938647Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:51.939097Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.539025Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A381000745"
+2024-05-11T16:46:52.732166Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.732668Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.740974Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.741507Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.769791Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.770172Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.782780Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.783198Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.793736Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.794089Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.806212Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.806724Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.824115Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.824559Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.841621Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.842081Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.858448Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.858942Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.875256Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.875732Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.889265Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.889732Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.905978Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.906451Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.922676Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.923162Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.939221Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.939747Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.956776Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.957289Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.972570Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.973051Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:52.989770Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:52.990369Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:53.005996Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:53.006533Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:53.022688Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:53.023238Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:53.039226Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:53.039712Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:53.055987Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:53.056571Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:53.302242Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:46:53.304472Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:53.304890Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:53.310032Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:46:53.310584Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:46:53.315988Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:47:37.952335Z DEBUG bambu_watcher: src/main.rs:112: running PrinterConnManager
+2024-05-11T16:47:37.956994Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A380200510"
+2024-05-11T16:47:37.957664Z DEBUG bambu_watcher::client: src\client.rs:115: printer connecting: "01P00A381000745"
+2024-05-11T16:47:39.008029Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A380200510"
+2024-05-11T16:47:39.142876Z  INFO bambu_watcher::client: src\client.rs:117: printer connected: "01P00A381000745"
+2024-05-11T16:47:39.245730Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:47:39.651047Z DEBUG bambu_watcher::ui: src\ui.rs:134: x: 1, y: 0
+2024-05-11T16:47:39.651441Z  WARN bambu_watcher::ui: src\ui.rs:135: idx out of bounds: 1
+2024-05-11T16:47:39.751537Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:47:41.769279Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:47:43.255181Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:47:45.498408Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:47:45.911655Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:47:47.316422Z DEBUG bambu_watcher::client: src\client.rs:92: got print report
+2024-05-11T16:50:29.502014Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T16:50:47.212215Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T16:53:30.548769Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T16:55:35.856140Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T16:56:11.904947Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T16:56:14.758644Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:15.724554Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:15.730671Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:15.856727Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:15.866495Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:15.886425Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.089604Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.129769Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.138854Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.146213Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.162482Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.179115Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.195999Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.212607Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.229140Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.245868Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.346312Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.351713Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.362538Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.379177Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.396064Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.412413Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.429214Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.445752Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.462478Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.479255Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.495878Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.512611Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.529175Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.545939Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.562509Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.579145Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.595923Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.612445Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.629138Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.645731Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.662437Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.680014Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.697571Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.713803Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.730193Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.745759Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.822811Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.846360Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.867475Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.876849Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.883179Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.895810Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.913220Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.930296Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.946410Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.962335Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.979065Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:27.995678Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.012427Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.029148Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.045880Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.062369Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.079426Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.095811Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.112357Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.129098Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.146065Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.162503Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.179173Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.195674Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.212418Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.229607Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.245827Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.262388Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:28.279233Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:56:29.112108Z DEBUG bambu_watcher::ui: src\ui.rs:127: num_x: 2, num_y: 1
+2024-05-11T16:58:29.824045Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T16:59:09.612270Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:00:07.065878Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:00:29.303069Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:04:32.699834Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:04:47.547604Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:11:41.822461Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:12:19.867970Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:12:34.693335Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:13:16.608797Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:13:37.004946Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:15:49.829912Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:16:43.632694Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:17:01.822357Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:17:31.566678Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:18:17.549095Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:19:28.777375Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:20:01.959462Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:20:32.832493Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:21:14.562788Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:21:16.356034Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-11T17:21:25.441029Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:21:27.017345Z  WARN egui_glow::painter: C:\Users\bob\.cargo\registry\src\index.crates.io-6f17d22bba15001f\egui_glow-0.27.2\src\painter.rs:763: You forgot to call destroy() on the egui glow painter. Resources will leak!    
+2024-05-11T17:22:00.604965Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:22:19.243562Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:23:39.649982Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:32:00.208793Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:33:36.566188Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:33:49.010004Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:40:55.630315Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:41:45.770380Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:43:55.081251Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:45:07.384458Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:45:56.498426Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:47:46.248724Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:48:12.298145Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:48:44.718693Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:50:12.149869Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:50:44.944948Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state
+2024-05-11T17:51:23.902741Z  WARN bambu_watcher: src/main.rs:96: adding debug printer state

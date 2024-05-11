@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use egui::{Color32, Margin, Sense, Vec2};
+use egui::{Align, Color32, Layout, Margin, Sense, Vec2};
 use tracing::{debug, error, info, trace, warn};
 
 use dashmap::DashMap;
@@ -64,41 +64,43 @@ impl eframe::App for App {
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.label("bottom");
 
-            let printer_cfg = &self.config.printers[0];
+            // let printer_cfg = &self.config.printers[0];
 
-            let mut status = self.printer_states.get_mut(&printer_cfg.serial).unwrap();
-
-            egui::ComboBox::from_label("Set State")
-                .selected_text(status.state.to_char())
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(
-                        &mut status.state,
-                        crate::status::PrinterState::Disconnected,
-                        "Disconnected",
-                    );
-                    ui.selectable_value(
-                        &mut status.state,
-                        crate::status::PrinterState::Idle,
-                        "Idle",
-                    );
-                    ui.selectable_value(
-                        &mut status.state,
-                        crate::status::PrinterState::Printing(
-                            std::time::Instant::now() + Duration::from_secs(92 * 60),
-                        ),
-                        "Printing",
-                    );
-                    ui.selectable_value(
-                        &mut status.state,
-                        crate::status::PrinterState::Paused,
-                        "Paused",
-                    );
-                    ui.selectable_value(
-                        &mut status.state,
-                        crate::status::PrinterState::Error("Error".to_string()),
-                        "Error",
-                    );
-                });
+            #[cfg(feature = "nope")]
+            if let Some(mut status) = self.printer_states.get_mut(&printer_cfg.serial) {
+                egui::ComboBox::from_label("Set State")
+                    .selected_text(status.state.to_char())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            &mut status.state,
+                            crate::status::PrinterState::Disconnected,
+                            "Disconnected",
+                        );
+                        ui.selectable_value(
+                            &mut status.state,
+                            crate::status::PrinterState::Idle,
+                            "Idle",
+                        );
+                        ui.selectable_value(
+                            &mut status.state,
+                            crate::status::PrinterState::Printing,
+                            // crate::status::PrinterState::Printing(
+                            //     std::time::Instant::now() + Duration::from_secs(92 * 60),
+                            // ),
+                            "Printing",
+                        );
+                        ui.selectable_value(
+                            &mut status.state,
+                            crate::status::PrinterState::Paused,
+                            "Paused",
+                        );
+                        ui.selectable_value(
+                            &mut status.state,
+                            crate::status::PrinterState::Error("Error".to_string()),
+                            "Error",
+                        );
+                    });
+            }
         });
 
         //
@@ -107,14 +109,16 @@ impl eframe::App for App {
 
 impl App {
     pub fn show_dashboard(&self, ui: &mut egui::Ui) {
-        let frame_size = Vec2::new(200., 100.);
-        let frame_margin = ui.style().spacing.item_spacing.x;
+        let width = 200.0;
 
-        let available_width = ui.available_width();
+        let frame_size = Vec2::new(width, width * (2. / 3.));
+        // let frame_margin = ui.style().spacing.item_spacing.x;
 
-        let num_x = (available_width / (frame_size.x + frame_margin)).floor() as usize;
-        let num_x = num_x.min(self.config.printers.len());
-        let num_y = (self.printer_states.len() as f32 / num_x as f32).ceil() as usize;
+        // let available_width = ui.available_width();
+
+        // let num_x = (available_width / (frame_size.x + frame_margin)).floor() as usize;
+        // let num_x = num_x.min(self.config.printers.len());
+        // let num_y = (self.printer_states.len() as f32 / num_x as f32).ceil() as usize;
 
         // ui.horizontal(|ui| {
         //     for printer in self.config.printers.iter() {
@@ -122,24 +126,189 @@ impl App {
         //     }
         // });
 
+        // debug!("num_x: {}, num_y: {}", num_x, num_y);
+
+        #[cfg(feature = "nope")]
+        egui_extras::TableBuilder::new(ui)
+            .columns(
+                egui_extras::Column::exact(width),
+                self.config.printers.len(),
+            )
+            .auto_shrink(true)
+            .body(|mut body| {
+                // body.ui_mut().style_mut().spacing.item_spacing.x = 50.;
+                body.row(frame_size.y, |mut row| {
+                    for printer_cfg in self.config.printers.iter() {
+                        let id = &printer_cfg.serial;
+                        let Some(printer) = self.printer_states.get(id) else {
+                            row.col(|ui| {});
+                            continue;
+                        };
+
+                        row.col(|ui| {
+                            egui::Frame::group(ui.style())
+                                // .outer_margin(egui::Margin::same(10.))
+                                // .inner_margin(egui::Margin::same(10.))
+                                .show(ui, |ui| {
+                                    self.show_printer(frame_size, ui, printer_cfg, &printer);
+                                    // ui.allocate_space(Vec2::new(
+                                    //     ui.available_width(),
+                                    //     frame_size.y,
+                                    // ));
+                                });
+                        });
+                    }
+                });
+            });
+
+        // #[cfg(feature = "nope")]
+        egui_extras::StripBuilder::new(ui)
+            .sizes(egui_extras::Size::exact(width), self.config.printers.len())
+            .horizontal(|mut strip| {
+                for printer_cfg in self.config.printers.iter() {
+                    let id = &printer_cfg.serial;
+                    let Some(printer) = self.printer_states.get(id) else {
+                        return;
+                    };
+
+                    strip.cell(|ui| {
+                        egui::Frame::group(ui.style())
+                            // .outer_margin(egui::Margin::same(10.))
+                            // .inner_margin(egui::Margin::same(10.))
+                            .show(ui, |ui| {
+                                self.show_printer(frame_size, ui, printer_cfg, &printer);
+                                ui.allocate_space(Vec2::new(ui.available_width(), frame_size.y));
+                            });
+                    })
+                }
+            });
+
+        // ui.allocate_ui_with_layout(frame_size, Layout::top_down(Align::LEFT), |ui| {
+        //     ui.group(|ui| {
+        //         // ui.set_min_size(frame_size);
+        //         // ui.set_max_size(frame_size);
+        //         self.show_printer(frame_size, ui, printer_cfg, &printer);
+        //         // ui.allocate_space(ui.available_size());
+        //     });
+        // });
+
+        #[cfg(feature = "nope")]
         for y in 0..num_y {
             ui.columns(num_x, |uis| {
                 for x in 0..num_x {
                     let idx = y * num_x + x;
-                    if idx >= self.printer_states.len() {
+                    if idx >= self.config.printers.len() {
+                        debug!("x: {}, y: {}", x, y);
                         warn!("idx out of bounds: {}", idx);
                         break;
                     }
 
                     let printer_cfg = &self.config.printers[idx];
                     let id = &printer_cfg.serial;
-                    let printer = self.printer_states.get(id).unwrap();
-                    self.show_printer(frame_size, &mut uis[x], printer_cfg, &printer);
+                    let Some(printer) = self.printer_states.get(id) else {
+                        continue;
+                    };
+                    uis[x].group(|ui| {
+                        self.show_printer(frame_size, ui, printer_cfg, &printer);
+                    });
                 }
             });
         }
     }
 
+    pub fn show_printer(
+        &self,
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        printer: &PrinterConfig,
+        printer_state: &PrinterStatus,
+    ) {
+        let Some(status) = self.printer_states.get(&printer.serial) else {
+            warn!("Printer not found: {}", printer.serial);
+            return;
+        };
+
+        /// printer name
+        ui.horizontal(|ui| {
+            paint_icon(ui, 40., &status.state);
+            ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
+        });
+
+        ui.add(thumbnail_printer());
+
+        /// temperatures
+        ui.group(|ui| {
+            ui.horizontal(|ui| {
+                ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                ui.separator();
+
+                ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+                ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+                ui.separator();
+
+                ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+            });
+        });
+
+        /// current print
+        ui.group(|ui| {
+            if let PrinterState::Printing = status.state {
+                self.show_current_print(frame_size, ui, &status, printer, printer_state);
+            } else {
+                ui.label("No print in progress");
+            }
+        });
+
+        /// controls
+        ui.group(|ui| {
+            //
+        });
+
+        //
+    }
+
+    fn show_current_print(
+        &self,
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        status: &PrinterStatus,
+        printer: &PrinterConfig,
+        printer_state: &PrinterStatus,
+    ) {
+        if let Some(eta) = status.eta {
+            let time = eta.time();
+            let dt = time - chrono::Local::now().naive_local().time();
+
+            egui::Grid::new(format!("grid_{}", printer.serial)).show(ui, |ui| {
+                ui.label("File:");
+                ui.label(
+                    status
+                        .current_file
+                        .as_ref()
+                        .map(|s| s.as_str())
+                        .unwrap_or("--"),
+                );
+                ui.end_row();
+
+                ui.label("ETA:");
+                ui.label(&time.format("%-I:%M %p").to_string());
+                ui.end_row();
+
+                ui.label("Remaining:");
+                ui.label(&format!(
+                    "{:02}:{:02}",
+                    dt.num_hours(),
+                    dt.num_minutes() % 60
+                ));
+                ui.end_row();
+            });
+        }
+
+        //
+    }
+
+    #[cfg(feature = "nope")]
     pub fn show_printer(
         &self,
         frame_size: Vec2,
@@ -164,31 +333,110 @@ impl App {
                 ui.set_min_size(frame_size);
 
                 ui.horizontal(|ui| {
-                    // ui.label(status.state.to_char());
                     paint_icon(ui, 40., &status.state);
                     ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
                 });
 
                 ui.horizontal(|ui| {
-                    let thumbnail = egui::Image::new(egui::include_image!(
-                        "../assets/printer_thumbnail_x1.svg"
-                    ))
-                    .fit_to_exact_size(Vec2::new(80., 80.))
-                    .max_width(80.)
-                    .max_height(80.);
-                    ui.add(thumbnail);
+                    ui.vertical(|ui| {
+                        ui.add(thumbnail);
+
+                        ui.columns(3, |uis| {
+                            uis[0].group(|ui| {
+                                ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                                ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                                //
+                            });
+                        });
+                    });
 
                     ui.group(|ui| {
-                        if let PrinterState::Printing(end) = status.state {
-                            // ui.label("ETA: {:02}:{:02}", , 23);
-                        } else {
-                            ui.label("ETA: --:--");
-                        }
+                        ui.vertical(|ui| {
+                            if let PrinterState::Printing = status.state {
+                                if let Some(eta) = status.eta {
+                                    // use std::time::{SystemTime, UNIX_EPOCH};
+                                    // let now = SystemTime::now();
+                                    // let duration_since_epoch =
+                                    //     now.duration_since(UNIX_EPOCH).expect("Time went backwards");
+                                    // let datetime: chrono::DateTime<chrono::Utc> = UNIX_EPOCH.into();
+                                    // let datetime = datetime
+                                    //     + chrono::Duration::from_std(duration_since_epoch)
+                                    //         .expect("Failed to convert duration");
+
+                                    let time = eta.time();
+                                    let dt = time - chrono::Local::now().naive_local().time();
+
+                                    egui::Grid::new(format!("grid_{}", printer.serial)).show(
+                                        ui,
+                                        |ui| {
+                                            ui.label("File:");
+                                            ui.label(
+                                                status
+                                                    .current_file
+                                                    .as_ref()
+                                                    .map(|s| s.as_str())
+                                                    .unwrap_or("--"),
+                                            );
+                                            ui.end_row();
+
+                                            ui.label("ETA:");
+                                            ui.label(&time.format("%-I:%M %p").to_string());
+                                            ui.end_row();
+
+                                            ui.label("Remaining:");
+                                            ui.label(&format!(
+                                                "{:02}:{:02}",
+                                                dt.num_hours(),
+                                                dt.num_minutes() % 60
+                                            ));
+                                            ui.end_row();
+                                        },
+                                    );
+                                }
+                                // ui.label("ETA: {:02}:{:02}", , 23);
+                            } else {
+                                ui.label("ETA: --:--");
+                            }
+                        });
                         ui.allocate_space(ui.available_size());
                     });
                 });
             });
     }
+}
+
+fn thumbnail_printer() -> egui::Image<'static> {
+    let size = 80.;
+    egui::Image::new(egui::include_image!("../assets/printer_thumbnail_x1.svg"))
+        .fit_to_exact_size(Vec2::new(size, size))
+        .max_width(size)
+        .max_height(size)
+}
+
+fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
+    let size = 15.;
+    let src = if active {
+        egui::include_image!("../assets/monitor_nozzle_temp_active.svg")
+    } else {
+        egui::include_image!("../assets/monitor_nozzle_temp.svg")
+    };
+    egui::Image::new(src)
+        .fit_to_exact_size(Vec2::new(size, size))
+        .max_width(size)
+        .max_height(size)
+}
+
+fn thumbnail_bed(active: bool) -> egui::Image<'static> {
+    let size = 15.;
+    let src = if active {
+        egui::include_image!("../assets/monitor_bed_temp_active.svg")
+    } else {
+        egui::include_image!("../assets/monitor_bed_temp.svg")
+    };
+    egui::Image::new(src)
+        .fit_to_exact_size(Vec2::new(size, size))
+        .max_width(size)
+        .max_height(size)
 }
 
 pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
@@ -199,7 +447,7 @@ pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
         PrinterState::Paused => {
             egui::include_image!("../assets/icons8-pause-squared-100.png")
         }
-        PrinterState::Printing(_) => {
+        PrinterState::Printing => {
             egui::include_image!("../assets/icons8-green-circle-96.png")
         }
         PrinterState::Error(_) => {

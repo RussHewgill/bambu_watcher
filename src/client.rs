@@ -35,6 +35,7 @@ pub struct PrinterConnManager {
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
     cmd_rx: Receiver<PrinterConnCmd>,
     msg_tx: Sender<PrinterConnMsg>,
+    ctx: egui::Context,
 }
 
 impl PrinterConnManager {
@@ -43,6 +44,7 @@ impl PrinterConnManager {
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
         cmd_rx: Receiver<PrinterConnCmd>,
         msg_tx: Sender<PrinterConnMsg>,
+        ctx: egui::Context,
     ) -> Self {
         Self {
             config,
@@ -50,6 +52,7 @@ impl PrinterConnManager {
             printer_states,
             cmd_rx,
             msg_tx,
+            ctx,
         }
     }
 
@@ -86,10 +89,20 @@ impl PrinterConnManager {
     async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
         match msg {
             Message::Print(report) => {
+                debug!("got print report");
                 // let report = PrinterStatusReport::from_print_data(&print.print);
 
                 let mut entry = self.printer_states.entry(id.clone()).or_default();
+
+                let error = entry.is_error();
+
                 entry.update(&report.print);
+
+                if error && !entry.is_error() {
+                    warn!("printer error: {:?}", id);
+                }
+
+                self.ctx.request_repaint();
 
                 self.msg_tx
                     .send(PrinterConnMsg::StatusReport(id, report.print))

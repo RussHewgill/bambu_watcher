@@ -12,6 +12,7 @@ pub mod client;
 pub mod config;
 pub mod logging;
 pub mod status;
+pub mod tray;
 pub mod ui;
 pub mod ui_types;
 // pub mod mqtt_types;
@@ -60,7 +61,7 @@ fn main() -> Result<()> {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-#[cfg(feature = "nope")]
+// #[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     // dotenv::dotenv().unwrap();
     logging::init_logs();
@@ -87,21 +88,52 @@ fn main() -> eframe::Result<()> {
     let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
     let printer_states2 = printer_states.clone();
 
+    let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
+
     /// debug printer state
+    // #[cfg(feature = "nope")]
     {
         warn!("adding debug printer state");
 
-        for printer in config.printers.iter() {
-            printer_states.insert(printer.serial.clone(), PrinterStatus::default());
+        {
+            let mut status = PrinterStatus::default();
+            status.temp_nozzle = Some(200.0);
+            status.temp_tgt_nozzle = Some(200.0);
+            status.temp_bed = Some(60.0);
+            status.temp_tgt_bed = Some(60.0);
+
+            status.state = status::PrinterState::Printing;
+            status.eta = Some(chrono::Local::now() + chrono::Duration::minutes(10));
+            status.current_file = Some("test.gcode".to_string());
+            status.gcode_state = Some(status::GcodeState::Running);
+            status.print_percent = Some(50);
+            status.layer_num = Some(50);
+            status.total_layer_num = Some(100);
+
+            let serial = config.printers[0].serial.clone();
+            printer_states.insert(serial, status);
+        }
+
+        {
+            let mut status = PrinterStatus::default();
+            status.temp_nozzle = Some(200.0);
+            status.temp_tgt_nozzle = Some(200.0);
+            status.state = status::PrinterState::Idle;
+            // status.eta = Some(chrono::Local::now() + chrono::Duration::minutes(10));
+
+            let serial = config.printers[1].serial.clone();
+            printer_states.insert(serial, status);
         }
     }
 
-    // #[cfg(feature = "nope")]
+    #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async move {
-            let mut manager = PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx);
+            let ctx = ctx_rx.await.unwrap();
+            let mut manager =
+                PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx);
 
             debug!("running PrinterConnManager");
             manager.run().await.unwrap();
@@ -121,6 +153,8 @@ fn main() -> eframe::Result<()> {
             };
 
             let context = cc.egui_ctx.clone();
+
+            ctx_tx.send(context.clone()).unwrap();
 
             // tray-icon crate
             // https://docs.rs/tray-icon/0.12.0/tray_icon/struct.TrayIconEvent.html#method.set_event_handler
@@ -163,7 +197,7 @@ fn main() -> eframe::Result<()> {
             ));
 
             /// Icon by https://www.flaticon.com/authors/freepik
-            let icon = crate::app::load_icon(&"icon.png");
+            let icon = crate::tray::load_icon(&"icon.png");
 
             {
                 tray_c.borrow_mut().replace(
@@ -281,8 +315,8 @@ fn main() -> Result<()> {
 }
 
 /// working?
-#[tokio::main]
-// #[cfg(feature = "nope")]
+// #[tokio::main]
+#[cfg(feature = "nope")]
 async fn main() -> Result<()> {
     dotenv::dotenv()?;
     logging::init_logs();

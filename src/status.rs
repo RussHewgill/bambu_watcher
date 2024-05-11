@@ -1,4 +1,5 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use chrono::{DateTime, Local, TimeDelta};
 use tracing::{debug, error, info, trace, warn};
 
 use bambulab::PrintData;
@@ -11,30 +12,129 @@ pub struct PrinterStatus {
     pub state: PrinterState,
     // pub last_report: Option<PrinterStatusReport>,
     pub last_report: Option<Instant>,
-    pub eta: Option<Instant>,
 
     pub current_file: Option<String>,
-    pub gcode_state: Option<String>,
-    pub print_percent: Option<i64>,
+    pub gcode_state: Option<GcodeState>,
     pub print_error: Option<PrintError>,
+    pub print_percent: Option<i64>,
+    pub eta: Option<DateTime<Local>>,
+
     pub wifi_signal: Option<String>,
     pub spd_lvl: Option<i64>,
     // pub print_line_number: Option<String>,
     pub layer_num: Option<i64>,
     pub total_layer_num: Option<i64>,
+
+    pub temp_nozzle: Option<f64>,
+    pub temp_tgt_nozzle: Option<f64>,
+    pub temp_bed: Option<f64>,
+    pub temp_tgt_bed: Option<f64>,
+    pub temp_chamber: Option<i64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GcodeState {
+    Running,
+    Paused,
+    Unknown,
+}
+
+impl GcodeState {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "RUNNING" => Self::Running,
+            "PAUSE" => Self::Paused,
+            _ => {
+                warn!("Unknown gcode state: {}", s);
+                Self::Unknown
+            }
+        }
+    }
 }
 
 impl PrinterStatus {
+    pub fn is_error(&self) -> bool {
+        matches!(self.state, PrinterState::Error(_))
+    }
+
+    fn get_state(report: &bambulab::PrintData) -> Option<PrinterState> {
+        if let Some(s) = report.gcode_state.as_ref() {
+            match s.as_str() {
+                "RUNNING" => Some(PrinterState::Printing),
+                "PAUSE" => {
+                    if let Some(e) = report.print_error {
+                        Some(PrinterState::Error(format!("Error: {}", e)))
+                    } else {
+                        Some(PrinterState::Paused)
+                    }
+                }
+                s => panic!("Unknown gcode state: {}", s),
+            }
+        } else {
+            None
+        }
+    }
+
     pub fn update(&mut self, report: &bambulab::PrintData) {
+        if let Some(s) = Self::get_state(report) {
+            self.state = s;
+        }
+
         self.last_report = Some(Instant::now());
-        // self.eta = report.mc_remaining_time.map(|t| Instant::now() + t);
 
-        // if let Some(f) = report.gcode_file.as_ref() {
-        //     self.current_file = Some(f.clone());
-        // }
+        if let Some(f) = report.gcode_file.as_ref() {
+            self.current_file = Some(f.clone());
+        }
 
-        // self.status = report.status.clone();
-        // self.last_report = Some(report);
+        if let Some(s) = report.gcode_state.as_ref() {
+            self.gcode_state = Some(GcodeState::from_str(s));
+        }
+
+        if let Some(p) = report.mc_percent {
+            self.print_percent = Some(p);
+        }
+
+        if let Some(e) = report.print_error {
+            self.print_error = Some(PrintError::from_code(e));
+        }
+
+        if let Some(t) = report.mc_remaining_time {
+            self.eta = Some(Local::now() + TimeDelta::new(t as i64 * 60, 0).unwrap());
+        }
+
+        if let Some(w) = report.wifi_signal.as_ref() {
+            self.wifi_signal = Some(w.clone());
+        }
+
+        if let Some(s) = report.spd_lvl {
+            self.spd_lvl = Some(s);
+        }
+
+        if let Some(l) = report.layer_num {
+            self.layer_num = Some(l);
+        }
+
+        if let Some(t) = report.total_layer_num {
+            self.total_layer_num = Some(t);
+        }
+
+        if let Some(t) = report.nozzle_temper {
+            self.temp_nozzle = Some(t);
+        }
+        if let Some(t) = report.nozzle_target_temper {
+            self.temp_tgt_nozzle = Some(t as f64);
+        }
+
+        if let Some(t) = report.bed_temper {
+            self.temp_bed = Some(t);
+        }
+        if let Some(t) = report.bed_target_temper {
+            self.temp_tgt_bed = Some(t as f64);
+        }
+
+        if let Some(t) = report.chamber_temper {
+            self.temp_chamber = Some(t);
+        }
     }
 }
 
@@ -42,7 +142,8 @@ impl PrinterStatus {
 pub enum PrinterState {
     Idle,
     Paused,
-    Printing(Instant),
+    // Printing(Instant),
+    Printing,
     Error(String),
     Disconnected,
 }
@@ -57,7 +158,7 @@ impl PrinterState {
     pub fn to_text(&self) -> &'static str {
         match self {
             PrinterState::Idle => "Idle",
-            PrinterState::Printing(_) => "Printing",
+            PrinterState::Printing => "Printing",
             PrinterState::Error(_) => "Error",
             PrinterState::Paused => "Paused",
             PrinterState::Disconnected => "Disconnected",
@@ -67,7 +168,7 @@ impl PrinterState {
     pub fn to_char(&self) -> &'static str {
         match self {
             PrinterState::Idle => "💤",
-            PrinterState::Printing(_) => "🟢",
+            PrinterState::Printing => "🟢",
             PrinterState::Error(_) => "🟥️",
             PrinterState::Paused => "🟡",
             PrinterState::Disconnected => "🔌",
@@ -150,10 +251,12 @@ pub enum PrintError {
     Unknown(i64),
 }
 
+/// https://e.bambulab.com/query.php?
 impl PrintError {
     pub fn from_code(code: i64) -> Self {
         match code {
-            83935249 => PrintError::None,
+            0 => PrintError::None,
+            // 83935249 => PrintError::None,
             _ => PrintError::Unknown(code),
         }
     }
