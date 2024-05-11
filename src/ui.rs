@@ -178,13 +178,17 @@ impl App {
                         //     .fill(Color32::RED)
                         //     .show(ui, |ui| {
                         //     });
+
                         egui::Frame::group(ui.style())
                             // .outer_margin(egui::Margin::same(100.))
                             // .inner_margin(egui::Margin::same(10.))
                             // .fill(Color32::GREEN)
                             .show(ui, |ui| {
+                                ui.set_min_size(frame_size);
+                                // ui.set_max_size(frame_size);
                                 self.show_printer(frame_size, ui, printer_cfg, &printer);
-                                ui.allocate_space(Vec2::new(ui.available_width(), frame_size.y));
+                                // ui.allocate_space(Vec2::new(ui.available_width(), frame_size.y));
+                                // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
                             });
                     })
                 }
@@ -256,12 +260,12 @@ impl App {
         //             ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
         //             //         ui.separator();
         //         });
-
         //         strip.cell(|ui| {
         //             ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
         //         });
         //     });
 
+        #[cfg(feature = "nope")]
         egui::Frame::group(ui.style())
             // .outer_margin(egui::Margin::same(100.))
             // .inner_margin(egui::Margin::same(10.))
@@ -285,20 +289,21 @@ impl App {
                         // ui.horizontal(|ui| {
                         ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
                         ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                        ui.separator();
                         // });
                     });
 
-                    ui.separator();
                     max_rect = max_rect.translate(offset);
+                    // ui.separator();
 
                     ui.allocate_ui_at_rect(max_rect, |ui| {
                         // ui.horizontal(|ui| {
                         ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
                         ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+                        ui.separator();
                         // });
                     });
 
-                    ui.separator();
                     max_rect = max_rect.translate(offset);
 
                     ui.allocate_ui_at_rect(max_rect, |ui| {
@@ -373,20 +378,32 @@ impl App {
         //     ui.group(|ui| {
         //         ui.style_mut().spacing.item_spacing.x = 1.;
         //         ui.style_mut().spacing.item_spacing.y = 1.;
-
         //         ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
         //         ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
         //         ui.separator();
-
         //         ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
         //         ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
         //         ui.separator();
-
         //         ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
         //     });
         //     #[cfg(feature = "nope")]
         //     ui.horizontal(|ui| {});
         // });
+
+        ui.group(|ui| {
+            ui.horizontal(|ui| {
+                ui.style_mut().spacing.item_spacing.x = 1.;
+                ui.style_mut().spacing.item_spacing.y = 1.;
+                ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                ui.separator();
+                ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+                ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+                ui.separator();
+                ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+                ui.allocate_space(Vec2::new(ui.available_width(), 0.));
+            });
+        });
 
         /// current print
         ui.group(|ui| {
@@ -399,7 +416,21 @@ impl App {
 
         /// controls
         ui.group(|ui| {
-            //
+            ui.columns(2, |uis| {
+                if uis[0]
+                    .add(egui::Button::image_and_text(icon_pause(), "Pause"))
+                    .clicked()
+                {
+                    debug!("Pause clicked");
+                }
+
+                if uis[1]
+                    .add(egui::Button::image_and_text(icon_stop(), "Stop"))
+                    .clicked()
+                {
+                    debug!("Stop clicked");
+                }
+            });
         });
 
         //
@@ -440,6 +471,8 @@ impl App {
                 ));
                 ui.end_row();
             });
+
+            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
         }
 
         //
@@ -540,6 +573,24 @@ impl App {
                 });
             });
     }
+}
+
+fn icon_pause() -> egui::Image<'static> {
+    let size = 20.;
+    egui::Image::new(egui::include_image!(
+        "../assets/icons8-pause-squared-100.png"
+    ))
+    .fit_to_exact_size(Vec2::new(size, size))
+    .max_width(size)
+    .max_height(size)
+}
+
+fn icon_stop() -> egui::Image<'static> {
+    let size = 20.;
+    egui::Image::new(egui::include_image!("../assets/icons8-red-square-96.png"))
+        .fit_to_exact_size(Vec2::new(size, size))
+        .max_width(size)
+        .max_height(size)
 }
 
 fn thumbnail_printer() -> egui::Image<'static> {
