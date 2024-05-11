@@ -111,7 +111,7 @@ impl App {
     pub fn show_dashboard(&self, ui: &mut egui::Ui) {
         let width = 200.0;
 
-        let frame_size = Vec2::new(width, width * (2. / 3.));
+        let frame_size = Vec2::new(width, width * (3. / 2.));
         // let frame_margin = ui.style().spacing.item_spacing.x;
 
         // let available_width = ui.available_width();
@@ -172,9 +172,16 @@ impl App {
                     };
 
                     strip.cell(|ui| {
+                        // // ui.set_max_size(frame_size);
+                        // egui::Frame::none()
+                        //     // .inner_margin(egui::Margin::same(10.))
+                        //     .fill(Color32::RED)
+                        //     .show(ui, |ui| {
+                        //     });
                         egui::Frame::group(ui.style())
-                            // .outer_margin(egui::Margin::same(10.))
+                            // .outer_margin(egui::Margin::same(100.))
                             // .inner_margin(egui::Margin::same(10.))
+                            // .fill(Color32::GREEN)
                             .show(ui, |ui| {
                                 self.show_printer(frame_size, ui, printer_cfg, &printer);
                                 ui.allocate_space(Vec2::new(ui.available_width(), frame_size.y));
@@ -236,20 +243,150 @@ impl App {
 
         ui.add(thumbnail_printer());
 
-        /// temperatures
-        ui.group(|ui| {
-            ui.horizontal(|ui| {
-                ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                ui.separator();
+        // egui_extras::StripBuilder::new(ui)
+        //     .sizes(egui_extras::Size::exact(frame_size.x / 3. - 5.), 3)
+        //     .horizontal(|mut strip| {
+        //         strip.cell(|ui| {
+        //             ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+        //             ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+        //             // ui.separator();
+        //         });
+        //         strip.cell(|ui| {
+        //             ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+        //             ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+        //             //         ui.separator();
+        //         });
 
-                ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-                ui.separator();
+        //         strip.cell(|ui| {
+        //             ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+        //         });
+        //     });
 
-                ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+        egui::Frame::group(ui.style())
+            // .outer_margin(egui::Margin::same(100.))
+            // .inner_margin(egui::Margin::same(10.))
+            // .fill(Color32::GREEN)
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    let item_spacing = ui.spacing().item_spacing.x;
+                    /// [[20.0 148.0] - [218.0 580.0]]
+                    let mut max_rect = ui.max_rect();
+                    max_rect.set_width(frame_size.x - 2.);
+                    // debug!("max_rect: {:?}", max_rect);
+                    max_rect.set_width(max_rect.width() - 2. * item_spacing); // adjust it so it does not include spacing
+                    let width = max_rect.width() / 3.; // get width for the widgets
+
+                    // debug!("width: {}", width);
+
+                    let offset = Vec2::new(width + item_spacing, 0.); // compute the offset for subsequent rects
+                    max_rect.set_width(width); // and set the width of rect
+
+                    ui.allocate_ui_at_rect(max_rect, |ui| {
+                        // ui.horizontal(|ui| {
+                        ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                        ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                        // });
+                    });
+
+                    ui.separator();
+                    max_rect = max_rect.translate(offset);
+
+                    ui.allocate_ui_at_rect(max_rect, |ui| {
+                        // ui.horizontal(|ui| {
+                        ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+                        ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+                        // });
+                    });
+
+                    ui.separator();
+                    max_rect = max_rect.translate(offset);
+
+                    ui.allocate_ui_at_rect(max_rect, |ui| {
+                        // ui.horizontal(|ui| {
+                        ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+                        // });
+                    });
+
+                    ui.allocate_space(Vec2::new(ui.available_size().x, 0.));
+                });
             });
-        });
+
+        #[cfg(feature = "nope")]
+        {
+            /// temperatures
+            let layout = Layout::left_to_right(Align::Center)
+                .with_main_justify(true)
+                // .with_cross_justify(true)
+                // .with_main_justify(true)
+                ;
+
+            /// size = 195, 30
+            let size = Vec2::new(frame_size.x - 5., 30.);
+            // debug!("size = {:?}", size);
+            ui.allocate_ui_with_layout(size, layout, |ui| {
+                ui.set_min_size(size);
+                ui.set_max_size(size);
+                egui::Frame::group(ui.style())
+                    // .outer_margin(egui::Margin::same(100.))
+                    // .inner_margin(egui::Margin::same(10.))
+                    // .fill(Color32::GREEN)
+                    .show(ui, |ui| {
+                        ui.set_min_size(size);
+                        ui.set_max_size(size);
+                        ui.style_mut().spacing.item_spacing.x = 1.;
+                        ui.style_mut().spacing.item_spacing.y = 1.;
+
+                        {
+                            ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                            ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                            ui.separator();
+
+                            ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+                            ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+                            ui.separator();
+
+                            ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+                        }
+
+                        // ui.columns(3, |uis| {
+                        //     uis[0].add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                        //     uis[0].label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                        //     //         ui.separator();
+                        //     uis[1].add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                        //     uis[1].label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                        //     uis[2].label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+                        // });
+                    });
+            });
+        }
+
+        // /// temperatures
+        //     let layout = Layout::left_to_right(Align::Center)
+        //         .with_main_justify(true)
+        //         // .with_main_justify(true)
+        //         ;
+        // let size = Vec2::new(frame_size.x - 5., 30.);
+        // // ui.set_max_size(size);
+        // // debug!("size = {:?}", size);
+        // ui.allocate_ui_with_layout(size, layout, |ui| {
+        //     ui.set_max_size(size);
+        //     ui.group(|ui| {
+        //         ui.style_mut().spacing.item_spacing.x = 1.;
+        //         ui.style_mut().spacing.item_spacing.y = 1.;
+
+        //         ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+        //         ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+        //         ui.separator();
+
+        //         ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+        //         ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+        //         ui.separator();
+
+        //         ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+        //     });
+        //     #[cfg(feature = "nope")]
+        //     ui.horizontal(|ui| {});
+        // });
 
         /// current print
         ui.group(|ui| {
@@ -414,7 +551,7 @@ fn thumbnail_printer() -> egui::Image<'static> {
 }
 
 fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
-    let size = 15.;
+    let size = 20.;
     let src = if active {
         egui::include_image!("../assets/monitor_nozzle_temp_active.svg")
     } else {
@@ -427,7 +564,7 @@ fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
 }
 
 fn thumbnail_bed(active: bool) -> egui::Image<'static> {
-    let size = 15.;
+    let size = 20.;
     let src = if active {
         egui::include_image!("../assets/monitor_bed_temp_active.svg")
     } else {
