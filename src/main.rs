@@ -5,6 +5,7 @@
 #![allow(unused_doc_comments)]
 #![allow(unused_labels)]
 #![allow(unexpected_cfgs)]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // pub mod app;
 // pub mod app_types;
@@ -302,10 +303,11 @@ fn main() -> eframe::Result<()> {
                 },
             ));
 
-            /// Icon by https://www.flaticon.com/authors/freepik
-            let icon = crate::tray::load_icon(&"icon.png");
-
+            #[cfg(feature = "nope")]
             {
+                /// Icon by https://www.flaticon.com/authors/freepik
+                let icon = crate::tray::load_icon(&"icon.png");
+
                 tray_c.borrow_mut().replace(
                     tray_icon::TrayIconBuilder::new()
                         // .with_menu(Box::new(menu))
