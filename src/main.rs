@@ -11,6 +11,7 @@
 pub mod alert;
 pub mod client;
 pub mod config;
+pub mod ftp;
 pub mod icons;
 pub mod logging;
 pub mod status;
@@ -61,73 +62,58 @@ fn main() -> Result<()> {
 }
 
 /// FTP test
-// #[cfg(feature = "nope")]
+#[cfg(feature = "nope")]
 fn main() {
     dotenv::dotenv().unwrap();
     logging::init_logs();
 
-    use suppaftp::native_tls::{TlsConnector, TlsStream};
-    use suppaftp::{FtpStream, NativeTlsConnector, NativeTlsFtpStream};
+    let printer_cfg = config::PrinterConfig {
+        name: "bambu".to_string(),
+        host: env::var("BAMBU_IP").unwrap(),
+        access_code: env::var("BAMBU_ACCESS_CODE").unwrap(),
+        serial: env::var("BAMBU_IDENT").unwrap(),
+    };
 
-    let port = 990;
-    // let port = 21;
-
-    let addr = format!("{}:{}", env::var("BAMBU_IP").unwrap(), port);
-    debug!("addr = {}", addr);
+    crate::ftp::get_gcode_thumbnail(
+        &printer_cfg,
+        "/cache/AMS Purging Strips 2 Colors Modified.3mf",
+    )
+    .unwrap();
 
     #[cfg(feature = "nope")]
     {
-        // let mut ctx = NativeTlsConnector::from(TlsConnector::new().unwrap());
-        // let ftp_stream = NativeTlsFtpStream::connect_timeout(addr, Duration::from_secs(5)).unwrap();
-        // let ftp_stream = NativeTlsFtpStream::connect(addr).unwrap();
-        let mut ftp_stream = FtpStream::connect(&addr).unwrap();
-        debug!("got stream");
-        let mut ftp_stream = ftp_stream
-            .into_secure(
-                NativeTlsConnector::from(TlsConnector::new().unwrap()),
-                &env::var("BAMBU_IP").unwrap(),
-            )
-            .unwrap();
-    }
+        use suppaftp::native_tls::{TlsConnector, TlsStream};
+        use suppaftp::{FtpStream, NativeTlsConnector, NativeTlsFtpStream};
 
-    debug!("building ctx");
-    // let mut ctx = NativeTlsConnector::new().unwrap();
-    let ctx = NativeTlsConnector::from(
-        TlsConnector::builder()
-            .danger_accept_invalid_certs(true)
-            .build()
-            .unwrap(),
-    );
+        let port = 990;
 
-    debug!("connecting");
-    let mut ftp_stream =
-        NativeTlsFtpStream::connect_secure_implicit(&addr, ctx, &env::var("BAMBU_IP").unwrap())
-            .unwrap();
+        let addr = format!("{}:{}", env::var("BAMBU_IP").unwrap(), port);
+        debug!("addr = {}", addr);
 
-    // debug!("connecting");
-    // let mut ftp_stream = NativeTlsFtpStream::connect(&addr).unwrap();
-    // debug!("got stream");
-    // let mut ftp_stream = ftp_stream
-    //     .into_secure(ctx, &env::var("BAMBU_IP").unwrap())
-    //     .unwrap();
+        /// explicit doesn't work for some reason
+        debug!("connecting");
+        let mut ftp_stream =
+            NativeTlsFtpStream::connect_secure_implicit(&addr, ctx, &env::var("BAMBU_IP").unwrap())
+                .unwrap();
 
-    // let mut ftp_stream = FtpStream::connect(&addr).unwrap_or_else(|err| panic!("{}", err));
-    debug!("connected to server");
-    assert!(ftp_stream
-        .login("bblp", &env::var("BAMBU_ACCESS_CODE").unwrap())
-        .is_ok());
+        // let mut ftp_stream = FtpStream::connect(&addr).unwrap_or_else(|err| panic!("{}", err));
+        debug!("connected to server");
+        assert!(ftp_stream
+            .login("bblp", &env::var("BAMBU_ACCESS_CODE").unwrap())
+            .is_ok());
 
-    debug!("listing");
-    if let Ok(list) = ftp_stream.list(None) {
-        for item in list {
-            println!("{}", item);
+        debug!("listing");
+        if let Ok(list) = ftp_stream.list(None) {
+            for item in list {
+                println!("{}", item);
+            }
         }
+
+        debug!("done");
+
+        // Disconnect from server
+        assert!(ftp_stream.quit().is_ok());
     }
-
-    debug!("done");
-
-    // Disconnect from server
-    assert!(ftp_stream.quit().is_ok());
 
     //
 }
@@ -139,7 +125,7 @@ fn main() {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-#[cfg(feature = "nope")]
+// #[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     // dotenv::dotenv().unwrap();
     logging::init_logs();
@@ -192,10 +178,33 @@ fn main() -> eframe::Result<()> {
             status.aux_fan_speed = Some(70);
             status.chamber_fan_speed = Some(80);
 
+            status.ams = Some(status::AmsStatus {
+                units: vec![status::AmsUnit {
+                    id: 0,
+                    humidity: 0,
+                    temp: 0,
+                    slots: [
+                        Some(status::AmsSlot {
+                            material: "PLA".to_string(),
+                            k: 0.03,
+                            color: egui::Color32::RED,
+                        }),
+                        None,
+                        None,
+                        None,
+                    ],
+                }],
+                current_tray: Some(status::AmsCurrentSlot::Tray {
+                    ams_id: 0,
+                    tray_id: 0,
+                }),
+            });
+
             let serial = config.printers[0].serial.clone();
             printer_states.insert(serial, status);
         }
 
+        #[cfg(feature = "nope")]
         {
             let mut status = PrinterStatus::default();
             status.temp_nozzle = Some(200.0);

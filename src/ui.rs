@@ -1,6 +1,9 @@
+pub mod printers;
+
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use egui::{Align, Color32, Layout, Margin, Sense, Vec2};
 use tracing::{debug, error, info, trace, warn};
+
+use egui::{Align, Color32, Layout, Margin, Sense, Vec2};
 
 use dashmap::DashMap;
 use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
@@ -190,7 +193,7 @@ impl App {
                             // .fill(Color32::GREEN)
                             .show(ui, |ui| {
                                 ui.set_min_size(frame_size);
-                                // ui.set_max_size(frame_size);
+                                ui.set_max_size(frame_size);
                                 self.show_printer(frame_size, ui, printer_cfg, &printer);
                                 // ui.allocate_space(Vec2::new(ui.available_width(), frame_size.y));
                                 // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
@@ -355,6 +358,72 @@ impl App {
         printer: &PrinterConfig,
         printer_state: &PrinterStatus,
     ) {
+        let Some(ams) = status.ams.as_ref() else {
+            return;
+        };
+
+        let unit = ams.units.get(0).unwrap();
+
+        // let size_x = ui.available_size_before_wrap().x;
+        // let size_x = frame_size.x - 20.;
+
+        ui.columns(4, |uis| {
+            for i in 0..4 {
+                let ui = &mut uis[i];
+                let size = Vec2::splat(20.0);
+                let (response, painter) = ui.allocate_painter(size, Sense::hover());
+
+                let rect = response.rect;
+                let c = rect.center();
+                let r = rect.width() / 2.0 - 1.0;
+
+                if let Some(slot) = unit.slots[i].as_ref() {
+                    painter.circle_filled(c, r, slot.color);
+                } else {
+                    painter.circle_stroke(c, r, egui::Stroke::new(1.0, Color32::from_gray(120)));
+                }
+            }
+        });
+
+        #[cfg(feature = "nope")]
+        {
+            let layout = Layout::left_to_right(Align::Center)
+                .with_main_align(Align::Center)
+                .with_main_justify(false)
+                .with_cross_justify(false);
+
+            let size = Vec2::new(size_x, 30.0);
+
+            ui.allocate_ui_with_layout(size, layout, |ui| {
+                ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+                ui.separator();
+                for i in 0..4 {
+                    let size = Vec2::splat(30.0);
+                    let (response, painter) = ui.allocate_painter(size, Sense::hover());
+
+                    let rect = response.rect;
+                    let c = rect.center();
+                    let r = rect.width() / 2.0 - 1.0;
+
+                    if let Some(slot) = unit.slots[i].as_ref() {
+                        painter.circle_filled(c, r, slot.color);
+                    } else {
+                        painter.circle_stroke(
+                            c,
+                            r,
+                            egui::Stroke::new(1.0, Color32::from_gray(120)),
+                        );
+                    }
+
+                    ui.separator();
+                }
+                ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
+
+                // let text = "\u{2B1B}";
+                // let mut job = LayoutJob::default();
+            });
+        }
+
         //
     }
 

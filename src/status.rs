@@ -1,7 +1,8 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use tracing::{debug, error, info, trace, warn};
+
 use chrono::{DateTime, Local, TimeDelta};
 use egui::Color32;
-use tracing::{debug, error, info, trace, warn};
 
 use bambulab::PrintData;
 use std::time::{Duration, Instant};
@@ -21,6 +22,7 @@ pub struct PrinterStatus {
     pub print_error: Option<PrintError>,
     pub print_percent: Option<i64>,
     pub eta: Option<DateTime<Local>>,
+    pub is_sdcard_printing: Option<bool>,
 
     pub wifi_signal: Option<String>,
     pub spd_lvl: Option<i64>,
@@ -52,6 +54,7 @@ impl GcodeState {
         match s {
             "RUNNING" => Self::Running,
             "PAUSE" => Self::Paused,
+            // "PREPARE" => Self::Running,
             _ => {
                 warn!("Unknown gcode state: {}", s);
                 Self::Unknown
@@ -174,6 +177,8 @@ impl PrinterStatus {
     fn update_ams(&mut self, ams: &bambulab::PrintAms) -> AmsStatus {
         let mut out = self.ams.take().unwrap_or_default();
 
+        // debug!("ams = {:#?}", ams);
+
         /// 254 if external spool / vt_tray,
         /// otherwise is ((ams_id * 4) + tray_id) for current tray
         /// (ams 2 tray 2 would be (1*4)+1 = 5)
@@ -196,14 +201,12 @@ impl PrinterStatus {
 
                 for i in 0..4 {
                     let slot = &unit.tray[i];
-                    if slot.id == "0" {
-                        continue;
-                    }
 
-                    let color = {
-                        let col = slot.tray_color.clone().unwrap();
-                        Color32::from_hex(&format!("#{}", col)).unwrap()
+                    let Some(col) = slot.tray_color.clone() else {
+                        slots[i] = None;
+                        continue;
                     };
+                    let color = Color32::from_hex(&format!("#{}", col)).unwrap();
 
                     slots[i] = Some(AmsSlot {
                         material: slot.tray_type.clone().unwrap(),
@@ -232,7 +235,7 @@ impl PrinterStatus {
         //     out.humidity = None;
         //     out.temp = None;
         // }
-        unimplemented!()
+        out
     }
 }
 
@@ -381,7 +384,7 @@ pub enum AmsCurrentSlot {
 pub struct AmsUnit {
     pub id: i64,
     pub humidity: i64,
-    pub temp: i64,
+    pub temp: f64,
     pub slots: [Option<AmsSlot>; 4],
 }
 
