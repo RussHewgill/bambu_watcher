@@ -45,6 +45,11 @@ jobs:
     - name: Install eframe deps on Linux
       run: sudo apt-get update --yes && sudo apt-get install --yes libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev
       if: contains(matrix.platform.name, 'Linux')
+
+    - name: Install openssl on macOS
+      run: brew install openssl@3
+      if: contains(matrix.platform.name, 'Darwin')
+
     - name: Build
       uses: houseabsolute/actions-rust-cross@v0.0.12
       with:
