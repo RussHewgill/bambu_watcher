@@ -364,26 +364,34 @@ impl App {
 
         let unit = ams.units.get(0).unwrap();
 
-        // let size_x = ui.available_size_before_wrap().x;
+        // let size_x = ui.available_size_before_wrap().x - 4.;
         // let size_x = frame_size.x - 20.;
+        // debug!("size_x: {}", size_x);
 
+        let size = 30.;
+
+        ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
         ui.columns(4, |uis| {
             for i in 0..4 {
                 let ui = &mut uis[i];
-                let size = Vec2::splat(20.0);
+                // let size = Vec2::splat(size_x / 4.0 - 10.0);
+                let size = Vec2::splat(size);
                 let (response, painter) = ui.allocate_painter(size, Sense::hover());
 
                 let rect = response.rect;
                 let c = rect.center();
-                let r = rect.width() / 2.0 - 1.0;
+                // let r = rect.width() / 2.0 - 1.0;
+                let r = size.x / 2.0 - 1.0;
 
                 if let Some(slot) = unit.slots[i].as_ref() {
                     painter.circle_filled(c, r, slot.color);
                 } else {
                     painter.circle_stroke(c, r, egui::Stroke::new(1.0, Color32::from_gray(120)));
                 }
+                ui.allocate_space(ui.available_size());
             }
         });
+        ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
 
         #[cfg(feature = "nope")]
         {
