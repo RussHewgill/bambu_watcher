@@ -42,4 +42,6 @@ pub struct App {
 
     #[serde(skip)]
     pub tray: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
+    // #[serde(skip)]
+    // pub alert_tx: Option<tokio::sync::mpsc::Sender<(String, String)>>,
 }

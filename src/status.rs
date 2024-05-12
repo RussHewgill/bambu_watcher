@@ -1,5 +1,6 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use chrono::{DateTime, Local, TimeDelta};
+use egui::Color32;
 use tracing::{debug, error, info, trace, warn};
 
 use bambulab::PrintData;
@@ -12,6 +13,8 @@ pub struct PrinterStatus {
     pub state: PrinterState,
     // pub last_report: Option<PrinterStatusReport>,
     pub last_report: Option<Instant>,
+
+    pub ams: Option<AmsStatus>,
 
     pub current_file: Option<String>,
     pub gcode_state: Option<GcodeState>,
@@ -30,6 +33,11 @@ pub struct PrinterStatus {
     pub temp_bed: Option<f64>,
     pub temp_tgt_bed: Option<f64>,
     pub temp_chamber: Option<i64>,
+
+    pub heatbreak_fan_speed: Option<i64>,
+    pub cooling_fan_speed: Option<i64>,
+    pub aux_fan_speed: Option<i64>,
+    pub chamber_fan_speed: Option<i64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -135,6 +143,96 @@ impl PrinterStatus {
         if let Some(t) = report.chamber_temper {
             self.temp_chamber = Some(t);
         }
+
+        // if let Some(t) = report.heatbreak_fan_speed {
+        //     self.heatbreak_fan_speed = Some(t);
+        // }
+
+        if let Some(t) = report.cooling_fan_speed.as_ref() {
+            if let Some(t) = t.parse::<i64>().ok() {
+                self.cooling_fan_speed = Some(t);
+            }
+        }
+
+        if let Some(t) = report.big_fan1_speed.as_ref() {
+            if let Some(t) = t.parse::<i64>().ok() {
+                self.aux_fan_speed = Some(t);
+            }
+        }
+
+        if let Some(t) = report.big_fan2_speed.as_ref() {
+            if let Some(t) = t.parse::<i64>().ok() {
+                self.chamber_fan_speed = Some(t);
+            }
+        }
+
+        if let Some(ams) = report.ams.as_ref() {
+            self.ams = Some(self.update_ams(ams));
+        }
+    }
+
+    fn update_ams(&mut self, ams: &bambulab::PrintAms) -> AmsStatus {
+        let mut out = self.ams.take().unwrap_or_default();
+
+        /// 254 if external spool / vt_tray,
+        /// otherwise is ((ams_id * 4) + tray_id) for current tray
+        /// (ams 2 tray 2 would be (1*4)+1 = 5)
+        if let Some(current) = ams.tray_now.as_ref().and_then(|t| t.parse::<u64>().ok()) {
+            out.current_tray = if current == 254 {
+                Some(AmsCurrentSlot::ExternalSpool)
+            } else {
+                Some(AmsCurrentSlot::Tray {
+                    ams_id: current / 4,
+                    tray_id: current % 4,
+                })
+            };
+        } else {
+            out.current_tray = None;
+        }
+
+        if let Some(units) = ams.ams.as_ref() {
+            for unit in units.iter() {
+                let mut slots: [Option<AmsSlot>; 4] = Default::default();
+
+                for i in 0..4 {
+                    let slot = &unit.tray[i];
+                    if slot.id == "0" {
+                        continue;
+                    }
+
+                    let color = {
+                        let col = slot.tray_color.clone().unwrap();
+                        Color32::from_hex(&format!("#{}", col)).unwrap()
+                    };
+
+                    slots[i] = Some(AmsSlot {
+                        material: slot.tray_type.clone().unwrap(),
+                        k: slot.k.unwrap(),
+                        color,
+                    });
+                }
+
+                out.units.push(AmsUnit {
+                    id: unit.id.parse().unwrap(),
+                    humidity: unit.humidity.parse().unwrap(),
+                    temp: unit.temp.parse().unwrap(),
+                    slots,
+                });
+            }
+        }
+
+        // out.current_slot = ams.tray_now.as_ref().and_then(|t| t.parse::<u64>().ok());
+
+        // if let Some(status) = ams.ams.as_ref().and_then(|a| a.get(0)) {
+        //     out.id = Some(status.id.parse().unwrap());
+        //     out.humidity = Some(status.humidity.parse().unwrap());
+        //     out.temp = Some(status.temp.parse().unwrap());
+        // } else {
+        //     out.id = None;
+        //     out.humidity = None;
+        //     out.temp = None;
+        // }
+        unimplemented!()
     }
 }
 
@@ -260,4 +358,37 @@ impl PrintError {
             _ => PrintError::Unknown(code),
         }
     }
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct AmsStatus {
+    pub units: Vec<AmsUnit>,
+    pub current_tray: Option<AmsCurrentSlot>,
+    // pub id: Option<i64>,
+    // pub humidity: Option<i64>,
+    // pub temp: Option<i64>,
+    // pub slots: [Option<AmsSlot>; 4],
+    // pub current_slot: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum AmsCurrentSlot {
+    ExternalSpool,
+    Tray { ams_id: u64, tray_id: u64 },
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct AmsUnit {
+    pub id: i64,
+    pub humidity: i64,
+    pub temp: i64,
+    pub slots: [Option<AmsSlot>; 4],
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct AmsSlot {
+    pub material: String,
+    pub k: f64,
+    // pub color: [u8; 3],
+    pub color: egui::Color32,
 }

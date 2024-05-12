@@ -8,8 +8,10 @@
 
 // pub mod app;
 // pub mod app_types;
+pub mod alert;
 pub mod client;
 pub mod config;
+pub mod icons;
 pub mod logging;
 pub mod status;
 pub mod tray;
@@ -58,10 +60,86 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+/// FTP test
+// #[cfg(feature = "nope")]
+fn main() {
+    dotenv::dotenv().unwrap();
+    logging::init_logs();
+
+    use suppaftp::native_tls::{TlsConnector, TlsStream};
+    use suppaftp::{FtpStream, NativeTlsConnector, NativeTlsFtpStream};
+
+    let port = 990;
+    // let port = 21;
+
+    let addr = format!("{}:{}", env::var("BAMBU_IP").unwrap(), port);
+    debug!("addr = {}", addr);
+
+    #[cfg(feature = "nope")]
+    {
+        // let mut ctx = NativeTlsConnector::from(TlsConnector::new().unwrap());
+        // let ftp_stream = NativeTlsFtpStream::connect_timeout(addr, Duration::from_secs(5)).unwrap();
+        // let ftp_stream = NativeTlsFtpStream::connect(addr).unwrap();
+        let mut ftp_stream = FtpStream::connect(&addr).unwrap();
+        debug!("got stream");
+        let mut ftp_stream = ftp_stream
+            .into_secure(
+                NativeTlsConnector::from(TlsConnector::new().unwrap()),
+                &env::var("BAMBU_IP").unwrap(),
+            )
+            .unwrap();
+    }
+
+    debug!("building ctx");
+    // let mut ctx = NativeTlsConnector::new().unwrap();
+    let ctx = NativeTlsConnector::from(
+        TlsConnector::builder()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .unwrap(),
+    );
+
+    debug!("connecting");
+    let mut ftp_stream =
+        NativeTlsFtpStream::connect_secure_implicit(&addr, ctx, &env::var("BAMBU_IP").unwrap())
+            .unwrap();
+
+    // debug!("connecting");
+    // let mut ftp_stream = NativeTlsFtpStream::connect(&addr).unwrap();
+    // debug!("got stream");
+    // let mut ftp_stream = ftp_stream
+    //     .into_secure(ctx, &env::var("BAMBU_IP").unwrap())
+    //     .unwrap();
+
+    // let mut ftp_stream = FtpStream::connect(&addr).unwrap_or_else(|err| panic!("{}", err));
+    debug!("connected to server");
+    assert!(ftp_stream
+        .login("bblp", &env::var("BAMBU_ACCESS_CODE").unwrap())
+        .is_ok());
+
+    debug!("listing");
+    if let Ok(list) = ftp_stream.list(None) {
+        for item in list {
+            println!("{}", item);
+        }
+    }
+
+    debug!("done");
+
+    // Disconnect from server
+    assert!(ftp_stream.quit().is_ok());
+
+    //
+}
+
+/// MARK: TODO:
+///     fan speeds
+///     AMS status
+///     graphs
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-// #[cfg(feature = "nope")]
+#[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     // dotenv::dotenv().unwrap();
     logging::init_logs();
@@ -82,8 +160,8 @@ fn main() -> eframe::Result<()> {
     let mut _tray_icon = std::rc::Rc::new(std::cell::RefCell::new(None));
     let tray_c = _tray_icon.clone();
 
-    let (msg_tx, mut msg_rx) = tokio::sync::mpsc::channel::<PrinterConnMsg>(25);
-    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(25);
+    let (msg_tx, mut msg_rx) = tokio::sync::watch::channel::<PrinterConnMsg>(PrinterConnMsg::Empty);
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(2);
 
     let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
     let printer_states2 = printer_states.clone();
@@ -91,7 +169,7 @@ fn main() -> eframe::Result<()> {
     let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
 
     /// debug printer state
-    // #[cfg(feature = "nope")]
+    #[cfg(feature = "nope")]
     {
         warn!("adding debug printer state");
 
@@ -110,6 +188,10 @@ fn main() -> eframe::Result<()> {
             status.layer_num = Some(50);
             status.total_layer_num = Some(100);
 
+            status.cooling_fan_speed = Some(100);
+            status.aux_fan_speed = Some(70);
+            status.chamber_fan_speed = Some(80);
+
             let serial = config.printers[0].serial.clone();
             printer_states.insert(serial, status);
         }
@@ -126,7 +208,10 @@ fn main() -> eframe::Result<()> {
         }
     }
 
-    #[cfg(feature = "nope")]
+    // let (handle_tx, handle_rx) = tokio::sync::oneshot::channel::<std::num::NonZeroIsize>();
+    // let (alert_tx, mut alert_rx) = tokio::sync::mpsc::channel::<(String, String)>(2);
+
+    // #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
@@ -134,6 +219,7 @@ fn main() -> eframe::Result<()> {
             let ctx = ctx_rx.await.unwrap();
             let mut manager =
                 PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx);
+            // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
 
             debug!("running PrinterConnManager");
             manager.run().await.unwrap();
@@ -144,24 +230,32 @@ fn main() -> eframe::Result<()> {
         "Bambu Watcher",
         native_options,
         Box::new(move |cc| {
-            let winit::raw_window_handle::RawWindowHandle::Win32(handle) =
-                winit::raw_window_handle::HasWindowHandle::window_handle(&cc)
-                    .unwrap()
-                    .as_raw()
-            else {
-                panic!("Unsupported platform");
-            };
+            // let winit::raw_window_handle::RawWindowHandle::Win32(handle) =
+            //     winit::raw_window_handle::HasWindowHandle::window_handle(&cc)
+            //         .unwrap()
+            //         .as_raw()
+            // else {
+            //     panic!("Unsupported platform");
+            // };
+
+            // std::thread::spawn(move || {
+            //     std::thread::sleep(std::time::Duration::from_secs(5));
+            //     debug!("spawning");
+            //     crate::alert::alert_message(handle.hwnd, "test alert", "test message", false);
+            // });
 
             let context = cc.egui_ctx.clone();
 
             ctx_tx.send(context.clone()).unwrap();
+            // handle_tx.send(handle.hwnd).unwrap();
 
             // tray-icon crate
             // https://docs.rs/tray-icon/0.12.0/tray_icon/struct.TrayIconEvent.html#method.set_event_handler
+            #[cfg(feature = "nope")]
             tray_icon::TrayIconEvent::set_event_handler(Some(
                 move |event: tray_icon::TrayIconEvent| {
                     // println!("TrayIconEvent: {:?}", event);
-                    if event.click_type != tray_icon::ClickType::Double {
+                    if event.click_type != tray_icon::ClickType::Left {
                         return;
                     }
 
@@ -176,6 +270,9 @@ fn main() -> eframe::Result<()> {
                             let _ = windows::Win32::UI::WindowsAndMessaging::ShowWindow(
                                 window_handle,
                                 hide,
+                            );
+                            let _ = windows::Win32::UI::WindowsAndMessaging::SetForegroundWindow(
+                                window_handle,
                             );
                         }
                         *visible = false;
@@ -204,9 +301,9 @@ fn main() -> eframe::Result<()> {
                     tray_icon::TrayIconBuilder::new()
                         // .with_menu(Box::new(menu))
                         .with_menu(Box::new(tray_icon::menu::Menu::new()))
-                        .with_tooltip("winit - awesome windowing lib")
+                        .with_tooltip("Bambu Watcher")
                         .with_icon(icon)
-                        .with_title("x")
+                        // .with_title("x")
                         .build()
                         .unwrap(),
                 );
@@ -218,7 +315,13 @@ fn main() -> eframe::Result<()> {
 
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            Box::new(ui_types::App::new(tray_c, printer_states, config, cc))
+            Box::new(ui_types::App::new(
+                tray_c,
+                printer_states,
+                config,
+                cc,
+                // alert_tx,
+            ))
         }),
     )
 

@@ -8,6 +8,7 @@ use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
 use crate::{
     client::PrinterId,
     config::PrinterConfig,
+    icons::*,
     status::{PrinterState, PrinterStatus},
     ui_types::{App, Tab},
 };
@@ -19,6 +20,7 @@ impl App {
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
         config: crate::config::Config,
         cc: &eframe::CreationContext<'_>,
+        // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
         let mut out = if let Some(storage) = cc.storage {
             let mut out: Self = eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
@@ -30,6 +32,7 @@ impl App {
         out.tray = tray_icon;
         out.printer_states = printer_states;
         out.config = config;
+        // out.alert_tx = Some(alert_tx);
         out
     }
 }
@@ -108,10 +111,12 @@ impl eframe::App for App {
 }
 
 impl App {
+    /// MARK: show_dashboard
     pub fn show_dashboard(&self, ui: &mut egui::Ui) {
         let width = 200.0;
 
         let frame_size = Vec2::new(width, width * (3. / 2.));
+        let frame_outer_size = Vec2::new(frame_size.x + 4., frame_size.y + 4.);
         // let frame_margin = ui.style().spacing.item_spacing.x;
 
         // let available_width = ui.available_width();
@@ -181,7 +186,7 @@ impl App {
 
                         egui::Frame::group(ui.style())
                             // .outer_margin(egui::Margin::same(100.))
-                            // .inner_margin(egui::Margin::same(10.))
+                            .inner_margin(egui::Margin::same(2.))
                             // .fill(Color32::GREEN)
                             .show(ui, |ui| {
                                 ui.set_min_size(frame_size);
@@ -227,6 +232,7 @@ impl App {
         }
     }
 
+    /// MARK: show_printer
     pub fn show_printer(
         &self,
         frame_size: Vec2,
@@ -247,195 +253,112 @@ impl App {
 
         ui.add(thumbnail_printer());
 
-        // egui_extras::StripBuilder::new(ui)
-        //     .sizes(egui_extras::Size::exact(frame_size.x / 3. - 5.), 3)
-        //     .horizontal(|mut strip| {
-        //         strip.cell(|ui| {
-        //             ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-        //             ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-        //             // ui.separator();
-        //         });
-        //         strip.cell(|ui| {
-        //             ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-        //             ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-        //             //         ui.separator();
-        //         });
-        //         strip.cell(|ui| {
-        //             ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
-        //         });
-        //     });
+        ui.separator();
+        ui.horizontal(|ui| {
+            ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
 
-        #[cfg(feature = "nope")]
-        egui::Frame::group(ui.style())
-            // .outer_margin(egui::Margin::same(100.))
-            // .inner_margin(egui::Margin::same(10.))
-            // .fill(Color32::GREEN)
-            .show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    let item_spacing = ui.spacing().item_spacing.x;
-                    /// [[20.0 148.0] - [218.0 580.0]]
-                    let mut max_rect = ui.max_rect();
-                    max_rect.set_width(frame_size.x - 2.);
-                    // debug!("max_rect: {:?}", max_rect);
-                    max_rect.set_width(max_rect.width() - 2. * item_spacing); // adjust it so it does not include spacing
-                    let width = max_rect.width() / 3.; // get width for the widgets
+            ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+            ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+            ui.separator();
+            ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+            ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+            ui.separator();
+            ui.add(thumbnail_chamber());
+            ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
 
-                    // debug!("width: {}", width);
-
-                    let offset = Vec2::new(width + item_spacing, 0.); // compute the offset for subsequent rects
-                    max_rect.set_width(width); // and set the width of rect
-
-                    ui.allocate_ui_at_rect(max_rect, |ui| {
-                        // ui.horizontal(|ui| {
-                        ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                        ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                        ui.separator();
-                        // });
-                    });
-
-                    max_rect = max_rect.translate(offset);
-                    // ui.separator();
-
-                    ui.allocate_ui_at_rect(max_rect, |ui| {
-                        // ui.horizontal(|ui| {
-                        ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                        ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-                        ui.separator();
-                        // });
-                    });
-
-                    max_rect = max_rect.translate(offset);
-
-                    ui.allocate_ui_at_rect(max_rect, |ui| {
-                        // ui.horizontal(|ui| {
-                        ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
-                        // });
-                    });
-
-                    ui.allocate_space(Vec2::new(ui.available_size().x, 0.));
-                });
-            });
-
-        #[cfg(feature = "nope")]
-        {
-            /// temperatures
-            let layout = Layout::left_to_right(Align::Center)
-                .with_main_justify(true)
-                // .with_cross_justify(true)
-                // .with_main_justify(true)
-                ;
-
-            /// size = 195, 30
-            let size = Vec2::new(frame_size.x - 5., 30.);
-            // debug!("size = {:?}", size);
-            ui.allocate_ui_with_layout(size, layout, |ui| {
-                ui.set_min_size(size);
-                ui.set_max_size(size);
-                egui::Frame::group(ui.style())
-                    // .outer_margin(egui::Margin::same(100.))
-                    // .inner_margin(egui::Margin::same(10.))
-                    // .fill(Color32::GREEN)
-                    .show(ui, |ui| {
-                        ui.set_min_size(size);
-                        ui.set_max_size(size);
-                        ui.style_mut().spacing.item_spacing.x = 1.;
-                        ui.style_mut().spacing.item_spacing.y = 1.;
-
-                        {
-                            ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                            ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                            ui.separator();
-
-                            ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                            ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-                            ui.separator();
-
-                            ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
-                        }
-
-                        // ui.columns(3, |uis| {
-                        //     uis[0].add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                        //     uis[0].label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                        //     //         ui.separator();
-                        //     uis[1].add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                        //     uis[1].label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                        //     uis[2].label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
-                        // });
-                    });
-            });
-        }
-
-        // /// temperatures
-        //     let layout = Layout::left_to_right(Align::Center)
-        //         .with_main_justify(true)
-        //         // .with_main_justify(true)
-        //         ;
-        // let size = Vec2::new(frame_size.x - 5., 30.);
-        // // ui.set_max_size(size);
-        // // debug!("size = {:?}", size);
-        // ui.allocate_ui_with_layout(size, layout, |ui| {
-        //     ui.set_max_size(size);
-        //     ui.group(|ui| {
-        //         ui.style_mut().spacing.item_spacing.x = 1.;
-        //         ui.style_mut().spacing.item_spacing.y = 1.;
-        //         ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-        //         ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-        //         ui.separator();
-        //         ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-        //         ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-        //         ui.separator();
-        //         ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
-        //     });
-        //     #[cfg(feature = "nope")]
-        //     ui.horizontal(|ui| {});
-        // });
-
-        ui.group(|ui| {
-            ui.horizontal(|ui| {
-                ui.style_mut().spacing.item_spacing.x = 1.;
-                ui.style_mut().spacing.item_spacing.y = 1.;
-                ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                ui.separator();
-                ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-                ui.separator();
-                ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
-                ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-            });
+            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
+            ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
         });
+        ui.separator();
+
+        /// fans
+        ui.horizontal(|ui| {
+            ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+            ui.label(&format!("Part: {}%", status.cooling_fan_speed.unwrap_or(0)));
+            ui.separator();
+            ui.label(&format!("Aux: {}%", status.aux_fan_speed.unwrap_or(0)));
+            ui.separator();
+            ui.label(&format!("Cham: {}%", status.chamber_fan_speed.unwrap_or(0)));
+            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
+            ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
+        });
+        ui.separator();
 
         /// current print
-        ui.group(|ui| {
-            if let PrinterState::Printing = status.state {
-                self.show_current_print(frame_size, ui, &status, printer, printer_state);
-            } else {
-                ui.label("No print in progress");
+        if let PrinterState::Printing = status.state {
+            self.show_current_print(frame_size, ui, &status, printer, printer_state);
+        } else {
+            ui.label("No print in progress");
+        }
+
+        ui.separator();
+
+        /// controls
+        ui.columns(2, |uis| {
+            match status.state {
+                PrinterState::Printing => {
+                    if uis[0]
+                        .add(egui::Button::image_and_text(icon_pause(), "Pause"))
+                        .clicked()
+                    {
+                        debug!("Pause clicked");
+                        // if let Some(tx) = self.alert_tx.as_ref() {
+                        //     tx.blocking_send((
+                        //         "test alert".to_string(),
+                        //         "test message".to_string(),
+                        //     ))
+                        //     .unwrap();
+                        // }
+                        // std::thread::spawn(|| {
+                        //     crate::alert::alert_message("test alert", "test message");
+                        // });
+                    }
+                    if uis[1]
+                        .add(egui::Button::image_and_text(icon_stop(), "Stop"))
+                        .clicked()
+                    {
+                        debug!("Stop clicked");
+                    }
+                }
+                PrinterState::Paused => {
+                    if uis[0]
+                        .add(egui::Button::image_and_text(icon_resume(), "Resume"))
+                        .clicked()
+                    {
+                        debug!("Resume clicked");
+                        // crate::alert::alert_message("test alert", "test message");
+                    }
+                    if uis[1]
+                        .add(egui::Button::image_and_text(icon_stop(), "Stop"))
+                        .clicked()
+                    {
+                        debug!("Stop clicked");
+                    }
+                }
+                PrinterState::Idle => {}
+                PrinterState::Error(_) => {}
+                PrinterState::Disconnected => {}
             }
         });
 
-        /// controls
-        ui.group(|ui| {
-            ui.columns(2, |uis| {
-                if uis[0]
-                    .add(egui::Button::image_and_text(icon_pause(), "Pause"))
-                    .clicked()
-                {
-                    debug!("Pause clicked");
-                }
-
-                if uis[1]
-                    .add(egui::Button::image_and_text(icon_stop(), "Stop"))
-                    .clicked()
-                {
-                    debug!("Stop clicked");
-                }
-            });
-        });
+        ui.separator();
+        self.show_ams(frame_size, ui, &status, printer, printer_state);
 
         //
     }
 
+    fn show_ams(
+        &self,
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        status: &PrinterStatus,
+        printer: &PrinterConfig,
+        printer_state: &PrinterStatus,
+    ) {
+        //
+    }
+
+    /// MARK: show_current_print
     fn show_current_print(
         &self,
         frame_size: Vec2,
@@ -446,10 +369,23 @@ impl App {
     ) {
         if let Some(eta) = status.eta {
             let time = eta.time();
-            let dt = time - chrono::Local::now().naive_local().time();
+            // let dt = time - chrono::Local::now().naive_local().time();
+            let dt = eta - chrono::Local::now();
+
+            // let Some(p) = status.print_percent else {
+            //     warn!("no print percent found");
+            //     return;
+            // };
+            // ui.add(
+            //     egui::ProgressBar::new(p as f32 / 100.0)
+            //         .desired_width(ui.available_width() - 10.)
+            //         .text(format!("{}%", p)),
+            // );
 
             egui::Grid::new(format!("grid_{}", printer.serial)).show(ui, |ui| {
-                ui.label("File:");
+                // ui.end_row();
+
+                // ui.label("File:");
                 ui.label(
                     status
                         .current_file
@@ -459,13 +395,13 @@ impl App {
                 );
                 ui.end_row();
 
-                ui.label("ETA:");
+                // ui.label("ETA:");
                 ui.label(&time.format("%-I:%M %p").to_string());
                 ui.end_row();
 
-                ui.label("Remaining:");
+                // ui.label("Remaining:");
                 ui.label(&format!(
-                    "{:02}:{:02}",
+                    "-{:02}:{:02}",
                     dt.num_hours(),
                     dt.num_minutes() % 60
                 ));
@@ -477,174 +413,4 @@ impl App {
 
         //
     }
-
-    #[cfg(feature = "nope")]
-    pub fn show_printer(
-        &self,
-        frame_size: Vec2,
-        ui: &mut egui::Ui,
-        printer: &PrinterConfig,
-        printer_state: &PrinterStatus,
-    ) {
-        let Some(status) = self.printer_states.get(&printer.serial) else {
-            warn!("Printer not found: {}", printer.serial);
-            return;
-        };
-
-        // let s: &PrinterStatus = &status;
-
-        // ui.label(printer_id);
-        egui::Frame::group(ui.style())
-            // .stroke(egui::Stroke::new(1.0, egui::Color32::RED))
-            // .shadow(shadow)
-            // .fill(egui::Color32::from_gray(230))
-            // .inner_margin(Margin::same(1.0))
-            .show(ui, |ui| {
-                ui.set_min_size(frame_size);
-
-                ui.horizontal(|ui| {
-                    paint_icon(ui, 40., &status.state);
-                    ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
-                });
-
-                ui.horizontal(|ui| {
-                    ui.vertical(|ui| {
-                        ui.add(thumbnail);
-
-                        ui.columns(3, |uis| {
-                            uis[0].group(|ui| {
-                                ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                                ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                                //
-                            });
-                        });
-                    });
-
-                    ui.group(|ui| {
-                        ui.vertical(|ui| {
-                            if let PrinterState::Printing = status.state {
-                                if let Some(eta) = status.eta {
-                                    // use std::time::{SystemTime, UNIX_EPOCH};
-                                    // let now = SystemTime::now();
-                                    // let duration_since_epoch =
-                                    //     now.duration_since(UNIX_EPOCH).expect("Time went backwards");
-                                    // let datetime: chrono::DateTime<chrono::Utc> = UNIX_EPOCH.into();
-                                    // let datetime = datetime
-                                    //     + chrono::Duration::from_std(duration_since_epoch)
-                                    //         .expect("Failed to convert duration");
-
-                                    let time = eta.time();
-                                    let dt = time - chrono::Local::now().naive_local().time();
-
-                                    egui::Grid::new(format!("grid_{}", printer.serial)).show(
-                                        ui,
-                                        |ui| {
-                                            ui.label("File:");
-                                            ui.label(
-                                                status
-                                                    .current_file
-                                                    .as_ref()
-                                                    .map(|s| s.as_str())
-                                                    .unwrap_or("--"),
-                                            );
-                                            ui.end_row();
-
-                                            ui.label("ETA:");
-                                            ui.label(&time.format("%-I:%M %p").to_string());
-                                            ui.end_row();
-
-                                            ui.label("Remaining:");
-                                            ui.label(&format!(
-                                                "{:02}:{:02}",
-                                                dt.num_hours(),
-                                                dt.num_minutes() % 60
-                                            ));
-                                            ui.end_row();
-                                        },
-                                    );
-                                }
-                                // ui.label("ETA: {:02}:{:02}", , 23);
-                            } else {
-                                ui.label("ETA: --:--");
-                            }
-                        });
-                        ui.allocate_space(ui.available_size());
-                    });
-                });
-            });
-    }
-}
-
-fn icon_pause() -> egui::Image<'static> {
-    let size = 20.;
-    egui::Image::new(egui::include_image!(
-        "../assets/icons8-pause-squared-100.png"
-    ))
-    .fit_to_exact_size(Vec2::new(size, size))
-    .max_width(size)
-    .max_height(size)
-}
-
-fn icon_stop() -> egui::Image<'static> {
-    let size = 20.;
-    egui::Image::new(egui::include_image!("../assets/icons8-red-square-96.png"))
-        .fit_to_exact_size(Vec2::new(size, size))
-        .max_width(size)
-        .max_height(size)
-}
-
-fn thumbnail_printer() -> egui::Image<'static> {
-    let size = 80.;
-    egui::Image::new(egui::include_image!("../assets/printer_thumbnail_x1.svg"))
-        .fit_to_exact_size(Vec2::new(size, size))
-        .max_width(size)
-        .max_height(size)
-}
-
-fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
-    let size = 20.;
-    let src = if active {
-        egui::include_image!("../assets/monitor_nozzle_temp_active.svg")
-    } else {
-        egui::include_image!("../assets/monitor_nozzle_temp.svg")
-    };
-    egui::Image::new(src)
-        .fit_to_exact_size(Vec2::new(size, size))
-        .max_width(size)
-        .max_height(size)
-}
-
-fn thumbnail_bed(active: bool) -> egui::Image<'static> {
-    let size = 20.;
-    let src = if active {
-        egui::include_image!("../assets/monitor_bed_temp_active.svg")
-    } else {
-        egui::include_image!("../assets/monitor_bed_temp.svg")
-    };
-    egui::Image::new(src)
-        .fit_to_exact_size(Vec2::new(size, size))
-        .max_width(size)
-        .max_height(size)
-}
-
-pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
-    let src = match state {
-        PrinterState::Idle => {
-            egui::include_image!("../assets/icons8-hourglass-100.png")
-        }
-        PrinterState::Paused => {
-            egui::include_image!("../assets/icons8-pause-squared-100.png")
-        }
-        PrinterState::Printing => {
-            egui::include_image!("../assets/icons8-green-circle-96.png")
-        }
-        PrinterState::Error(_) => {
-            egui::include_image!("../assets/icons8-red-square-96.png")
-        }
-        PrinterState::Disconnected => {
-            egui::include_image!("../assets/icons8-disconnected-100.png")
-        }
-    };
-    let thumbnail = egui::Image::new(src).max_width(size).max_height(size);
-    ui.add(thumbnail);
 }

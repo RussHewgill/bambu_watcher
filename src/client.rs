@@ -1,11 +1,11 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use dashmap::DashMap;
 use tracing::{debug, error, info, trace, warn};
 
 use bambulab::{Client as BambuClient, Message};
-use tokio::sync::mpsc::{Receiver, Sender};
+use dashmap::DashMap;
+// use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::{
     config::{Config, PrinterConfig},
@@ -18,6 +18,7 @@ pub type PrinterId = String;
 /// messages from PrinterConnManager to UI
 #[derive(Debug, Clone)]
 pub enum PrinterConnMsg {
+    Empty,
     /// The current status of a printer
     StatusReport(PrinterId, bambulab::PrintData),
 }
@@ -33,18 +34,22 @@ pub struct PrinterConnManager {
     config: Config,
     printers: HashMap<PrinterId, BambuClient>,
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
-    cmd_rx: Receiver<PrinterConnCmd>,
-    msg_tx: Sender<PrinterConnMsg>,
+    cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
+    msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
     ctx: egui::Context,
+    // win_handle: std::num::NonZeroIsize,
+    // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
 }
 
 impl PrinterConnManager {
     pub fn new(
         config: Config,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
-        cmd_rx: Receiver<PrinterConnCmd>,
-        msg_tx: Sender<PrinterConnMsg>,
+        cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
+        msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
         ctx: egui::Context,
+        // win_handle: std::num::NonZeroIsize,
+        // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
         Self {
             config,
@@ -53,6 +58,8 @@ impl PrinterConnManager {
             cmd_rx,
             msg_tx,
             ctx,
+            // win_handle,
+            // alert_tx,
         }
     }
 
@@ -89,25 +96,60 @@ impl PrinterConnManager {
     async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
         match msg {
             Message::Print(report) => {
-                debug!("got print report");
+                // debug!("got print report");
                 // let report = PrinterStatusReport::from_print_data(&print.print);
 
                 let mut entry = self.printer_states.entry(id.clone()).or_default();
 
-                let error = entry.is_error();
+                let prev_error = entry.is_error();
 
                 entry.update(&report.print);
 
-                if error && !entry.is_error() {
+                // debug!("is_error: {:?}", entry.is_error());
+
+                if !prev_error && entry.is_error() {
                     warn!("printer error: {:?}", id);
+
+                    let error = report.print.print_error.clone().unwrap_or_default();
+                    let name = self
+                        .config
+                        .printers
+                        .iter()
+                        .find(|p| p.serial == id)
+                        .unwrap()
+                        .name
+                        .clone();
+
+                    let _ = notify_rust::Notification::new()
+                        .summary(&format!("Printer Error: {}", name))
+                        .body(&format!("Printer error: {:?}\n\nError: {:?}", id, error))
+                        // .icon("thunderbird")
+                        .appname("Bambu Watcher")
+                        .timeout(0)
+                        .show();
                 }
+
+                // let handle = self.win_handle.clone();
+                // let id2 = id.clone();
+                // std::thread::spawn(move || {
+                //     crate::alert::alert_message(
+                //         handle,
+                //         "Print Error",
+                //         "Printer error",
+                //         // true,
+                //         false,
+                //     );
+                // });
 
                 self.ctx.request_repaint();
 
-                self.msg_tx
+                if let Err(e) = self
+                    .msg_tx
                     .send(PrinterConnMsg::StatusReport(id, report.print))
-                    .await
-                    .unwrap();
+                {
+                    error!("error sending status report: {:?}", e);
+                }
+                // .await
             }
             Message::Info(info) => debug!("printer info: {:?}", info),
             Message::System(system) => debug!("printer system: {:?}", system),
@@ -141,7 +183,7 @@ impl PrinterConnManager {
     }
 
     async fn start_printer_listener(
-        msg_tx: Sender<(PrinterId, Message)>,
+        msg_tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
         printer: &PrinterConfig,
     ) -> Result<BambuClient> {
         let (tx, mut rx) = tokio::sync::broadcast::channel::<Message>(25);
