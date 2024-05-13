@@ -102,6 +102,10 @@ pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
         PrinterState::Disconnected => {
             egui::include_image!("../assets/icons8-disconnected-100.png")
         }
+        PrinterState::Unknown(s) => {
+            ui.label(format!("Unknown: {}", &s));
+            return;
+        }
     };
     let thumbnail = egui::Image::new(src).max_width(size).max_height(size);
     ui.add(thumbnail);

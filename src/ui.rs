@@ -1,9 +1,11 @@
+pub mod options;
+pub mod plotting;
 pub mod printers;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
-use egui::{Align, Color32, Layout, Margin, Sense, Vec2};
+use egui::{Align, Color32, Layout, Margin, Rounding, Sense, Stroke, Vec2};
 
 use dashmap::DashMap;
 use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
@@ -36,6 +38,18 @@ impl App {
         out.printer_states = printer_states;
         out.config = config;
         // out.alert_tx = Some(alert_tx);
+
+        out.unplaced_printers = out
+            .config
+            .printers
+            .iter()
+            .map(|p| p.serial.clone())
+            .collect();
+        /// for each printer that isn't in printer_order, queue to add
+        for (_, id) in out.printer_order.iter() {
+            out.unplaced_printers.retain(|p| p != id);
+        }
+
         out
     }
 }
@@ -62,8 +76,12 @@ impl eframe::App for App {
 
             match self.current_tab {
                 Tab::Main => self.show_dashboard(ui),
-                // Tab::Options => self.show_options(ui),
-                Tab::Options => unimplemented!(),
+                Tab::Graphs => self.show_graphs(ui),
+                Tab::Printers => self.show_printers_config(ui),
+                Tab::Options => self.show_options(ui),
+                Tab::Debugging => {
+                    self.show_debugging(ui);
+                }
             }
         });
 
@@ -114,79 +132,131 @@ impl eframe::App for App {
 }
 
 impl App {
+    fn show_debugging(&mut self, ui: &mut egui::Ui) {
+        ui.label("Debugging");
+
+        egui::Grid::new("debugging_grid").show(ui, |ui| {
+            ui.label("Host:");
+            ui.text_edit_singleline(&mut self.debug_host);
+            ui.end_row();
+
+            ui.label("Serial:");
+            ui.text_edit_singleline(&mut self.debug_serial);
+            ui.end_row();
+
+            ui.label("Access Code:");
+            ui.text_edit_singleline(&mut self.debug_code);
+            ui.end_row();
+        });
+
+        if ui.button("Fetch info").clicked() {
+            // MARK: TODO
+        }
+    }
+
     /// MARK: show_dashboard
-    pub fn show_dashboard(&self, ui: &mut egui::Ui) {
+    pub fn show_dashboard(&mut self, ui: &mut egui::Ui) {
         let width = 200.0;
+        let height = 350.0;
 
-        let frame_size = Vec2::new(width, width * (3. / 2.));
-        let frame_outer_size = Vec2::new(frame_size.x + 4., frame_size.y + 4.);
-        // let frame_margin = ui.style().spacing.item_spacing.x;
+        // let frame_size = Vec2::new(width, width * (3. / 2.));
+        let frame_size = Vec2::new(width, height);
+        let item_spacing = 4.;
 
-        // let available_width = ui.available_width();
+        egui::Frame::none().show(ui, |ui| {
+            let mut max_rect = ui.max_rect();
 
-        // let num_x = (available_width / (frame_size.x + frame_margin)).floor() as usize;
-        // let num_x = num_x.min(self.config.printers.len());
-        // let num_y = (self.printer_states.len() as f32 / num_x as f32).ceil() as usize;
+            max_rect.set_width(max_rect.width() - 2. * item_spacing);
 
-        // ui.horizontal(|ui| {
-        //     for printer in self.config.printers.iter() {
-        //         // ui.label(&printer.serial);
-        //     }
-        // });
+            let num_x = max_rect.width() / (frame_size.x + item_spacing);
+            let num_y = max_rect.height() / (frame_size.y + item_spacing);
 
-        // debug!("num_x: {}, num_y: {}", num_x, num_y);
+            // debug!("num_x: {}, num_y: {}", num_x, num_y);
 
-        #[cfg(feature = "nope")]
-        egui_extras::TableBuilder::new(ui)
-            .columns(
-                egui_extras::Column::exact(width),
-                self.config.printers.len(),
-            )
-            .auto_shrink(true)
-            .body(|mut body| {
-                // body.ui_mut().style_mut().spacing.item_spacing.x = 50.;
-                body.row(frame_size.y, |mut row| {
-                    for printer_cfg in self.config.printers.iter() {
-                        let id = &printer_cfg.serial;
-                        let Some(printer) = self.printer_states.get(id) else {
-                            row.col(|ui| {});
-                            continue;
-                        };
+            let width = max_rect.width() / num_x;
+            let height = max_rect.height() / num_y;
 
-                        row.col(|ui| {
-                            egui::Frame::group(ui.style())
-                                // .outer_margin(egui::Margin::same(10.))
-                                // .inner_margin(egui::Margin::same(10.))
-                                .show(ui, |ui| {
-                                    self.show_printer(frame_size, ui, printer_cfg, &printer);
-                                    // ui.allocate_space(Vec2::new(
-                                    //     ui.available_width(),
-                                    //     frame_size.y,
-                                    // ));
-                                });
+            let offset_x = Vec2::new(width + item_spacing, 0.);
+            let offset_y = Vec2::new(0., height + item_spacing);
+
+            max_rect.set_width(width - item_spacing);
+
+            for y in 0..num_y as usize {
+                let mut max_rect_row = max_rect;
+                for x in 0..num_x as usize {
+                    {
+                        let mut ui = ui.child_ui(max_rect_row, *ui.layout());
+                        // ui.label(format!("{}x{}", x, y));
+                        egui::Frame::group(ui.style()).show(&mut ui, |ui| {
+                            let id = if let Some(id) = self.printer_order.get(&(x, y)) {
+                                id
+                            } else {
+                                /// if no printer at this location, try to place one
+                                let Some(id) = self.unplaced_printers.pop() else {
+                                    return;
+                                };
+
+                                self.printer_order.insert((x, y), id.clone());
+                                self.printer_order.get(&(x, y)).unwrap()
+                            };
+
+                            let Some(printer) =
+                                self.config.printers.iter().find(|p| &p.serial == id)
+                            else {
+                                warn!("Printer not found: {}", id);
+                                return;
+                            };
+
+                            // let id = &printer_cfg.serial;
+                            match self.printer_states.get(id) {
+                                Some(printer_state) => self.show_printer(
+                                    (x, y),
+                                    frame_size,
+                                    ui,
+                                    printer,
+                                    &printer_state,
+                                ),
+                                None => {
+                                    ui.label("Printer not found");
+                                }
+                            }
+
+                            // let (resp, painter) =
+                            //     ui.allocate_painter(ui.available_size(), Sense::hover());
+
+                            // painter.rect_stroke(max_rect_row, Rounding::same(0.5), Stroke::NONE);
+
+                            // ui.allocate_space(ui.available_size());
+                            // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
                         });
                     }
-                });
-            });
 
-        // #[cfg(feature = "nope")]
+                    ui.advance_cursor_after_rect(max_rect_row);
+                    max_rect_row = max_rect_row.translate(offset_x);
+                }
+                max_rect = max_rect.translate(offset_y);
+            }
+        });
+
+        // egui::Grid::new("printers_grid")
+        //     .max_col_width(frame_outer_size.x)
+        //     .min_col_width(frame_outer_size.x)
+        //     .min_row_height(frame_outer_size.y)
+        //     .show(ui, |ui| {
+        //         //
+        //     });
+
+        #[cfg(feature = "nope")]
         egui_extras::StripBuilder::new(ui)
             .sizes(egui_extras::Size::exact(width), self.config.printers.len())
             .horizontal(|mut strip| {
-                for printer_cfg in self.config.printers.iter() {
+                for (x, printer_cfg) in self.config.printers.iter().enumerate() {
                     let id = &printer_cfg.serial;
                     let Some(printer) = self.printer_states.get(id) else {
                         return;
                     };
 
                     strip.cell(|ui| {
-                        // // ui.set_max_size(frame_size);
-                        // egui::Frame::none()
-                        //     // .inner_margin(egui::Margin::same(10.))
-                        //     .fill(Color32::RED)
-                        //     .show(ui, |ui| {
-                        //     });
-
                         egui::Frame::group(ui.style())
                             // .outer_margin(egui::Margin::same(100.))
                             .inner_margin(egui::Margin::same(2.))
@@ -202,42 +272,13 @@ impl App {
                 }
             });
 
-        // ui.allocate_ui_with_layout(frame_size, Layout::top_down(Align::LEFT), |ui| {
-        //     ui.group(|ui| {
-        //         // ui.set_min_size(frame_size);
-        //         // ui.set_max_size(frame_size);
-        //         self.show_printer(frame_size, ui, printer_cfg, &printer);
-        //         // ui.allocate_space(ui.available_size());
-        //     });
-        // });
-
-        #[cfg(feature = "nope")]
-        for y in 0..num_y {
-            ui.columns(num_x, |uis| {
-                for x in 0..num_x {
-                    let idx = y * num_x + x;
-                    if idx >= self.config.printers.len() {
-                        debug!("x: {}, y: {}", x, y);
-                        warn!("idx out of bounds: {}", idx);
-                        break;
-                    }
-
-                    let printer_cfg = &self.config.printers[idx];
-                    let id = &printer_cfg.serial;
-                    let Some(printer) = self.printer_states.get(id) else {
-                        continue;
-                    };
-                    uis[x].group(|ui| {
-                        self.show_printer(frame_size, ui, printer_cfg, &printer);
-                    });
-                }
-            });
-        }
+        //
     }
 
     /// MARK: show_printer
     pub fn show_printer(
         &self,
+        pos: (usize, usize),
         frame_size: Vec2,
         ui: &mut egui::Ui,
         printer: &PrinterConfig,
@@ -248,11 +289,17 @@ impl App {
             return;
         };
 
-        /// printer name
-        ui.horizontal(|ui| {
-            paint_icon(ui, 40., &status.state);
-            ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
-        });
+        ui.dnd_drag_source(
+            egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
+            pos,
+            |ui| {
+                /// printer name
+                ui.horizontal(|ui| {
+                    paint_icon(ui, 40., &status.state);
+                    ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
+                });
+            },
+        );
 
         ui.add(thumbnail_printer());
 
@@ -291,14 +338,23 @@ impl App {
         if let PrinterState::Printing = status.state {
             self.show_current_print(frame_size, ui, &status, printer, printer_state);
         } else {
-            ui.label("No print in progress");
+            egui::Grid::new(format!("grid_{}", printer.serial)).show(ui, |ui| {
+                ui.label("No print in progress");
+                ui.end_row();
+                ui.label("--:--");
+                ui.end_row();
+                ui.label("--:--");
+                ui.end_row();
+            });
+            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
         }
 
         ui.separator();
 
         /// controls
+        #[cfg(feature = "nope")]
         ui.columns(2, |uis| {
-            match status.state {
+            match &status.state {
                 PrinterState::Printing => {
                     if uis[0]
                         .add(egui::Button::image_and_text(icon_pause(), "Pause"))
@@ -341,11 +397,80 @@ impl App {
                 PrinterState::Idle => {}
                 PrinterState::Error(_) => {}
                 PrinterState::Disconnected => {}
+                PrinterState::Unknown(s) => {
+                    uis[0].label(&format!("Unknown state: {}", &s));
+                }
             }
         });
 
+        self.show_controls(frame_size, ui, &status, printer, printer_state);
+
         ui.separator();
         self.show_ams(frame_size, ui, &status, printer, printer_state);
+
+        //
+    }
+
+    fn show_controls(
+        &self,
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        status: &PrinterStatus,
+        printer: &PrinterConfig,
+        printer_state: &PrinterStatus,
+    ) {
+        let pause = match &status.state {
+            PrinterState::Printing => egui::Button::image_and_text(icon_pause(), "Pause"),
+            _ => egui::Button::image_and_text(icon_resume(), "Resume"),
+        };
+        let stop = egui::Button::image_and_text(icon_stop(), "Stop");
+
+        ui.columns(2, |uis| {
+            if uis[0].add(pause).clicked() {
+                debug!("Pause clicked");
+            }
+            if uis[1].add(stop).clicked() {
+                debug!("Stop clicked");
+            }
+        });
+
+        #[cfg(feature = "nope")]
+        ui.columns(2, |uis| {
+            match &status.state {
+                PrinterState::Printing => {
+                    if uis[0].add().clicked() {
+                        debug!("Pause clicked");
+                    }
+                    if uis[1]
+                        .add(egui::Button::image_and_text(icon_stop(), "Stop"))
+                        .clicked()
+                    {
+                        debug!("Stop clicked");
+                    }
+                }
+                PrinterState::Paused => {
+                    if uis[0]
+                        .add(egui::Button::image_and_text(icon_resume(), "Resume"))
+                        .clicked()
+                    {
+                        debug!("Resume clicked");
+                        // crate::alert::alert_message("test alert", "test message");
+                    }
+                    if uis[1]
+                        .add(egui::Button::image_and_text(icon_stop(), "Stop"))
+                        .clicked()
+                    {
+                        debug!("Stop clicked");
+                    }
+                }
+                PrinterState::Idle => {}
+                PrinterState::Error(_) => {}
+                PrinterState::Disconnected => {}
+                PrinterState::Unknown(s) => {
+                    uis[0].label(&format!("Unknown state: {}", &s));
+                }
+            }
+        });
 
         //
     }
@@ -362,7 +487,10 @@ impl App {
             return;
         };
 
-        let unit = ams.units.get(0).unwrap();
+        let Some(unit) = ams.units.get(0) else {
+            ui.label("Error getting AMS unit");
+            return;
+        };
 
         // let size_x = ui.available_size_before_wrap().x - 4.;
         // let size_x = frame_size.x - 20.;
@@ -388,49 +516,10 @@ impl App {
                 } else {
                     painter.circle_stroke(c, r, egui::Stroke::new(1.0, Color32::from_gray(120)));
                 }
-                ui.allocate_space(ui.available_size());
+                // ui.allocate_space(ui.available_size());
             }
         });
         ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
-
-        #[cfg(feature = "nope")]
-        {
-            let layout = Layout::left_to_right(Align::Center)
-                .with_main_align(Align::Center)
-                .with_main_justify(false)
-                .with_cross_justify(false);
-
-            let size = Vec2::new(size_x, 30.0);
-
-            ui.allocate_ui_with_layout(size, layout, |ui| {
-                ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
-                ui.separator();
-                for i in 0..4 {
-                    let size = Vec2::splat(30.0);
-                    let (response, painter) = ui.allocate_painter(size, Sense::hover());
-
-                    let rect = response.rect;
-                    let c = rect.center();
-                    let r = rect.width() / 2.0 - 1.0;
-
-                    if let Some(slot) = unit.slots[i].as_ref() {
-                        painter.circle_filled(c, r, slot.color);
-                    } else {
-                        painter.circle_stroke(
-                            c,
-                            r,
-                            egui::Stroke::new(1.0, Color32::from_gray(120)),
-                        );
-                    }
-
-                    ui.separator();
-                }
-                ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
-
-                // let text = "\u{2B1B}";
-                // let mut job = LayoutJob::default();
-            });
-        }
 
         //
     }

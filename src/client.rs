@@ -103,20 +103,24 @@ impl PrinterConnManager {
 
                 let prev_error = entry.is_error();
 
-                entry.update(&report.print);
+                entry.update(&report.print)?;
 
                 // debug!("is_error: {:?}", entry.is_error());
 
                 if !prev_error && entry.is_error() {
                     warn!("printer error: {:?}", id);
 
-                    let error = report.print.print_error.clone().unwrap_or_default();
+                    let error = report
+                        .print
+                        .print_error
+                        .clone()
+                        .context("no error found?")?;
                     let name = self
                         .config
                         .printers
                         .iter()
                         .find(|p| p.serial == id)
-                        .unwrap()
+                        .context("printer not found")?
                         .name
                         .clone();
 
@@ -153,7 +157,10 @@ impl PrinterConnManager {
             }
             Message::Info(info) => debug!("printer info: {:?}", info),
             Message::System(system) => debug!("printer system: {:?}", system),
-            Message::Unknown(unknown) => error!("unknown message: {:?}", unknown),
+            Message::Unknown(unknown) => match unknown {
+                Some(unknown) => warn!("unknown message: {}", unknown),
+                _ => warn!("unknown message: None"),
+            },
             Message::Connecting => debug!("printer connecting: {:?}", id),
             Message::Connected => {
                 info!("printer connected: {:?}", id);
@@ -161,7 +168,9 @@ impl PrinterConnManager {
                     .printers
                     .get(&id)
                     .with_context(|| format!("printer not found: {:?}", id))?;
-                client.publish(bambulab::Command::PushAll).await.unwrap();
+                if let Err(e) = client.publish(bambulab::Command::PushAll).await {
+                    error!("error publishing status: {:?}", e);
+                }
             }
             Message::Reconnecting => warn!("printer reconnecting: {:?}", id),
             Message::Disconnected => error!("printer disconnected: {:?}", id),
@@ -176,7 +185,9 @@ impl PrinterConnManager {
                     .printers
                     .get(&id)
                     .with_context(|| format!("printer not found: {:?}", id))?;
-                client.publish(bambulab::Command::PushAll).await.unwrap();
+                if let Err(e) = client.publish(bambulab::Command::PushAll).await {
+                    error!("error publishing status: {:?}", e);
+                }
             }
         }
         Ok(())
@@ -191,15 +202,26 @@ impl PrinterConnManager {
             bambulab::Client::new(&printer.host, &printer.access_code, &printer.serial, tx);
         let client_clone = client.clone();
         tokio::spawn(async move {
-            client.run().await.unwrap();
+            if let Err(e) = client.run().await {
+                error!("error running client: {:?}", e);
+            }
         });
         let serial = printer.serial.clone();
 
         /// get a message from the printer, add the ID, and forward to the conn manager
         tokio::spawn(async move {
             loop {
-                let message = rx.recv().await.unwrap();
-                msg_tx.send((serial.clone(), message)).await.unwrap();
+                match rx.recv().await {
+                    Ok(message) => {
+                        if let Err(e) = msg_tx.send((serial.clone(), message)).await {
+                            error!("error sending message: {:?}", e);
+                        }
+                    }
+                    Err(e) => {
+                        error!("error receiving message: {:?}", e);
+                        break;
+                    }
+                }
             }
         });
         Ok(client_clone)

@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub printers: Vec<PrinterConfig>,
+    // pub printers: HashMap<PrinterId, PrinterConfig>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

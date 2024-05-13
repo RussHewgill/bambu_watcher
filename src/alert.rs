@@ -3,12 +3,8 @@ use tracing::{debug, error, info, trace, warn};
 
 use notify_rust::Notification;
 
-fn alert_message(
-    window: std::num::NonZeroIsize,
-    title: &str,
-    message: &str,
-    notification: bool,
-) {
+#[cfg(feature = "nope")]
+fn alert_message(window: std::num::NonZeroIsize, title: &str, message: &str, notification: bool) {
     if notification {
         Notification::new()
             .summary(title)

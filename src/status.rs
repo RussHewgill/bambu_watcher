@@ -18,7 +18,7 @@ pub struct PrinterStatus {
     pub ams: Option<AmsStatus>,
 
     pub current_file: Option<String>,
-    pub gcode_state: Option<GcodeState>,
+    // pub gcode_state: Option<GcodeState>,
     pub print_error: Option<PrintError>,
     pub print_percent: Option<i64>,
     pub eta: Option<DateTime<Local>>,
@@ -42,27 +42,6 @@ pub struct PrinterStatus {
     pub chamber_fan_speed: Option<i64>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum GcodeState {
-    Running,
-    Paused,
-    Unknown,
-}
-
-impl GcodeState {
-    pub fn from_str(s: &str) -> Self {
-        match s {
-            "RUNNING" => Self::Running,
-            "PAUSE" => Self::Paused,
-            // "PREPARE" => Self::Running,
-            _ => {
-                warn!("Unknown gcode state: {}", s);
-                Self::Unknown
-            }
-        }
-    }
-}
-
 impl PrinterStatus {
     pub fn is_error(&self) -> bool {
         matches!(self.state, PrinterState::Error(_))
@@ -71,7 +50,11 @@ impl PrinterStatus {
     fn get_state(report: &bambulab::PrintData) -> Option<PrinterState> {
         if let Some(s) = report.gcode_state.as_ref() {
             match s.as_str() {
+                "CREATED" => Some(PrinterState::Printing),
+                "READY" => Some(PrinterState::Idle),
                 "RUNNING" => Some(PrinterState::Printing),
+                "PREPARE" => Some(PrinterState::Printing),
+                "FINISH" => Some(PrinterState::Idle),
                 "PAUSE" => {
                     if let Some(e) = report.print_error {
                         Some(PrinterState::Error(format!("Error: {}", e)))
@@ -79,14 +62,16 @@ impl PrinterStatus {
                         Some(PrinterState::Paused)
                     }
                 }
-                s => panic!("Unknown gcode state: {}", s),
+                "FAILED" => Some(PrinterState::Error("Failed".to_string())),
+                // s => panic!("Unknown gcode state: {}", s),
+                s => Some(PrinterState::Unknown(s.to_string())),
             }
         } else {
             None
         }
     }
 
-    pub fn update(&mut self, report: &bambulab::PrintData) {
+    pub fn update(&mut self, report: &bambulab::PrintData) -> Result<()> {
         if let Some(s) = Self::get_state(report) {
             self.state = s;
         }
@@ -97,9 +82,9 @@ impl PrinterStatus {
             self.current_file = Some(f.clone());
         }
 
-        if let Some(s) = report.gcode_state.as_ref() {
-            self.gcode_state = Some(GcodeState::from_str(s));
-        }
+        // if let Some(s) = report.gcode_state.as_ref() {
+        //     self.gcode_state = Some(GcodeState::from_str(s));
+        // }
 
         if let Some(p) = report.mc_percent {
             self.print_percent = Some(p);
@@ -110,7 +95,10 @@ impl PrinterStatus {
         }
 
         if let Some(t) = report.mc_remaining_time {
-            self.eta = Some(Local::now() + TimeDelta::new(t as i64 * 60, 0).unwrap());
+            self.eta = Some(
+                Local::now()
+                    + TimeDelta::new(t as i64 * 60, 0).context(format!("time delta: {:?}", t))?,
+            );
         }
 
         if let Some(w) = report.wifi_signal.as_ref() {
@@ -170,11 +158,13 @@ impl PrinterStatus {
         }
 
         if let Some(ams) = report.ams.as_ref() {
-            self.ams = Some(self.update_ams(ams));
+            self.ams = Some(self.update_ams(ams)?);
         }
+
+        Ok(())
     }
 
-    fn update_ams(&mut self, ams: &bambulab::PrintAms) -> AmsStatus {
+    fn update_ams(&mut self, ams: &bambulab::PrintAms) -> Result<AmsStatus> {
         let mut out = self.ams.take().unwrap_or_default();
 
         // debug!("ams = {:#?}", ams);
@@ -206,36 +196,28 @@ impl PrinterStatus {
                         slots[i] = None;
                         continue;
                     };
-                    let color = Color32::from_hex(&format!("#{}", col)).unwrap();
+                    let color = Color32::from_hex(&format!("#{}", col))
+                        .unwrap_or(Color32::from_rgb(255, 0, 255));
 
                     slots[i] = Some(AmsSlot {
-                        material: slot.tray_type.clone().unwrap(),
-                        k: slot.k.unwrap(),
+                        material: slot.tray_type.clone().unwrap_or("Unknown".to_string()),
+                        k: slot.k.unwrap_or(0.),
                         color,
                     });
                 }
 
+                let id = unit.id.parse::<i64>()?;
+
                 out.units.push(AmsUnit {
-                    id: unit.id.parse().unwrap(),
-                    humidity: unit.humidity.parse().unwrap(),
-                    temp: unit.temp.parse().unwrap(),
+                    id,
+                    humidity: unit.humidity.parse().unwrap_or(0),
+                    temp: unit.temp.parse().unwrap_or(0.),
                     slots,
                 });
             }
         }
 
-        // out.current_slot = ams.tray_now.as_ref().and_then(|t| t.parse::<u64>().ok());
-
-        // if let Some(status) = ams.ams.as_ref().and_then(|a| a.get(0)) {
-        //     out.id = Some(status.id.parse().unwrap());
-        //     out.humidity = Some(status.humidity.parse().unwrap());
-        //     out.temp = Some(status.temp.parse().unwrap());
-        // } else {
-        //     out.id = None;
-        //     out.humidity = None;
-        //     out.temp = None;
-        // }
-        out
+        Ok(out)
     }
 }
 
@@ -243,10 +225,10 @@ impl PrinterStatus {
 pub enum PrinterState {
     Idle,
     Paused,
-    // Printing(Instant),
     Printing,
     Error(String),
     Disconnected,
+    Unknown(String),
 }
 
 impl Default for PrinterState {
@@ -263,18 +245,19 @@ impl PrinterState {
             PrinterState::Error(_) => "Error",
             PrinterState::Paused => "Paused",
             PrinterState::Disconnected => "Disconnected",
+            PrinterState::Unknown(s) => "Unknown",
         }
     }
 
-    pub fn to_char(&self) -> &'static str {
-        match self {
-            PrinterState::Idle => "💤",
-            PrinterState::Printing => "🟢",
-            PrinterState::Error(_) => "🟥️",
-            PrinterState::Paused => "🟡",
-            PrinterState::Disconnected => "🔌",
-        }
-    }
+    // pub fn to_char(&self) -> &'static str {
+    //     match self {
+    //         PrinterState::Idle => "💤",
+    //         PrinterState::Printing => "🟢",
+    //         PrinterState::Error(_) => "🟥️",
+    //         PrinterState::Paused => "🟡",
+    //         PrinterState::Disconnected => "🔌",
+    //     }
+    // }
 
     // pub fn to_icon(&self) -> StatusIcon {
     //     match self {
@@ -285,6 +268,13 @@ impl PrinterState {
     //         PrinterState::Disconnected => StatusIcon::Disconnected,
     //     }
     // }
+}
+
+/// check available actions
+impl PrinterState {
+    pub fn can_print(&self) -> bool {
+        !matches!(self, PrinterState::Printing)
+    }
 }
 
 #[cfg(feature = "nope")]
