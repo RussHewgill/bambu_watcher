@@ -5,7 +5,7 @@ pub mod printers;
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
-use egui::{Align, Color32, Layout, Margin, Rounding, Sense, Stroke, Vec2};
+use egui::{Align, Color32, Layout, Margin, Response, Rounding, Sense, Stroke, Vec2};
 
 use dashmap::DashMap;
 use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
@@ -15,7 +15,7 @@ use crate::{
     config::PrinterConfig,
     icons::*,
     status::{PrinterState, PrinterStatus},
-    ui_types::{App, Tab},
+    ui_types::{App, GridLocation, Tab},
 };
 
 impl App {
@@ -159,6 +159,7 @@ impl App {
         let width = 200.0;
         let height = 350.0;
 
+        /// actually ends up 200 x 330?
         // let frame_size = Vec2::new(width, width * (3. / 2.));
         let frame_size = Vec2::new(width, height);
         let item_spacing = 4.;
@@ -171,15 +172,21 @@ impl App {
             let num_x = max_rect.width() / (frame_size.x + item_spacing);
             let num_y = max_rect.height() / (frame_size.y + item_spacing);
 
-            // debug!("num_x: {}, num_y: {}", num_x, num_y);
-
-            let width = max_rect.width() / num_x;
-            let height = max_rect.height() / num_y;
+            let width = max_rect.width() / num_x.floor();
+            let height = max_rect.height() / num_y.floor();
 
             let offset_x = Vec2::new(width + item_spacing, 0.);
             let offset_y = Vec2::new(0., height + item_spacing);
 
             max_rect.set_width(width - item_spacing);
+            max_rect.set_height(height - item_spacing);
+
+            let mut from = None;
+            let mut to = None;
+
+            let w = max_rect.width() - 2. * item_spacing;
+            /// XXX: magic number
+            let h = max_rect.height() - 15. * item_spacing;
 
             for y in 0..num_y as usize {
                 let mut max_rect_row = max_rect;
@@ -187,48 +194,63 @@ impl App {
                     {
                         let mut ui = ui.child_ui(max_rect_row, *ui.layout());
                         // ui.label(format!("{}x{}", x, y));
-                        egui::Frame::group(ui.style()).show(&mut ui, |ui| {
-                            let id = if let Some(id) = self.printer_order.get(&(x, y)) {
-                                id
-                            } else {
-                                /// if no printer at this location, try to place one
-                                let Some(id) = self.unplaced_printers.pop() else {
+                        let frame = egui::Frame::group(ui.style());
+
+                        let (_, dropped_payload) =
+                            ui.dnd_drop_zone::<GridLocation, ()>(frame, |ui| {
+                                let pos = GridLocation { col: x, row: y };
+                                let id = if let Some(id) = self.printer_order.get(&pos) {
+                                    id
+                                } else {
+                                    /// if no printer at this location, try to place one
+                                    let Some(id) = self.unplaced_printers.pop() else {
+                                        ui.label("Empty");
+                                        ui.allocate_space(Vec2::new(w, h));
+                                        return;
+                                    };
+
+                                    self.printer_order.insert(pos, id);
+                                    self.printer_order.get(&pos).unwrap()
+                                };
+
+                                let Some(printer) =
+                                    self.config.printers.iter().find(|p| &p.serial == id)
+                                else {
+                                    warn!("Printer not found: {}", id);
                                     return;
                                 };
 
-                                self.printer_order.insert((x, y), id.clone());
-                                self.printer_order.get(&(x, y)).unwrap()
-                            };
+                                // let id = &printer_cfg.serial;
+                                match self.printer_states.get(id) {
+                                    Some(printer_state) => {
+                                        let resp = self.show_printer(
+                                            (x, y),
+                                            frame_size,
+                                            ui,
+                                            printer,
+                                            &printer_state,
+                                        );
 
-                            let Some(printer) =
-                                self.config.printers.iter().find(|p| &p.serial == id)
-                            else {
-                                warn!("Printer not found: {}", id);
-                                return;
-                            };
-
-                            // let id = &printer_cfg.serial;
-                            match self.printer_states.get(id) {
-                                Some(printer_state) => self.show_printer(
-                                    (x, y),
-                                    frame_size,
-                                    ui,
-                                    printer,
-                                    &printer_state,
-                                ),
-                                None => {
-                                    ui.label("Printer not found");
+                                        // /// TODO: Preview
+                                        // if let (Some(pointer), Some(hovered_payload)) = (
+                                        //     ui.input(|i| i.pointer.interact_pos()),
+                                        //     resp.response.dnd_hover_payload::<GridLocation>(),
+                                        // ) {
+                                        //     // debug!("dropped from {:?}", hovered_payload);
+                                        //     //
+                                        // }
+                                    }
+                                    None => {
+                                        ui.label("Printer not found");
+                                        ui.allocate_space(Vec2::new(w, h));
+                                    }
                                 }
-                            }
+                            });
 
-                            // let (resp, painter) =
-                            //     ui.allocate_painter(ui.available_size(), Sense::hover());
-
-                            // painter.rect_stroke(max_rect_row, Rounding::same(0.5), Stroke::NONE);
-
-                            // ui.allocate_space(ui.available_size());
-                            // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-                        });
+                        if let Some(dragged_payload) = dropped_payload {
+                            from = Some(dragged_payload);
+                            to = Some(GridLocation { col: x, row: y });
+                        }
                     }
 
                     ui.advance_cursor_after_rect(max_rect_row);
@@ -236,41 +258,32 @@ impl App {
                 }
                 max_rect = max_rect.translate(offset_y);
             }
-        });
 
-        // egui::Grid::new("printers_grid")
-        //     .max_col_width(frame_outer_size.x)
-        //     .min_col_width(frame_outer_size.x)
-        //     .min_row_height(frame_outer_size.y)
-        //     .show(ui, |ui| {
-        //         //
-        //     });
-
-        #[cfg(feature = "nope")]
-        egui_extras::StripBuilder::new(ui)
-            .sizes(egui_extras::Size::exact(width), self.config.printers.len())
-            .horizontal(|mut strip| {
-                for (x, printer_cfg) in self.config.printers.iter().enumerate() {
-                    let id = &printer_cfg.serial;
-                    let Some(printer) = self.printer_states.get(id) else {
-                        return;
-                    };
-
-                    strip.cell(|ui| {
-                        egui::Frame::group(ui.style())
-                            // .outer_margin(egui::Margin::same(100.))
-                            .inner_margin(egui::Margin::same(2.))
-                            // .fill(Color32::GREEN)
-                            .show(ui, |ui| {
-                                ui.set_min_size(frame_size);
-                                ui.set_max_size(frame_size);
-                                self.show_printer(frame_size, ui, printer_cfg, &printer);
-                                // ui.allocate_space(Vec2::new(ui.available_width(), frame_size.y));
-                                // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-                            });
-                    })
+            if let (Some(from), Some(to)) = (from, to) {
+                if *from != to {
+                    match (
+                        self.printer_order.remove(&from),
+                        self.printer_order.remove(&to),
+                    ) {
+                        (Some(id_from), Some(id_to)) => {
+                            debug!("TODO: swap printers");
+                        }
+                        (Some(id), None) => {
+                            debug!("moving printer {} from {:?} to {:?}", id, from, to);
+                            self.printer_order.insert(to, id);
+                            //
+                        }
+                        (None, _) => {
+                            error!("Drop: No printer at drop source");
+                            // self.printer_order.insert(to, from);
+                            // self.printer_order.remove(&from);
+                        }
+                    }
                 }
-            });
+
+                //
+            }
+        });
 
         //
     }
@@ -283,23 +296,33 @@ impl App {
         ui: &mut egui::Ui,
         printer: &PrinterConfig,
         printer_state: &PrinterStatus,
-    ) {
+    ) -> Response {
         let Some(status) = self.printer_states.get(&printer.serial) else {
             warn!("Printer not found: {}", printer.serial);
-            return;
+            panic!();
         };
 
-        ui.dnd_drag_source(
-            egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
-            pos,
-            |ui| {
-                /// printer name
-                ui.horizontal(|ui| {
-                    paint_icon(ui, 40., &status.state);
-                    ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
-                });
-            },
-        );
+        let resp = ui
+            .dnd_drag_source(
+                egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
+                GridLocation {
+                    col: pos.0,
+                    row: pos.1,
+                },
+                |ui| {
+                    ui.horizontal(|ui| {
+                        paint_icon(ui, 40., &status.state);
+                        ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
+                    });
+                },
+            )
+            .response;
+
+        // /// printer name
+        // ui.horizontal(|ui| {
+        //     paint_icon(ui, 40., &status.state);
+        //     ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
+        // });
 
         ui.add(thumbnail_printer());
 
@@ -350,65 +373,13 @@ impl App {
         }
 
         ui.separator();
-
-        /// controls
-        #[cfg(feature = "nope")]
-        ui.columns(2, |uis| {
-            match &status.state {
-                PrinterState::Printing => {
-                    if uis[0]
-                        .add(egui::Button::image_and_text(icon_pause(), "Pause"))
-                        .clicked()
-                    {
-                        debug!("Pause clicked");
-                        // if let Some(tx) = self.alert_tx.as_ref() {
-                        //     tx.blocking_send((
-                        //         "test alert".to_string(),
-                        //         "test message".to_string(),
-                        //     ))
-                        //     .unwrap();
-                        // }
-                        // std::thread::spawn(|| {
-                        //     crate::alert::alert_message("test alert", "test message");
-                        // });
-                    }
-                    if uis[1]
-                        .add(egui::Button::image_and_text(icon_stop(), "Stop"))
-                        .clicked()
-                    {
-                        debug!("Stop clicked");
-                    }
-                }
-                PrinterState::Paused => {
-                    if uis[0]
-                        .add(egui::Button::image_and_text(icon_resume(), "Resume"))
-                        .clicked()
-                    {
-                        debug!("Resume clicked");
-                        // crate::alert::alert_message("test alert", "test message");
-                    }
-                    if uis[1]
-                        .add(egui::Button::image_and_text(icon_stop(), "Stop"))
-                        .clicked()
-                    {
-                        debug!("Stop clicked");
-                    }
-                }
-                PrinterState::Idle => {}
-                PrinterState::Error(_) => {}
-                PrinterState::Disconnected => {}
-                PrinterState::Unknown(s) => {
-                    uis[0].label(&format!("Unknown state: {}", &s));
-                }
-            }
-        });
-
         self.show_controls(frame_size, ui, &status, printer, printer_state);
 
         ui.separator();
         self.show_ams(frame_size, ui, &status, printer, printer_state);
 
         //
+        resp
     }
 
     fn show_controls(

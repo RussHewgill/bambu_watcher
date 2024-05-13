@@ -6,6 +6,7 @@ use std::{
 };
 
 use dashmap::DashMap;
+use serde::{Deserialize, Serialize};
 
 use crate::{client::PrinterId, status::PrinterStatus};
 
@@ -24,7 +25,13 @@ impl Default for Tab {
     }
 }
 
-#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
+pub struct GridLocation {
+    pub col: usize,
+    pub row: usize,
+}
+
+#[derive(Default, Deserialize, Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct App {
     pub current_tab: Tab,
@@ -42,7 +49,7 @@ pub struct App {
     pub debug_serial: String,
     pub debug_code: String,
 
-    pub printer_order: HashMap<(usize, usize), PrinterId>,
+    pub printer_order: HashMap<GridLocation, PrinterId>,
     #[serde(skip)]
     pub unplaced_printers: Vec<PrinterId>,
 
