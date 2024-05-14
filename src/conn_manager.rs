@@ -11,6 +11,7 @@ use crate::{
         message::{Message, PrintData},
         BambuClient,
     },
+    status::PrinterType,
 };
 use dashmap::DashMap;
 // use tokio::sync::mpsc::{Receiver, Sender};
@@ -37,6 +38,7 @@ pub enum PrinterConnCmd {
     AddPrinter(PrinterConfig),
     /// get the status of a printer
     ReportStatus(PrinterId),
+    ReportInfo(PrinterId),
 }
 
 pub struct PrinterConnManager {
@@ -44,6 +46,7 @@ pub struct PrinterConnManager {
     config: ConfigArc,
     printers: HashMap<PrinterId, BambuClient>,
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
+    cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
     cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
     msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
     ctx: egui::Context,
@@ -57,6 +60,7 @@ impl PrinterConnManager {
     pub fn new(
         config: ConfigArc,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
+        cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
         cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
         msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
         ctx: egui::Context,
@@ -68,6 +72,7 @@ impl PrinterConnManager {
             config,
             printers: HashMap::new(),
             printer_states,
+            cmd_tx,
             cmd_rx,
             msg_tx,
             ctx,
@@ -127,7 +132,7 @@ impl PrinterConnManager {
     async fn handle_printer_msg(&mut self, printer: &PrinterConfig, msg: Message) -> Result<()> {
         match msg {
             Message::Print(report) => {
-                // debug!("got print report");
+                debug!("got print report");
                 // debug!("got print report = {:?}", report.print);
                 // debug!("gcode_state = {:?}", report.print.gcode_state);
                 // if report.print.spd_lvl.is_some() {
@@ -192,6 +197,13 @@ impl PrinterConnManager {
                 )) {
                     error!("error sending status report: {:?}", e);
                 }
+
+                if entry.printer_type.is_none() {
+                    self.cmd_tx
+                        .send(PrinterConnCmd::ReportInfo(printer.serial.clone()))
+                        .await?;
+                }
+
                 // .await
             }
             Message::Info(info) => {
@@ -205,9 +217,28 @@ impl PrinterConnManager {
 
                 for module in info.info.module.iter() {
                     if module.name == "mc" {
-                        debug!("project_name = {:?}", module.project_name);
+                        // debug!("project_name = {:?}", module.project_name);
+                        match module.project_name.as_ref() {
+                            None => entry.printer_type = Some(PrinterType::X1),
+                            Some(s) => match s.as_str() {
+                                "P1" => {
+                                    if entry.chamber_fan_speed.is_some() {
+                                        entry.printer_type = Some(PrinterType::P1S);
+                                    } else {
+                                        entry.printer_type = Some(PrinterType::P1P);
+                                    }
+                                }
+                                "N2S" => entry.printer_type = Some(PrinterType::A1),
+                                "N1" => entry.printer_type = Some(PrinterType::A1m),
+                                _ => {
+                                    warn!("unknown printer type: {:?}", s);
+                                    entry.printer_type = Some(PrinterType::Unknown);
+                                }
+                            },
+                        }
+                        debug!("set printer type: {:?}", entry.printer_type);
                     }
-                    // debug!("module = {:?}", module);
+                    // debug!("module {:?} = {:?}", module.name, module.project_name);
                 }
                 // entry.printer_type
 
@@ -255,6 +286,15 @@ impl PrinterConnManager {
             PrinterConnCmd::AddPrinter(printer) => {
                 self.add_printer(printer, false).await?;
                 // unimplemented!()
+            }
+            PrinterConnCmd::ReportInfo(id) => {
+                let client = self
+                    .printers
+                    .get(&id)
+                    .with_context(|| format!("printer not found: {:?}", id))?;
+                if let Err(e) = client.publish(Command::GetVersion).await {
+                    error!("error publishing status: {:?}", e);
+                }
             }
             PrinterConnCmd::ReportStatus(id) => {
                 let client = self

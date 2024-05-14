@@ -354,7 +354,9 @@ impl App {
         // });
 
         ui.columns(2, |uis| {
-            uis[0].add(thumbnail_printer(printer, uis[0].ctx()));
+            if let Some(t) = printer_state.printer_type {
+                uis[0].add(thumbnail_printer(printer, &t, uis[0].ctx()));
+            }
 
             uis[1].vertical(|ui| {
                 ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);

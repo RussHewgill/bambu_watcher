@@ -251,9 +251,9 @@ impl ClientListener {
                         debug!("sending pushall");
                         self.send_pushall().await?;
                         debug!("sent");
-                        debug!("sending get version");
-                        self.send_get_version().await?;
-                        debug!("sent");
+                        // debug!("sending get version");
+                        // self.send_get_version().await?;
+                        // debug!("sent");
                     }
                 }
                 Event::Incoming(Incoming::Publish(p)) => {

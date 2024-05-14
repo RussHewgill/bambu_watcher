@@ -36,7 +36,9 @@ pub struct PrintData {
     pub heatbreak_fan_speed: Option<String>,
     pub cooling_fan_speed: Option<String>,
     pub aux_part_fan: Option<bool>,
+    /// Aux fan
     pub big_fan1_speed: Option<String>,
+    /// Chamber fan
     pub big_fan2_speed: Option<String>,
     pub mc_percent: Option<i64>,
     pub mc_remaining_time: Option<i64>,
@@ -220,12 +222,13 @@ pub struct InfoData {
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InfoModule {
     pub name: String,
-    pub project_name: String,
+    pub project_name: Option<String>,
     pub sw_ver: String,
     pub hw_ver: String,
     pub sn: String,
     pub loader_ver: Option<String>,
     pub ota_ver: Option<String>,
+    pub flag: Option<i64>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

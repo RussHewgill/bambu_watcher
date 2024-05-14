@@ -1,6 +1,9 @@
 use egui::Vec2;
 
-use crate::{config::PrinterConfig, status::PrinterState};
+use crate::{
+    config::PrinterConfig,
+    status::{PrinterState, PrinterType},
+};
 
 /// MARK: icons
 pub fn icon_resume() -> egui::Image<'static> {
@@ -29,13 +32,33 @@ pub fn icon_stop() -> egui::Image<'static> {
         .max_height(size)
 }
 
-pub fn thumbnail_printer(printer: &PrinterConfig, ctx: &egui::Context) -> egui::Image<'static> {
+pub fn thumbnail_printer(
+    printer: &PrinterConfig,
+    printer_type: &PrinterType,
+    ctx: &egui::Context,
+) -> egui::Image<'static> {
     let size = 80.;
 
     let src = if ctx.style().visuals.dark_mode {
-        egui::include_image!("../assets/printer_thumbnail_x1.svg")
+        // egui::include_image!("../assets/printer_thumbnail_x1.svg")
+        match printer_type {
+            PrinterType::X1 => egui::include_image!("../assets/printer_thumbnail_x1.svg"),
+            PrinterType::P1P => egui::include_image!("../assets/printer_thumbnail_p1p.svg"),
+            PrinterType::P1S => egui::include_image!("../assets/printer_thumbnail_p1s.svg"),
+            PrinterType::A1 => egui::include_image!("../assets/printer_thumbnail_n2s.svg"),
+            PrinterType::A1m => egui::include_image!("../assets/printer_thumbnail_n1.svg"),
+            PrinterType::Unknown => egui::include_image!("../assets/printer_thumbnail_x1.svg"),
+        }
     } else {
-        egui::include_image!("../assets/printer_thumbnail_x1_dark.svg")
+        // egui::include_image!("../assets/printer_thumbnail_x1_dark.svg")
+        match printer_type {
+            PrinterType::X1 => egui::include_image!("../assets/printer_thumbnail_x1_dark.svg"),
+            PrinterType::P1P => egui::include_image!("../assets/printer_thumbnail_p1p_dark.svg"),
+            PrinterType::P1S => egui::include_image!("../assets/printer_thumbnail_p1s_dark.svg"),
+            PrinterType::A1 => egui::include_image!("../assets/printer_thumbnail_n2s_dark.svg"),
+            PrinterType::A1m => egui::include_image!("../assets/printer_thumbnail_n1_dark.svg"),
+            PrinterType::Unknown => egui::include_image!("../assets/printer_thumbnail_x1_dark.svg"),
+        }
     };
 
     egui::Image::new(src)

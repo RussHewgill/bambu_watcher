@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 #[derive(Default, Debug, Clone)]
 pub struct PrinterStatus {
     /// X1, P1, A1, etc
-    pub printer_type: Option<String>,
+    pub printer_type: Option<PrinterType>,
 
     pub state: PrinterState,
     // pub last_report: Option<PrinterStatusReport>,
@@ -228,6 +228,16 @@ impl PrinterStatus {
 
         Ok(out)
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PrinterType {
+    X1,
+    P1P,
+    P1S,
+    A1,
+    A1m,
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq)]

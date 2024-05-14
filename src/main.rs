@@ -241,6 +241,8 @@ fn main() -> eframe::Result<()> {
     // let (handle_tx, handle_rx) = tokio::sync::oneshot::channel::<std::num::NonZeroIsize>();
     // let (alert_tx, mut alert_rx) = tokio::sync::mpsc::channel::<(String, String)>(2);
 
+    let cmd_tx2 = cmd_tx.clone();
+
     // #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
@@ -248,7 +250,7 @@ fn main() -> eframe::Result<()> {
         rt.block_on(async move {
             let ctx = ctx_rx.await.unwrap();
             let mut manager =
-                PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx);
+                PrinterConnManager::new(config2, printer_states2, cmd_tx2, cmd_rx, msg_tx, ctx);
             // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
 
             debug!("running PrinterConnManager");
