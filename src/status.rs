@@ -12,6 +12,9 @@ use std::time::{Duration, Instant};
 
 #[derive(Default, Debug, Clone)]
 pub struct PrinterStatus {
+    /// X1, P1, A1, etc
+    pub printer_type: Option<String>,
+
     pub state: PrinterState,
     // pub last_report: Option<PrinterStatusReport>,
     pub last_report: Option<Instant>,

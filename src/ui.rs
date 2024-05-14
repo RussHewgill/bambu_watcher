@@ -83,6 +83,10 @@ impl eframe::App for App {
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        // ctx.style_mut(|s| {
+        //     s.visuals.dark_mode = true;
+        // });
+        // ctx.set_visuals(egui::Visuals::dark());
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
@@ -350,7 +354,7 @@ impl App {
         // });
 
         ui.columns(2, |uis| {
-            uis[0].add(thumbnail_printer());
+            uis[0].add(thumbnail_printer(printer, uis[0].ctx()));
 
             uis[1].vertical(|ui| {
                 ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);

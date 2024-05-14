@@ -251,6 +251,9 @@ impl ClientListener {
                         debug!("sending pushall");
                         self.send_pushall().await?;
                         debug!("sent");
+                        debug!("sending get version");
+                        self.send_get_version().await?;
+                        debug!("sent");
                     }
                 }
                 Event::Incoming(Incoming::Publish(p)) => {
@@ -264,6 +267,21 @@ impl ClientListener {
                 }
             }
         }
+    }
+
+    async fn send_get_version(&mut self) -> Result<()> {
+        let payload = Command::GetVersion.get_payload();
+
+        self.client
+            .publish(
+                &self.topic_device_request,
+                rumqttc::QoS::AtMostOnce,
+                false,
+                payload,
+            )
+            .await?;
+
+        Ok(())
     }
 
     async fn send_pushall(&mut self) -> Result<()> {

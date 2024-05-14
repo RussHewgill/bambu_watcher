@@ -1,6 +1,6 @@
 use egui::Vec2;
 
-use crate::status::PrinterState;
+use crate::{config::PrinterConfig, status::PrinterState};
 
 /// MARK: icons
 pub fn icon_resume() -> egui::Image<'static> {
@@ -29,9 +29,16 @@ pub fn icon_stop() -> egui::Image<'static> {
         .max_height(size)
 }
 
-pub fn thumbnail_printer() -> egui::Image<'static> {
+pub fn thumbnail_printer(printer: &PrinterConfig, ctx: &egui::Context) -> egui::Image<'static> {
     let size = 80.;
-    egui::Image::new(egui::include_image!("../assets/printer_thumbnail_x1.svg"))
+
+    let src = if ctx.style().visuals.dark_mode {
+        egui::include_image!("../assets/printer_thumbnail_x1.svg")
+    } else {
+        egui::include_image!("../assets/printer_thumbnail_x1_dark.svg")
+    };
+
+    egui::Image::new(src)
         .fit_to_exact_size(Vec2::new(size, size))
         .max_width(size)
         .max_height(size)

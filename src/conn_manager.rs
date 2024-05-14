@@ -93,7 +93,9 @@ impl PrinterConnManager {
                 }
                 Some((id, printer_msg)) = self.rx.recv() => {
                     // debug!("got printer_msg, id = {:?} = {:?}", id, printer_msg);
-                    self.handle_printer_msg(id, printer_msg).await?;
+                    if let Some(printer) = self.config.get_printer(&id) {
+                        self.handle_printer_msg(&printer, printer_msg).await?;
+                    }
                 }
             }
         }
@@ -122,7 +124,7 @@ impl PrinterConnManager {
 }
 
 impl PrinterConnManager {
-    async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
+    async fn handle_printer_msg(&mut self, printer: &PrinterConfig, msg: Message) -> Result<()> {
         match msg {
             Message::Print(report) => {
                 // debug!("got print report");
@@ -132,7 +134,10 @@ impl PrinterConnManager {
                 // }
                 // let report = PrinterStatusReport::from_print_data(&print.print);
 
-                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                let mut entry = self
+                    .printer_states
+                    .entry(printer.serial.clone())
+                    .or_default();
 
                 let prev_error = entry.is_error();
 
@@ -141,7 +146,7 @@ impl PrinterConnManager {
                 // debug!("is_error: {:?}", entry.is_error());
 
                 if !prev_error && entry.is_error() {
-                    warn!("printer error: {:?}", id);
+                    warn!("printer error: {:?}", &printer.name);
 
                     let error = report
                         .print
@@ -150,14 +155,17 @@ impl PrinterConnManager {
                         .context("no error found?")?;
                     let name = self
                         .config
-                        .get_printer(&id)
+                        .get_printer(&printer.serial)
                         .context("printer not found")?
                         .name
                         .clone();
 
                     let _ = notify_rust::Notification::new()
                         .summary(&format!("Printer Error: {}", name))
-                        .body(&format!("Printer error: {:?}\n\nError: {:?}", id, error))
+                        .body(&format!(
+                            "Printer error: {:?}\n\nError: {:?}",
+                            &printer.name, error
+                        ))
                         // .icon("thunderbird")
                         .appname("Bambu Watcher")
                         .timeout(0)
@@ -178,39 +186,60 @@ impl PrinterConnManager {
 
                 self.ctx.request_repaint();
 
-                if let Err(e) = self
-                    .msg_tx
-                    .send(PrinterConnMsg::StatusReport(id, report.print))
-                {
+                if let Err(e) = self.msg_tx.send(PrinterConnMsg::StatusReport(
+                    printer.serial.clone(),
+                    report.print,
+                )) {
                     error!("error sending status report: {:?}", e);
                 }
                 // .await
             }
-            Message::Info(info) => debug!("printer info: {:?}", info),
+            Message::Info(info) => {
+                // debug!("printer info: {:?}", info);
+                debug!("got printer info");
+
+                let mut entry = self
+                    .printer_states
+                    .entry(printer.serial.clone())
+                    .or_default();
+
+                for module in info.info.module.iter() {
+                    debug!("module = {:?}", module);
+                }
+                // entry.printer_type
+
+                //
+            }
             Message::System(system) => debug!("printer system: {:?}", system),
             Message::Unknown(unknown) => match unknown {
                 Some(unknown) => warn!("unknown message: {}", unknown),
                 _ => warn!("unknown message: None"),
             },
-            Message::Connecting => debug!("printer connecting: {:?}", id),
+            Message::Connecting => debug!("printer connecting: {:?}", &printer.name),
             Message::Connected => {
-                info!("printer connected: {:?}", id);
+                info!("printer connected: {:?}", &printer.name);
                 let client = self
                     .printers
-                    .get(&id)
-                    .with_context(|| format!("printer not found: {:?}", id))?;
+                    .get(&printer.serial)
+                    .with_context(|| format!("printer not found: {:?}", &printer.name))?;
                 if let Err(e) = client.publish(Command::PushAll).await {
                     error!("error publishing status: {:?}", e);
                 }
-                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                let mut entry = self
+                    .printer_states
+                    .entry(printer.serial.clone())
+                    .or_default();
                 entry.reset();
                 self.ctx.request_repaint();
             }
-            Message::Reconnecting => warn!("printer reconnecting: {:?}", id),
+            Message::Reconnecting => warn!("printer reconnecting: {:?}", &printer.name),
             Message::Disconnected => {
-                error!("printer disconnected: {:?}", id);
+                error!("printer disconnected: {:?}", &printer.name);
 
-                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                let mut entry = self
+                    .printer_states
+                    .entry(printer.serial.clone())
+                    .or_default();
                 entry.state = PrinterState::Disconnected;
                 self.ctx.request_repaint();
             }
