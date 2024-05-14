@@ -1,3 +1,4 @@
+#[derive(Debug, Clone)]
 pub enum Command {
     /// Get the version of the printer.
     GetVersion,

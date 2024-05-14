@@ -20,7 +20,7 @@ use crate::{
 
 impl App {
     pub fn new(
-        tray_icon: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
+        // tray_icon: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
         // tray_icon: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
         config: crate::config::Config,
@@ -34,7 +34,7 @@ impl App {
             Self::default()
         };
 
-        out.tray = tray_icon;
+        // out.tray = tray_icon;
         out.printer_states = printer_states;
         out.config = config;
         // out.alert_tx = Some(alert_tx);
@@ -348,7 +348,7 @@ impl App {
                 ui.separator();
                 ui.horizontal(|ui| {
                     ui.add(thumbnail_chamber());
-                    ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+                    ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64));
                 });
 
                 ui.allocate_space(Vec2::new(ui.available_width(), 0.));

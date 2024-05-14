@@ -42,9 +42,8 @@ pub struct App {
     #[serde(skip)]
     pub printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
 
-    #[serde(skip)]
-    pub tray: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
-
+    // #[serde(skip)]
+    // pub tray: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
     pub debug_host: String,
     pub debug_serial: String,
     pub debug_code: String,

@@ -12,12 +12,12 @@
 pub mod alert;
 pub mod client;
 pub mod config;
-pub mod ftp;
+// pub mod ftp;
 pub mod icons;
 pub mod logging;
 pub mod mqtt;
 pub mod status;
-pub mod tray;
+// pub mod tray;
 pub mod ui;
 pub mod ui_types;
 // pub mod mqtt_types;
@@ -28,6 +28,7 @@ use tracing::{debug, error, info, trace, warn};
 use futures::StreamExt;
 // use rumqttc::{Client, MqttOptions, QoS};
 use dashmap::DashMap;
+use rumqttc::tokio_rustls::rustls;
 use std::{env, sync::Arc, time::Duration};
 
 // use bambulab::{Command, Message};
@@ -355,58 +356,178 @@ fn main() -> eframe::Result<()> {
     //
 }
 
-/// client test
-// #[tokio::main]
+/// rumqttc test
 #[cfg(feature = "nope")]
+fn main() -> Result<()> {
+    dotenv::dotenv()?;
+    logging::init_logs();
+
+    use rumqttc::{Client, MqttOptions, QoS};
+
+    let host = env::var("BAMBU_IP")?;
+    let access_code = env::var("BAMBU_ACCESS_CODE")?;
+    let serial = env::var("BAMBU_IDENT")?;
+
+    let client_id = "bambu_watcher";
+
+    let mut mqttoptions = MqttOptions::new(client_id, host, 8883);
+    mqttoptions.set_keep_alive(Duration::from_secs(5));
+    mqttoptions.set_credentials("bblp", &access_code);
+
+    let mut root_cert_store = rumqttc::tokio_rustls::rustls::RootCertStore::empty();
+    // root_cert_store.add_parsable_certificates(
+    //     rustls_native_certs::load_native_certs().expect("could not load platform certs"),
+    // );
+    let mut cert_file = std::io::BufReader::new(std::fs::File::open("certs/root.pem")?);
+    let certs = rustls_pemfile::certs(&mut cert_file).flatten();
+    root_cert_store.add_parsable_certificates(certs);
+
+    let client_config = rumqttc::tokio_rustls::rustls::ClientConfig::builder()
+        // .with_root_certificates(root_cert_store)
+        .dangerous()
+        .with_custom_certificate_verifier(Arc::new(NoCertificateVerification))
+        .with_no_client_auth();
+
+    // let transport = rumqttc::Transport::tls_with_config(rumqttc::TlsConfiguration::Native);
+    let transport = rumqttc::Transport::tls_with_config(rumqttc::TlsConfiguration::Rustls(
+        Arc::new(client_config),
+    ));
+
+    mqttoptions.set_transport(transport);
+
+    debug!("connecting");
+    let (mut client, mut connection) = Client::new(mqttoptions, 10);
+    debug!("connected");
+
+    // // client.subscribe(topic, QoS::AtMostOnce).unwrap();
+
+    for (i, notification) in connection.iter().enumerate() {
+        println!("Notification = {:?}", notification);
+        break;
+    }
+
+    Ok(())
+}
+
+/// paho-mqtt test
+#[cfg(feature = "nope")]
+// #[tokio::main]
+async fn main() -> Result<()> {
+    dotenv::dotenv()?;
+    logging::init_logs();
+
+    let host = env::var("BAMBU_IP")?;
+    let access_code = env::var("BAMBU_ACCESS_CODE")?;
+    let serial = env::var("BAMBU_IDENT")?;
+
+    let client_id = "bambu_watcher";
+
+    let create_opts = paho_mqtt::CreateOptionsBuilder::new()
+        .server_uri(&host)
+        .client_id(client_id)
+        .max_buffered_messages(25)
+        .finalize();
+
+    let mut client = paho_mqtt::AsyncClient::new(create_opts).expect("Failed to create client");
+    let stream = client.get_stream(25);
+
+    let ssl_opts = paho_mqtt::SslOptionsBuilder::new()
+        .disable_default_trust_store(true)
+        .enable_server_cert_auth(false)
+        .verify(false)
+        .finalize();
+
+    let conn_opts = paho_mqtt::ConnectOptionsBuilder::new()
+        .ssl_options(ssl_opts)
+        .keep_alive_interval(Duration::from_secs(5))
+        .connect_timeout(Duration::from_secs(3))
+        .user_name("bblp")
+        .password(&access_code)
+        .finalize();
+
+    debug!("connecting");
+    client.connect(conn_opts).await?;
+    debug!("connected");
+
+    Ok(())
+}
+
+/// client test
+#[tokio::main]
+// #[cfg(feature = "nope")]
 async fn main() -> Result<()> {
     use crate::mqtt::{command::Command, message::Message};
 
     dotenv::dotenv()?;
     logging::init_logs();
 
-    let config: config::Config =
-        match serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()) {
-            Ok(config) => config,
-            Err(e) => {
-                warn!("error reading config: {:?}", e);
-                panic!("error reading config: {:?}", e);
-            }
-        };
+    // let config: config::Config =
+    //     match serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()) {
+    //         Ok(config) => config,
+    //         Err(e) => {
+    //             warn!("error reading config: {:?}", e);
+    //             panic!("error reading config: {:?}", e);
+    //         }
+    //     };
 
-    let (tx, mut rx) = tokio::sync::broadcast::channel::<mqtt::message::Message>(50);
+    let host = env::var("BAMBU_IP")?;
+    let access_code = env::var("BAMBU_ACCESS_CODE")?;
+    let serial = env::var("BAMBU_IDENT")?;
 
-    let mut client = mqtt::Client::new(&config.printers[0], tx);
-    let mut client_clone = client.clone();
+    let config = config::PrinterConfig {
+        name: "bambu".to_string(),
+        host,
+        access_code,
+        serial,
+    };
 
-    tokio::try_join!(
-        tokio::spawn(async move {
-            client.run().await.unwrap();
-        }),
-        tokio::spawn(async move {
-            loop {
-                let message = rx.recv().await.unwrap();
-                // debug!("received: {:#?}", message);
-                match message {
-                    Message::Connected => {
-                        client_clone.publish(Command::PushAll).await.unwrap();
-                    }
-                    Message::Print(_) => {
-                        debug!("got print report");
-                    }
-                    _ => {
-                        debug!("got message: {:#?}", message);
-                    }
-                }
-            }
-        }),
-    )?;
+    let (msg_tx, mut msg_rx) =
+        tokio::sync::mpsc::channel::<(PrinterId, mqtt::message::Message)>(50);
+    // let (cmd_tx, cmd_rx) = tokio::sync::broadcast::channel::<mqtt::command::Command>(50);
 
-    Ok(())
+    // let mut client = mqtt::Client::new(&config.printers[0], tx);
+    // let mut client = mqtt::Client::new(&config, msg_tx, cmd_rx);
+    let mut client = mqtt::BambuClient::new(&config, msg_tx).await?;
+
+    debug!("running");
+
+    client.publish(Command::PushAll).await?;
+    debug!("published");
+
+    loop {
+        let message = msg_rx.recv().await.unwrap();
+        debug!("received: {:#?}", message);
+    }
+
+    // tokio::try_join!(
+    //     tokio::spawn(async move {
+    //         client.run().await.unwrap();
+    //     }),
+    //     tokio::spawn(async move {
+    //         loop {
+    //             let message = rx.recv().await.unwrap();
+    //             // debug!("received: {:#?}", message);
+    //             match message {
+    //                 Message::Connected => {
+    //                     client_clone.publish(Command::PushAll).await.unwrap();
+    //                 }
+    //                 Message::Print(_) => {
+    //                     debug!("got print report");
+    //                 }
+    //                 _ => {
+    //                     debug!("got message: {:#?}", message);
+    //                 }
+    //             }
+    //         }
+    //     }),
+    // )?;
+
+    // Ok(())
 }
 
 /// working?
-#[tokio::main]
-// #[cfg(feature = "nope")]
+// #[tokio::main]
+#[cfg(feature = "nope")]
 async fn main() -> Result<()> {
     use bambulab::{Command, Message};
 

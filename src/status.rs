@@ -4,7 +4,8 @@ use tracing::{debug, error, info, trace, warn};
 use chrono::{DateTime, Local, TimeDelta};
 use egui::Color32;
 
-use bambulab::PrintData;
+// use bambulab::PrintData;
+use crate::mqtt::message::{PrintAms, PrintData};
 use std::time::{Duration, Instant};
 
 // use crate::app_types::StatusIcon;
@@ -34,7 +35,7 @@ pub struct PrinterStatus {
     pub temp_tgt_nozzle: Option<f64>,
     pub temp_bed: Option<f64>,
     pub temp_tgt_bed: Option<f64>,
-    pub temp_chamber: Option<i64>,
+    pub temp_chamber: Option<f64>,
 
     pub heatbreak_fan_speed: Option<i64>,
     pub cooling_fan_speed: Option<i64>,
@@ -51,7 +52,7 @@ impl PrinterStatus {
         *self = Self::default();
     }
 
-    fn get_state(report: &bambulab::PrintData) -> Option<PrinterState> {
+    fn get_state(report: &PrintData) -> Option<PrinterState> {
         if let Some(s) = report.gcode_state.as_ref() {
             match s.as_str() {
                 "CREATED" => Some(PrinterState::Printing),
@@ -75,7 +76,7 @@ impl PrinterStatus {
         }
     }
 
-    pub fn update(&mut self, report: &bambulab::PrintData) -> Result<()> {
+    pub fn update(&mut self, report: &PrintData) -> Result<()> {
         if let Some(s) = Self::get_state(report) {
             self.state = s;
         }
@@ -168,7 +169,7 @@ impl PrinterStatus {
         Ok(())
     }
 
-    fn update_ams(&mut self, ams: &bambulab::PrintAms) -> Result<AmsStatus> {
+    fn update_ams(&mut self, ams: &PrintAms) -> Result<AmsStatus> {
         let mut out = self.ams.take().unwrap_or_default();
 
         // debug!("ams = {:#?}", ams);

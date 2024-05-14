@@ -3,7 +3,12 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
-use bambulab::{Client as BambuClient, Message};
+// use bambulab::{Client as BambuClient, Message};
+use crate::mqtt::{
+    command::Command,
+    message::{Message, PrintData},
+    BambuClient,
+};
 use dashmap::DashMap;
 // use tokio::sync::mpsc::{Receiver, Sender};
 
@@ -20,7 +25,7 @@ pub type PrinterId = String;
 pub enum PrinterConnMsg {
     Empty,
     /// The current status of a printer
-    StatusReport(PrinterId, bambulab::PrintData),
+    StatusReport(PrinterId, PrintData),
 }
 
 /// messages from UI to PrinterConnManager
@@ -41,6 +46,39 @@ pub struct PrinterConnManager {
     // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
 }
 
+impl PrinterConnManager {
+    pub fn new(
+        config: Config,
+        printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
+        cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
+        msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
+        ctx: egui::Context,
+        // win_handle: std::num::NonZeroIsize,
+        // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
+    ) -> Self {
+        Self {
+            config,
+            printers: HashMap::new(),
+            printer_states,
+            cmd_rx,
+            msg_tx,
+            ctx,
+            // win_handle,
+            // alert_tx,
+        }
+    }
+
+    pub async fn run(&mut self) -> Result<()> {
+        unimplemented!()
+    }
+
+    // async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
+    //     unimplemented!()
+    // }
+}
+
+/// old
+#[cfg(feature = "nope")]
 impl PrinterConnManager {
     pub fn new(
         config: Config,
@@ -170,7 +208,7 @@ impl PrinterConnManager {
                     .printers
                     .get(&id)
                     .with_context(|| format!("printer not found: {:?}", id))?;
-                if let Err(e) = client.publish(bambulab::Command::PushAll).await {
+                if let Err(e) = client.publish(Command::PushAll).await {
                     error!("error publishing status: {:?}", e);
                 }
                 let mut entry = self.printer_states.entry(id.clone()).or_default();
@@ -196,7 +234,7 @@ impl PrinterConnManager {
                     .printers
                     .get(&id)
                     .with_context(|| format!("printer not found: {:?}", id))?;
-                if let Err(e) = client.publish(bambulab::Command::PushAll).await {
+                if let Err(e) = client.publish(Command::PushAll).await {
                     error!("error publishing status: {:?}", e);
                 }
             }
@@ -210,7 +248,8 @@ impl PrinterConnManager {
     ) -> Result<BambuClient> {
         let (tx, mut rx) = tokio::sync::broadcast::channel::<Message>(25);
         let mut client =
-            bambulab::Client::new(&printer.host, &printer.access_code, &printer.serial, tx);
+            // bambulab::Client::new(&printer.host, &printer.access_code, &printer.serial, tx);
+            crate::mqtt::BambuClient::new(&printer, tx);
         let client_clone = client.clone();
         tokio::spawn(async move {
             if let Err(e) = client.run().await {
