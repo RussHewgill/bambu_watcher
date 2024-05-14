@@ -6,11 +6,14 @@ use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
-use rumqttc::{tokio_rustls::rustls, AsyncClient, EventLoop, Incoming, MqttOptions};
+use rumqttc::{
+    tokio_rustls::{client, rustls},
+    AsyncClient, EventLoop, Incoming, MqttOptions,
+};
 use std::{sync::Arc, time::Duration};
 use tracing_subscriber::field::debug;
 
-use crate::{client::PrinterId, config::PrinterConfig};
+use crate::{config::PrinterConfig, conn_manager::PrinterId};
 
 use self::{command::Command, message::Message};
 
@@ -92,7 +95,7 @@ pub struct BambuClient {
 }
 
 impl BambuClient {
-    pub async fn new(
+    pub async fn new_and_init(
         printer_cfg: &PrinterConfig,
         tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
         // rx: tokio::sync::broadcast::Receiver<Command>,
@@ -117,6 +120,7 @@ impl BambuClient {
         ));
 
         mqttoptions.set_transport(transport);
+        mqttoptions.set_clean_session(true);
 
         debug!("connecting");
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
@@ -140,29 +144,39 @@ impl BambuClient {
 
     pub async fn init(&mut self, eventloop: EventLoop) -> Result<()> {
         let config2 = self.config.clone();
+        let client2 = self.client.clone();
         let tx2 = self.tx.clone();
+        let topic_report = self.topic_device_report.clone();
+        let topic_request = self.topic_device_request.clone();
         tokio::task::spawn(async move {
-            poll_eventloop(config2, eventloop, tx2).await.unwrap();
+            let mut listener = ClientListener::new(
+                config2,
+                client2,
+                eventloop,
+                tx2,
+                topic_report,
+                topic_request,
+            );
+            loop {
+                if let Err(e) = listener.poll_eventloop().await {
+                    error!("Error in listener: {:?}", e);
+                    listener
+                        .tx
+                        .send((listener.printer_cfg.serial.clone(), Message::Disconnected))
+                        .await
+                        .unwrap();
+                }
+                listener.eventloop.clean();
+                debug!("Reconnecting...");
+            }
         });
 
-        self.client
-            .subscribe(&self.topic_device_report, rumqttc::QoS::AtMostOnce)
-            .await?;
+        // self.client
+        //     .subscribe(&self.topic_device_report, rumqttc::QoS::AtMostOnce)
+        //     .await?;
 
         Ok(())
     }
-
-    // async fn poll(&mut self) -> Result<()> {
-    //     match self.eventloop.poll().await? {
-    //         rumqttc::Event::Outgoing(event) => {
-    //             // debug!("outgoing event: {:?}", event);
-    //         }
-    //         rumqttc::Event::Incoming(event) => {
-    //             debug!("incoming event: {:?}", event);
-    //         }
-    //     }
-    //     Ok(())
-    // }
 
     pub async fn publish(&self, command: Command) -> Result<()> {
         let payload = command.get_payload();
@@ -176,25 +190,92 @@ impl BambuClient {
     }
 }
 
-async fn poll_eventloop(
+struct ClientListener {
     printer_cfg: PrinterConfig,
-    mut eventloop: rumqttc::EventLoop,
+    client: rumqttc::AsyncClient,
+    eventloop: rumqttc::EventLoop,
     tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
-) -> Result<()> {
-    loop {
-        match eventloop.poll().await? {
-            rumqttc::Event::Outgoing(event) => {
-                // debug!("outgoing event: {:?}", event);
-            }
-            rumqttc::Event::Incoming(Incoming::Publish(p)) => {
-                let msg = parse::parse_message(&p);
-                debug!("incoming publish: {:?}", msg);
-                tx.send((printer_cfg.serial.clone(), msg)).await?;
-            }
-            rumqttc::Event::Incoming(event) => {
-                debug!("incoming other event: {:?}", event);
+    topic_device_report: String,
+    topic_device_request: String,
+}
+
+impl ClientListener {
+    pub fn new(
+        printer_cfg: PrinterConfig,
+        client: rumqttc::AsyncClient,
+        eventloop: rumqttc::EventLoop,
+        tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+        topic_device_report: String,
+        topic_device_request: String,
+    ) -> Self {
+        Self {
+            printer_cfg,
+            client,
+            eventloop,
+            tx,
+            topic_device_report,
+            topic_device_request,
+        }
+    }
+
+    /// MARK: main event handler
+    async fn poll_eventloop(&mut self) -> Result<()> {
+        use rumqttc::Event;
+        loop {
+            match self.eventloop.poll().await? {
+                Event::Outgoing(event) => {
+                    // debug!("outgoing event: {:?}", event);
+                }
+                Event::Incoming(Incoming::PingResp) => {}
+                Event::Incoming(Incoming::ConnAck(c)) => {
+                    debug!("got ConnAck: {:?}", c.code);
+                    if c.code == rumqttc::ConnectReturnCode::Success {
+                        // debug!("Connected to MQTT");
+                        self.client
+                            .subscribe(&self.topic_device_report, rumqttc::QoS::AtMostOnce)
+                            .await?;
+                        debug!("sent subscribe to topic");
+                        // self.send_pushall().await?;
+                    } else {
+                        error!("Failed to connect to MQTT: {:?}", c.code);
+                    }
+                }
+                Event::Incoming(Incoming::SubAck(s)) => {
+                    debug!("got SubAck");
+                    if s.return_codes
+                        .iter()
+                        .any(|&r| r == rumqttc::SubscribeReasonCode::Failure)
+                    {
+                        error!("Failed to subscribe to topic");
+                    } else {
+                        debug!("sending pushall");
+                        self.send_pushall().await?;
+                        debug!("sent");
+                    }
+                }
+                Event::Incoming(Incoming::Publish(p)) => {
+                    // debug!("incoming publish");
+                    let msg = parse::parse_message(&p);
+                    // debug!("incoming publish: {:?}", msg);
+                    self.tx.send((self.printer_cfg.serial.clone(), msg)).await?;
+                }
+                Event::Incoming(event) => {
+                    debug!("incoming other event: {:?}", event);
+                }
             }
         }
+    }
+
+    async fn send_pushall(&mut self) -> Result<()> {
+        let command = Command::PushAll;
+        let payload = command.get_payload();
+
+        let qos = rumqttc::QoS::AtMostOnce;
+        self.client
+            .publish(&self.topic_device_request, qos, false, payload)
+            .await?;
+
+        Ok(())
     }
 }
 

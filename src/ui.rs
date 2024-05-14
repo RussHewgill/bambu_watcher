@@ -8,11 +8,11 @@ use tracing::{debug, error, info, trace, warn};
 use egui::{Align, Color32, Layout, Margin, Response, Rounding, Sense, Stroke, Vec2};
 
 use dashmap::DashMap;
-use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
+use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc, time::Duration};
 
 use crate::{
-    client::PrinterId,
-    config::PrinterConfig,
+    config::{ConfigArc, PrinterConfig},
+    conn_manager::{PrinterConnCmd, PrinterId},
     icons::*,
     status::{PrinterState, PrinterStatus},
     ui_types::{App, GridLocation, Tab},
@@ -23,13 +23,15 @@ impl App {
         // tray_icon: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
         // tray_icon: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
-        config: crate::config::Config,
+        config: ConfigArc,
         cc: &eframe::CreationContext<'_>,
+        cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
         let mut out = if let Some(storage) = cc.storage {
-            let mut out: Self = eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
-            out
+            eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
+            // warn!("using default app state");
+            // Self::default()
         } else {
             Self::default()
         };
@@ -39,9 +41,11 @@ impl App {
         out.config = config;
         // out.alert_tx = Some(alert_tx);
 
+        out.cmd_tx = Some(cmd_tx);
+
         out.unplaced_printers = out
             .config
-            .printers
+            .printers()
             .iter()
             .map(|p| p.serial.clone())
             .collect();
@@ -51,10 +55,23 @@ impl App {
         }
 
         /// remove printers that were previously placed but are no longer in the config
-        for id in out.config.printers.iter() {
-            out.unplaced_printers.retain(|p| p != &id.serial);
-            out.printer_order.retain(|_, v| v != &id.serial);
+        {
+            let current_printers = out
+                .config
+                .printers()
+                .iter()
+                .map(|c| c.serial.clone())
+                .collect::<HashSet<_>>();
+
+            out.unplaced_printers
+                .retain(|p| current_printers.contains(p));
+            out.printer_order
+                .retain(|_, v| current_printers.contains(v));
         }
+        // for id in out.config.printers.iter() {
+        //     out.unplaced_printers.retain(|p| p != &id.serial);
+        //     out.printer_order.retain(|_, v| v != &id.serial);
+        // }
 
         out
     }
@@ -73,7 +90,9 @@ impl eframe::App for App {
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.current_tab, Tab::Main, "Dashboard");
-                ui.selectable_value(&mut self.current_tab, Tab::Options, "Options");
+                // ui.selectable_value(&mut self.current_tab, Tab::Graphs, "Graphs");
+                ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
+                // ui.selectable_value(&mut self.current_tab, Tab::Options, "Options");
             });
         });
 
@@ -220,7 +239,7 @@ impl App {
                                 };
 
                                 let Some(printer) =
-                                    self.config.printers.iter().find(|p| &p.serial == id)
+                                    self.config.printers().into_iter().find(|p| &p.serial == id)
                                 else {
                                     warn!("Printer not found: {}", id);
                                     return;
@@ -233,7 +252,7 @@ impl App {
                                             (x, y),
                                             frame_size,
                                             ui,
-                                            printer,
+                                            &printer,
                                             &printer_state,
                                         );
 
@@ -534,31 +553,37 @@ impl App {
         printer: &PrinterConfig,
         printer_state: &PrinterStatus,
     ) {
-        if let Some(eta) = status.eta {
-            let time = eta.time();
-            // let dt = time - chrono::Local::now().naive_local().time();
-            let dt = eta - chrono::Local::now();
+        let Some(eta) = status.eta else {
+            return;
+        };
 
-            // let Some(p) = status.print_percent else {
-            //     warn!("no print percent found");
-            //     return;
-            // };
-            // ui.add(
-            //     egui::ProgressBar::new(p as f32 / 100.0)
-            //         .desired_width(ui.available_width() - 10.)
-            //         .text(format!("{}%", p)),
-            // );
+        let time = eta.time();
+        // let dt = time - chrono::Local::now().naive_local().time();
+        let dt = eta - chrono::Local::now();
 
-            egui::Grid::new(format!("grid_{}", printer.serial)).show(ui, |ui| {
-                // ui.end_row();
+        // let Some(p) = status.print_percent else {
+        //     warn!("no print percent found");
+        //     return;
+        // };
+        // ui.add(
+        //     egui::ProgressBar::new(p as f32 / 100.0)
+        //         .desired_width(ui.available_width() - 10.)
+        //         .text(format!("{}%", p)),
+        // );
 
+        egui::Grid::new(format!("grid_{}", printer.serial))
+            .min_col_width(ui.available_width() - 4.)
+            .show(ui, |ui| {
                 // ui.label("File:");
-                ui.label(
-                    status
-                        .current_file
-                        .as_ref()
-                        .map(|s| s.as_str())
-                        .unwrap_or("--"),
+                ui.add(
+                    egui::Label::new(
+                        status
+                            .current_file
+                            .as_ref()
+                            .map(|s| s.as_str())
+                            .unwrap_or("--"),
+                    )
+                    .truncate(true),
                 );
                 ui.end_row();
 
@@ -573,10 +598,11 @@ impl App {
                     dt.num_minutes() % 60
                 ));
                 ui.end_row();
+
+                // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
             });
 
-            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-        }
+        ui.allocate_space(Vec2::new(ui.available_width(), 0.));
 
         //
     }

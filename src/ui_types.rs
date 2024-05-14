@@ -8,7 +8,11 @@ use std::{
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{client::PrinterId, status::PrinterStatus};
+use crate::{
+    config::ConfigArc,
+    conn_manager::{PrinterConnCmd, PrinterId},
+    status::PrinterStatus,
+};
 
 #[derive(PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum Tab {
@@ -37,7 +41,10 @@ pub struct App {
     pub current_tab: Tab,
 
     #[serde(skip)]
-    pub config: crate::config::Config,
+    pub config: ConfigArc,
+
+    #[serde(skip)]
+    pub cmd_tx: Option<tokio::sync::mpsc::Sender<PrinterConnCmd>>,
 
     #[serde(skip)]
     pub printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
@@ -53,4 +60,15 @@ pub struct App {
     pub unplaced_printers: Vec<PrinterId>,
 
     pub selected_ams: HashMap<PrinterId, usize>,
+
+    // #[serde(skip)]
+    pub new_printer: NewPrinterEntry,
+}
+
+#[derive(Default, Deserialize, Serialize)]
+pub struct NewPrinterEntry {
+    pub name: String,
+    pub host: String,
+    pub access_code: String,
+    pub serial: String,
 }

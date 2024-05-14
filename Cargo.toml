@@ -65,6 +65,7 @@ rumqttc = { version = "0.24.0", default-features = false, features = [
 rustls-native-certs = "0.7.0"
 # tokio-rustls = "0.26.0"
 rustls-pemfile = "2.1.2"
+parking_lot = "0.12.2"
 
 
 # eframe = { version = "0.27.0", features = ["persistence"] }

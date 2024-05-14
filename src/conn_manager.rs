@@ -4,10 +4,13 @@ use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
 // use bambulab::{Client as BambuClient, Message};
-use crate::mqtt::{
-    command::Command,
-    message::{Message, PrintData},
-    BambuClient,
+use crate::{
+    config::ConfigArc,
+    mqtt::{
+        command::Command,
+        message::{Message, PrintData},
+        BambuClient,
+    },
 };
 use dashmap::DashMap;
 // use tokio::sync::mpsc::{Receiver, Sender};
@@ -31,12 +34,14 @@ pub enum PrinterConnMsg {
 /// messages from UI to PrinterConnManager
 #[derive(Debug, Clone)]
 pub enum PrinterConnCmd {
+    AddPrinter(PrinterConfig),
     /// get the status of a printer
     ReportStatus(PrinterId),
 }
 
 pub struct PrinterConnManager {
-    config: Config,
+    // config: Config,
+    config: ConfigArc,
     printers: HashMap<PrinterId, BambuClient>,
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
     cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
@@ -44,11 +49,13 @@ pub struct PrinterConnManager {
     ctx: egui::Context,
     // win_handle: std::num::NonZeroIsize,
     // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
+    tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+    rx: tokio::sync::mpsc::Receiver<(PrinterId, Message)>,
 }
 
 impl PrinterConnManager {
     pub fn new(
-        config: Config,
+        config: ConfigArc,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
         cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
         msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
@@ -56,6 +63,7 @@ impl PrinterConnManager {
         // win_handle: std::num::NonZeroIsize,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
+        let (tx, mut rx) = tokio::sync::mpsc::channel::<(PrinterId, Message)>(25);
         Self {
             config,
             printers: HashMap::new(),
@@ -65,16 +73,169 @@ impl PrinterConnManager {
             ctx,
             // win_handle,
             // alert_tx,
+            tx,
+            rx,
         }
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        unimplemented!()
+        for printer in self.config.printers().iter() {
+            // let client = Self::start_printer_listener(self.tx.clone(), printer).await?;
+            // self.printers.insert(printer.serial.clone(), client);
+            self.add_printer(printer.clone(), true).await?;
+        }
+
+        loop {
+            tokio::select! {
+                Some(cmd) = self.cmd_rx.recv() => {
+                    debug!("got cmd = {:?}", cmd);
+                    self.handle_command(cmd).await?;
+                }
+                Some((id, printer_msg)) = self.rx.recv() => {
+                    // debug!("got printer_msg, id = {:?} = {:?}", id, printer_msg);
+                    self.handle_printer_msg(id, printer_msg).await?;
+                }
+            }
+        }
+
+        // Ok(())
     }
 
-    // async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
-    //     unimplemented!()
-    // }
+    async fn add_printer(&mut self, printer: PrinterConfig, from_cfg: bool) -> Result<()> {
+        if !from_cfg {
+            self.config.add_printer(printer.clone());
+        }
+
+        let client = Self::start_printer_listener(self.tx.clone(), &printer).await?;
+        self.printers.insert(printer.serial.clone(), client);
+
+        Ok(())
+    }
+
+    async fn start_printer_listener(
+        msg_tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+        printer: &PrinterConfig,
+    ) -> Result<BambuClient> {
+        let mut client = crate::mqtt::BambuClient::new_and_init(&printer, msg_tx).await?;
+        Ok(client)
+    }
+}
+
+impl PrinterConnManager {
+    async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
+        match msg {
+            Message::Print(report) => {
+                // debug!("got print report");
+                // debug!("got print report = {:?}", report.print);
+                // debug!("gcode_state = {:?}", report.print.gcode_state);
+                // if report.print.spd_lvl.is_some() {
+                // }
+                // let report = PrinterStatusReport::from_print_data(&print.print);
+
+                let mut entry = self.printer_states.entry(id.clone()).or_default();
+
+                let prev_error = entry.is_error();
+
+                entry.update(&report.print)?;
+
+                // debug!("is_error: {:?}", entry.is_error());
+
+                if !prev_error && entry.is_error() {
+                    warn!("printer error: {:?}", id);
+
+                    let error = report
+                        .print
+                        .print_error
+                        .clone()
+                        .context("no error found?")?;
+                    let name = self
+                        .config
+                        .get_printer(&id)
+                        .context("printer not found")?
+                        .name
+                        .clone();
+
+                    let _ = notify_rust::Notification::new()
+                        .summary(&format!("Printer Error: {}", name))
+                        .body(&format!("Printer error: {:?}\n\nError: {:?}", id, error))
+                        // .icon("thunderbird")
+                        .appname("Bambu Watcher")
+                        .timeout(0)
+                        .show();
+                }
+
+                // let handle = self.win_handle.clone();
+                // let id2 = id.clone();
+                // std::thread::spawn(move || {
+                //     crate::alert::alert_message(
+                //         handle,
+                //         "Print Error",
+                //         "Printer error",
+                //         // true,
+                //         false,
+                //     );
+                // });
+
+                self.ctx.request_repaint();
+
+                if let Err(e) = self
+                    .msg_tx
+                    .send(PrinterConnMsg::StatusReport(id, report.print))
+                {
+                    error!("error sending status report: {:?}", e);
+                }
+                // .await
+            }
+            Message::Info(info) => debug!("printer info: {:?}", info),
+            Message::System(system) => debug!("printer system: {:?}", system),
+            Message::Unknown(unknown) => match unknown {
+                Some(unknown) => warn!("unknown message: {}", unknown),
+                _ => warn!("unknown message: None"),
+            },
+            Message::Connecting => debug!("printer connecting: {:?}", id),
+            Message::Connected => {
+                info!("printer connected: {:?}", id);
+                let client = self
+                    .printers
+                    .get(&id)
+                    .with_context(|| format!("printer not found: {:?}", id))?;
+                if let Err(e) = client.publish(Command::PushAll).await {
+                    error!("error publishing status: {:?}", e);
+                }
+                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                entry.reset();
+                self.ctx.request_repaint();
+            }
+            Message::Reconnecting => warn!("printer reconnecting: {:?}", id),
+            Message::Disconnected => {
+                error!("printer disconnected: {:?}", id);
+
+                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                entry.state = PrinterState::Disconnected;
+                self.ctx.request_repaint();
+            }
+        }
+        Ok(())
+    }
+
+    async fn handle_command(&mut self, cmd: PrinterConnCmd) -> Result<()> {
+        match cmd {
+            PrinterConnCmd::AddPrinter(printer) => {
+                self.add_printer(printer, false).await?;
+                // unimplemented!()
+            }
+            PrinterConnCmd::ReportStatus(id) => {
+                let client = self
+                    .printers
+                    .get(&id)
+                    .with_context(|| format!("printer not found: {:?}", id))?;
+                if let Err(e) = client.publish(Command::PushAll).await {
+                    error!("error publishing status: {:?}", e);
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 /// old

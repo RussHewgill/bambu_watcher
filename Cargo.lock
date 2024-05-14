@@ -628,6 +628,7 @@ dependencies = [
  "imageproc",
  "nanoid",
  "notify-rust",
+ "parking_lot",
  "resvg",
  "rumqttc",
  "rustls-native-certs",

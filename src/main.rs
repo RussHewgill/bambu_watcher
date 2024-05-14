@@ -10,8 +10,8 @@
 // pub mod app;
 // pub mod app_types;
 pub mod alert;
-pub mod client;
 pub mod config;
+pub mod conn_manager;
 // pub mod ftp;
 pub mod icons;
 pub mod logging;
@@ -23,6 +23,8 @@ pub mod ui_types;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use config::ConfigArc;
+use parking_lot::RwLock;
 use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
@@ -34,7 +36,7 @@ use std::{env, sync::Arc, time::Duration};
 // use bambulab::{Command, Message};
 
 use crate::{
-    client::{PrinterConnCmd, PrinterConnManager, PrinterConnMsg, PrinterId},
+    conn_manager::{PrinterConnCmd, PrinterConnManager, PrinterConnMsg, PrinterId},
     status::PrinterStatus,
 };
 
@@ -137,7 +139,7 @@ fn main() {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-#[cfg(feature = "nope")]
+// #[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     // dotenv::dotenv().unwrap();
     logging::init_logs();
@@ -149,7 +151,7 @@ fn main() -> eframe::Result<()> {
         ..Default::default()
     };
 
-    static VISIBLE: std::sync::Mutex<bool> = std::sync::Mutex::new(true);
+    // static VISIBLE: std::sync::Mutex<bool> = std::sync::Mutex::new(true);
 
     let config: config::Config =
         match serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()) {
@@ -159,10 +161,11 @@ fn main() -> eframe::Result<()> {
                 panic!("error reading config: {:?}", e);
             }
         };
+    let config = ConfigArc::new(config);
     let config2 = config.clone();
 
-    let mut _tray_icon = std::rc::Rc::new(std::cell::RefCell::new(None));
-    let tray_c = _tray_icon.clone();
+    // let mut _tray_icon = std::rc::Rc::new(std::cell::RefCell::new(None));
+    // let tray_c = _tray_icon.clone();
 
     let (msg_tx, mut msg_rx) = tokio::sync::watch::channel::<PrinterConnMsg>(PrinterConnMsg::Empty);
     let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(2);
@@ -187,7 +190,7 @@ fn main() -> eframe::Result<()> {
             status.state = status::PrinterState::Printing;
             status.eta = Some(chrono::Local::now() + chrono::Duration::minutes(10));
             status.current_file = Some("test.gcode".to_string());
-            status.gcode_state = Some(status::GcodeState::Running);
+            // status.gcode_state = Some(status::GcodeState::Running);
             status.print_percent = Some(50);
             status.layer_num = Some(50);
             status.total_layer_num = Some(100);
@@ -200,7 +203,7 @@ fn main() -> eframe::Result<()> {
                 units: vec![status::AmsUnit {
                     id: 0,
                     humidity: 0,
-                    temp: 0,
+                    temp: 0.,
                     slots: [
                         Some(status::AmsSlot {
                             material: "PLA".to_string(),
@@ -222,7 +225,7 @@ fn main() -> eframe::Result<()> {
             printer_states.insert(serial, status);
         }
 
-        #[cfg(feature = "nope")]
+        // #[cfg(feature = "nope")]
         {
             let mut status = PrinterStatus::default();
             status.temp_nozzle = Some(200.0);
@@ -344,11 +347,12 @@ fn main() -> eframe::Result<()> {
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
             Box::new(ui_types::App::new(
-                tray_c,
+                // tray_c,
                 printer_states,
                 config,
                 cc,
                 // alert_tx,
+                cmd_tx,
             ))
         }),
     )
@@ -429,7 +433,7 @@ async fn main() -> Result<()> {
         .finalize();
 
     let mut client = paho_mqtt::AsyncClient::new(create_opts).expect("Failed to create client");
-    let stream = client.get_stream(25);
+    let stream = conn_manager.get_stream(25);
 
     let ssl_opts = paho_mqtt::SslOptionsBuilder::new()
         .disable_default_trust_store(true)
@@ -446,15 +450,15 @@ async fn main() -> Result<()> {
         .finalize();
 
     debug!("connecting");
-    client.connect(conn_opts).await?;
+    conn_manager.connect(conn_opts).await?;
     debug!("connected");
 
     Ok(())
 }
 
 /// client test
-#[tokio::main]
-// #[cfg(feature = "nope")]
+// #[tokio::main]
+#[cfg(feature = "nope")]
 async fn main() -> Result<()> {
     use crate::mqtt::{command::Command, message::Message};
 
@@ -474,55 +478,51 @@ async fn main() -> Result<()> {
     let access_code = env::var("BAMBU_ACCESS_CODE")?;
     let serial = env::var("BAMBU_IDENT")?;
 
-    let config = config::PrinterConfig {
-        name: "bambu".to_string(),
+    let printer_config = config::PrinterConfig {
+        name: "Calvin".to_string(),
         host,
         access_code,
         serial,
     };
+    let config = config::Config {
+        printers: vec![printer_config],
+    };
 
-    let (msg_tx, mut msg_rx) =
-        tokio::sync::mpsc::channel::<(PrinterId, mqtt::message::Message)>(50);
-    // let (cmd_tx, cmd_rx) = tokio::sync::broadcast::channel::<mqtt::command::Command>(50);
+    let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
 
-    // let mut client = mqtt::Client::new(&config.printers[0], tx);
-    // let mut client = mqtt::Client::new(&config, msg_tx, cmd_rx);
-    let mut client = mqtt::BambuClient::new(&config, msg_tx).await?;
+    let (msg_tx, mut msg_rx) = tokio::sync::watch::channel::<PrinterConnMsg>(PrinterConnMsg::Empty);
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(2);
+
+    let ctx = egui::Context::default();
+    let mut conn_manager =
+        conn_manager::PrinterConnManager::new(config, printer_states, cmd_rx, msg_tx, ctx);
 
     debug!("running");
+    conn_manager.run().await?;
+    debug!("done");
 
-    client.publish(Command::PushAll).await?;
-    debug!("published");
+    #[cfg(feature = "nope")]
+    {
+        let (msg_tx, mut msg_rx) =
+            tokio::sync::mpsc::channel::<(PrinterId, mqtt::message::Message)>(50);
+        // let (cmd_tx, cmd_rx) = tokio::sync::broadcast::channel::<mqtt::command::Command>(50);
 
-    loop {
-        let message = msg_rx.recv().await.unwrap();
-        debug!("received: {:#?}", message);
+        // let mut client = mqtt::Client::new(&config.printers[0], tx);
+        // let mut client = mqtt::Client::new(&config, msg_tx, cmd_rx);
+        let mut client = mqtt::BambuClient::new(&config, msg_tx).await?;
+
+        debug!("running");
+
+        // client.publish(Command::PushAll).await?;
+        // debug!("published");
+
+        loop {
+            let message = msg_rx.recv().await.unwrap();
+            debug!("received: {:#?}", message);
+        }
     }
 
-    // tokio::try_join!(
-    //     tokio::spawn(async move {
-    //         client.run().await.unwrap();
-    //     }),
-    //     tokio::spawn(async move {
-    //         loop {
-    //             let message = rx.recv().await.unwrap();
-    //             // debug!("received: {:#?}", message);
-    //             match message {
-    //                 Message::Connected => {
-    //                     client_clone.publish(Command::PushAll).await.unwrap();
-    //                 }
-    //                 Message::Print(_) => {
-    //                     debug!("got print report");
-    //                 }
-    //                 _ => {
-    //                     debug!("got message: {:#?}", message);
-    //                 }
-    //             }
-    //         }
-    //     }),
-    // )?;
-
-    // Ok(())
+    Ok(())
 }
 
 /// working?
@@ -541,11 +541,11 @@ async fn main() -> Result<()> {
     let (tx, mut rx) = tokio::sync::broadcast::channel::<Message>(50);
 
     let mut client = bambulab::Client::new(host, access_code, serial, tx);
-    let mut client_clone = client.clone();
+    let mut client_clone = conn_manager.clone();
 
     tokio::try_join!(
         tokio::spawn(async move {
-            client.run().await.unwrap();
+            conn_manager.run().await.unwrap();
         }),
         tokio::spawn(async move {
             loop {
