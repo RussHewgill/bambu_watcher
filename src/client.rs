@@ -9,7 +9,7 @@ use dashmap::DashMap;
 
 use crate::{
     config::{Config, PrinterConfig},
-    status::PrinterStatus,
+    status::{PrinterState, PrinterStatus},
 };
 
 /// The serial number of a printer
@@ -96,7 +96,9 @@ impl PrinterConnManager {
     async fn handle_printer_msg(&mut self, id: PrinterId, msg: Message) -> Result<()> {
         match msg {
             Message::Print(report) => {
-                // debug!("got print report");
+                debug!("got print report");
+                // if report.print.spd_lvl.is_some() {
+                // }
                 // let report = PrinterStatusReport::from_print_data(&print.print);
 
                 let mut entry = self.printer_states.entry(id.clone()).or_default();
@@ -171,9 +173,18 @@ impl PrinterConnManager {
                 if let Err(e) = client.publish(bambulab::Command::PushAll).await {
                     error!("error publishing status: {:?}", e);
                 }
+                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                entry.reset();
+                self.ctx.request_repaint();
             }
             Message::Reconnecting => warn!("printer reconnecting: {:?}", id),
-            Message::Disconnected => error!("printer disconnected: {:?}", id),
+            Message::Disconnected => {
+                error!("printer disconnected: {:?}", id);
+
+                let mut entry = self.printer_states.entry(id.clone()).or_default();
+                entry.state = PrinterState::Disconnected;
+                self.ctx.request_repaint();
+            }
         }
         Ok(())
     }

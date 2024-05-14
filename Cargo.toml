@@ -31,7 +31,8 @@ tracing-subscriber = { version = "0.3.18", features = [
     "registry",
 ] }
 # openssl = { version = "0.10.64", features = ["vendored"] }
-paho-mqtt = { version = "0.12.3", features = ["vendored-ssl"] }
+# paho-mqtt = { version = "0.12.3", features = ["vendored-ssl"] }
+paho-mqtt = { version = "0.12.3", features = [] }
 # paho-mqtt = { version = "0.12.3", features = ["ssl"] }
 serde_json = "1.0.117"
 futures = { version = "0.3.30", default-features = false }
@@ -54,6 +55,7 @@ resvg = "=0.37.0"
 egui_plot = "0.27.2"
 suppaftp = { version = "5.3.1", features = ["deprecated", "native-tls"] }
 zip = "1.2.3"
+nanoid = "0.4.0"
 
 # eframe = { version = "0.27.0", features = ["persistence"] }
 # egui = "0.27.0"

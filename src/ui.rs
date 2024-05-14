@@ -50,6 +50,12 @@ impl App {
             out.unplaced_printers.retain(|p| p != id);
         }
 
+        /// remove printers that were previously placed but are no longer in the config
+        for id in out.config.printers.iter() {
+            out.unplaced_printers.retain(|p| p != &id.serial);
+            out.printer_order.retain(|_, v| v != &id.serial);
+        }
+
         out
     }
 }
@@ -324,25 +330,49 @@ impl App {
         //     ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
         // });
 
-        ui.add(thumbnail_printer());
+        ui.columns(2, |uis| {
+            uis[0].add(thumbnail_printer());
 
-        ui.separator();
-        ui.horizontal(|ui| {
-            ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+            uis[1].vertical(|ui| {
+                ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
 
-            ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-            ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-            ui.separator();
-            ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-            ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-            ui.separator();
-            ui.add(thumbnail_chamber());
-            ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+                ui.horizontal(|ui| {
+                    ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+                    ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+                });
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+                    ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+                });
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.add(thumbnail_chamber());
+                    ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+                });
 
-            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-            ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
+                ui.allocate_space(Vec2::new(ui.available_width(), 0.));
+                ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
+            });
         });
+
         ui.separator();
+        // ui.horizontal(|ui| {
+        //     ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+
+        //     ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+        //     ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
+        //     ui.separator();
+        //     ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+        //     ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
+        //     ui.separator();
+        //     ui.add(thumbnail_chamber());
+        //     ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
+
+        //     ui.allocate_space(Vec2::new(ui.available_width(), 0.));
+        //     ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
+        // });
+        // ui.separator();
 
         /// fans
         ui.horizontal(|ui| {

@@ -47,6 +47,10 @@ impl PrinterStatus {
         matches!(self.state, PrinterState::Error(_))
     }
 
+    pub fn reset(&mut self) {
+        *self = Self::default();
+    }
+
     fn get_state(report: &bambulab::PrintData) -> Option<PrinterState> {
         if let Some(s) = report.gcode_state.as_ref() {
             match s.as_str() {

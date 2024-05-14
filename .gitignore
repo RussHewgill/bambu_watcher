@@ -5,7 +5,7 @@ certs*
 *.png
 config.yaml
 example.ron
-example.json
+example*.json
 *.log
 *.svg
 
