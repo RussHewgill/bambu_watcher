@@ -122,9 +122,9 @@ impl BambuClient {
         mqttoptions.set_transport(transport);
         mqttoptions.set_clean_session(true);
 
-        debug!("connecting");
+        debug!("connecting, serial = {}", &printer_cfg.serial);
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-        debug!("connected");
+        debug!("connected, serial = {}", &printer_cfg.serial);
 
         let mut out = Self {
             config: printer_cfg.clone(),

@@ -55,11 +55,12 @@ impl PrinterStatus {
     fn get_state(report: &PrintData) -> Option<PrinterState> {
         if let Some(s) = report.gcode_state.as_ref() {
             match s.as_str() {
-                "CREATED" => Some(PrinterState::Printing),
+                "IDLE" => Some(PrinterState::Idle),
                 "READY" => Some(PrinterState::Idle),
+                "FINISH" => Some(PrinterState::Idle),
+                "CREATED" => Some(PrinterState::Printing),
                 "RUNNING" => Some(PrinterState::Printing),
                 "PREPARE" => Some(PrinterState::Printing),
-                "FINISH" => Some(PrinterState::Idle),
                 "PAUSE" => {
                     if let Some(e) = report.print_error {
                         Some(PrinterState::Error(format!("Error: {}", e)))
