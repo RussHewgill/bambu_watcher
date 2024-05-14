@@ -196,7 +196,7 @@ impl PrinterConnManager {
             }
             Message::Info(info) => {
                 // debug!("printer info: {:?}", info);
-                debug!("got printer info");
+                debug!("got printer info for printer: {:?}", &printer.name);
 
                 let mut entry = self
                     .printer_states
@@ -204,7 +204,10 @@ impl PrinterConnManager {
                     .or_default();
 
                 for module in info.info.module.iter() {
-                    debug!("module = {:?}", module);
+                    if module.name == "mc" {
+                        debug!("project_name = {:?}", module.project_name);
+                    }
+                    // debug!("module = {:?}", module);
                 }
                 // entry.printer_type
 
