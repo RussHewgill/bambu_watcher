@@ -25,7 +25,4 @@ example*.json
 !assets/monitor_nozzle_temp.svg
 !assets/monitor_nozzle_temp_active.svg
 !assets/param_chamber_temp.svg
-!assets/printer_thumbnail_p1s.svg
-!assets/printer_thumbnail_x1.svg
-!assets/printer_thumbnail_p1s_dark.svg
-!assets/printer_thumbnail_x1_dark.svg
+!assets/printer_*.svg
