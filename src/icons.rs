@@ -117,6 +117,23 @@ pub fn thumbnail_fan(on: bool) -> egui::Image<'static> {
 
 pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
     let src = match state {
+        PrinterState::Idle => egui::include_image!("../assets/icons/check-circle_poly.svg"),
+        PrinterState::Paused => egui::include_image!("../assets/icons/pause-circle_poly.svg"),
+        PrinterState::Printing => egui::include_image!("../assets/icons/play-circle_poly.svg"),
+        PrinterState::Error(_) => {
+            egui::include_image!("../assets/icons/exclamation-triangle_poly.svg")
+        }
+        PrinterState::Disconnected => egui::include_image!("../assets/icons/disconnected_poly.svg"),
+        PrinterState::Unknown(_) => {
+            egui::include_image!("../assets/icons/question-circle_poly.svg")
+        }
+    };
+
+    #[cfg(feature = "nope")]
+    let src = match state {
+        PrinterState::Idle => {
+            egui::include_image!("../assets/icons8-hourglass-100.png")
+        }
         PrinterState::Idle => {
             egui::include_image!("../assets/icons8-hourglass-100.png")
         }

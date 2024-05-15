@@ -35,6 +35,12 @@ pub struct GridLocation {
     pub row: usize,
 }
 
+impl GridLocation {
+    pub fn new(col: usize, row: usize) -> Self {
+        Self { col, row }
+    }
+}
+
 #[derive(Default, Deserialize, Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct App {

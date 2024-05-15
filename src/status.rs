@@ -243,6 +243,7 @@ pub enum PrinterType {
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrinterState {
     Idle,
+    // Finished,
     Paused,
     Printing,
     Error(String),
@@ -260,6 +261,7 @@ impl PrinterState {
     pub fn to_text(&self) -> &'static str {
         match self {
             PrinterState::Idle => "Idle",
+            // PrinterState::Finished => "Finished",
             PrinterState::Printing => "Printing",
             PrinterState::Error(_) => "Error",
             PrinterState::Paused => "Paused",

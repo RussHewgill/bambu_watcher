@@ -7,6 +7,7 @@ use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
 use egui::{Align, Color32, Layout, Margin, Response, Rounding, Sense, Stroke, Vec2};
+use egui_phosphor::fill;
 
 use dashmap::DashMap;
 use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc, time::Duration};
@@ -19,6 +20,7 @@ use crate::{
     ui_types::{App, GridLocation, Tab},
 };
 
+/// new
 impl App {
     pub fn new(
         // tray_icon: Rc<RefCell<Option<tray_icon::TrayIcon>>>,
@@ -36,6 +38,11 @@ impl App {
         } else {
             Self::default()
         };
+
+        let mut fonts = egui::FontDefinitions::default();
+        egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
+
+        cc.egui_ctx.set_fonts(fonts);
 
         // out.tray = tray_icon;
         out.printer_states = printer_states;
@@ -118,7 +125,33 @@ impl eframe::App for App {
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 // egui::widgets::global_dark_light_mode_switch(ui);
-                ui.label("bottom");
+                // ui.label("bottom");
+
+                egui_extras::StripBuilder::new(ui)
+                    .size(egui_extras::Size::initial(50.))
+                    .size(egui_extras::Size::initial(20.))
+                    .size(egui_extras::Size::initial(20.))
+                    .size(egui_extras::Size::initial(20.))
+                    .horizontal(|mut strip| {
+                        strip.cell(|ui| {
+                            ui.label("Rows: ");
+                        });
+                        strip.cell(|ui| {
+                            if ui.button(&format!("{}", fill::ARROW_FAT_UP)).clicked() {
+                                self.change_rows(false);
+                            }
+                        });
+
+                        strip.cell(|ui| {
+                            ui.label(&format!("{}", self.options.dashboard_size.1));
+                        });
+
+                        strip.cell(|ui| {
+                            if ui.button(&format!("{}", fill::ARROW_FAT_DOWN)).clicked() {
+                                self.change_rows(true);
+                            }
+                        });
+                    });
             });
 
             // let printer_cfg = &self.config.printers[0];
