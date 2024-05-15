@@ -563,7 +563,7 @@ impl App {
         //         });
         //     });
 
-        let Some(unit) = ams.units.get(amd_id) else {
+        let Some(unit) = ams.units.get(*ams_id) else {
             ui.label("No AMS Connected");
             return;
         };
