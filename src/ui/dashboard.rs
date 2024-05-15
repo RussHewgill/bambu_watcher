@@ -424,6 +424,7 @@ impl App {
         resp
     }
 
+    /// MARK: control
     fn show_controls(
         &self,
         frame_size: Vec2,
@@ -488,6 +489,7 @@ impl App {
         //
     }
 
+    /// MARK: ams
     fn show_ams(
         &mut self,
         frame_size: Vec2,
@@ -506,78 +508,73 @@ impl App {
             return;
         };
 
-        let Some(unit) = ams.units.get(0) else {
-            ui.label("Error getting AMS unit");
-            return;
-        };
-
         // let size_x = ui.available_size_before_wrap().x - 4.;
         // let size_x = frame_size.x - 20.;
         // debug!("size_x: {}", size_x);
 
         let size = 30.;
 
-        ui.style_mut().spacing.item_spacing = Vec2::new(0., 1.);
+        let num_ams = ams.units.len();
+        let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+
         ui.horizontal(|ui| {
-            // let layout = Layout::top_down(Align::Min)
-            //     // .with_main_justify(true)
-            //     // .with_cross_justify(true)
-            //     .with_cross_align(Align::Center)
-            //     // .with_main_justify(true)
-            //     ;
+            if ui.button("-").clicked() {
+                if *ams_id == 0 {
+                    *ams_id = num_ams - 1;
+                } else {
+                    *ams_id -= 1;
+                }
+            }
+            ui.label(&format!("{}", ams_id));
+            if ui.button("+").clicked() {
+                if *ams_id >= num_ams - 1 {
+                    *ams_id = 0;
+                } else {
+                    *ams_id += 1;
+                }
+            }
+        });
 
-            // ui.with_layout(layout, |ui| {
-            //     let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
-            //     if ui.button("+").clicked() {
-            //         *ams_id += 1;
-            //     }
-            //     ui.label(&format!("{}", ams_id));
-            //     if ui.button("-").clicked() {
-            //         *ams_id -= 1;
-            //     }
-            // });
+        // egui_extras::StripBuilder::new(ui)
+        //     .size(egui_extras::Size::exact(30.))
+        //     .size(egui_extras::Size::exact(30.))
+        //     .size(egui_extras::Size::exact(30.))
+        //     .horizontal(|mut strip| {
+        //         strip.cell(|ui| {
+        //             if ui.button("+").clicked() {
+        //                 if *ams_id >= num_ams - 1 {
+        //                     *ams_id = 0;
+        //                 } else {
+        //                     *ams_id += 1;
+        //                 }
+        //             }
+        //         });
+        //         strip.cell(|ui| {
+        //             ui.label(&format!("{}", ams_id));
+        //         });
+        //         strip.cell(|ui| {
+        //             if ui.button("-").clicked() {
+        //                 if *ams_id == 0 {
+        //                     *ams_id = num_ams - 1;
+        //                 } else {
+        //                     *ams_id -= 1;
+        //                 }
+        //             }
+        //         });
+        //     });
 
-            // let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+        let Some(unit) = ams.units.get(0) else {
+            ui.label("No AMS Connected");
+            return;
+        };
 
-            // egui::Grid::new(format!("ams_grid_{}", printer.serial)).show(ui, |ui| {
-            //     if ui.button("+").clicked() {
-            //         *ams_id += 1;
-            //     }
-            //     ui.label(&format!("{}", ams_id));
-            //     if ui.button("-").clicked() {
-            //         *ams_id -= 1;
-            //     }
-            // });
-
-            // egui_extras::StripBuilder::new(ui)
-            //     .size(egui_extras::Size::exact(8.))
-            //     .size(egui_extras::Size::exact(24.))
-            //     .size(egui_extras::Size::exact(8.))
-            //     .vertical(|mut strip| {
-            //         strip.cell(|ui| {
-            //             if ui.button("+").clicked() {
-            //                 *ams_id += 1;
-            //             }
-            //         });
-
-            //         strip.cell(|ui| {
-            //             ui.label(&format!("{}", ams_id));
-            //         });
-
-            //         strip.cell(|ui| {
-            //             if ui.button("-").clicked() {
-            //                 *ams_id -= 1;
-            //             }
-            //         });
-
-            //
-            // });
-
+        ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+        ui.horizontal(|ui| {
             #[cfg(feature = "nope")]
             ui.vertical(|ui| {});
 
             ui.columns(4, |uis| {
-                let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+                // let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
 
                 #[cfg(feature = "nope")]
                 {
