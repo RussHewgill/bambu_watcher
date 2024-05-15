@@ -592,7 +592,7 @@ impl App {
             // ams_icons(ui, false, ams.units.get(0).unwrap());
             // ams_icons(ui, false, ams.units.get(1).unwrap());
             // ams_icons(ui, false, ams.units.get(2).unwrap());
-        } else {
+        } else if num_ams == 4 {
             ams_icons_double(
                 ui,
                 size,
@@ -605,6 +605,10 @@ impl App {
                 ams.units.get(2).unwrap(),
                 ams.units.get(3).unwrap(),
             );
+        } else {
+            ui.label(format!("Too many AMS units: {}", num_ams));
+            warn!("Too many AMS units: {}", num_ams);
+            return;
         }
 
         ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);

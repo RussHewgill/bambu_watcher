@@ -46,7 +46,7 @@ fn main() -> Result<()> {
     dotenv::dotenv()?;
     logging::init_logs();
 
-    let path = "config.yaml";
+    // let path = "config.yaml";
     // let path = "config_test.yaml";
 
     // let printer0 = config::PrinterConfig {
@@ -64,18 +64,18 @@ fn main() -> Result<()> {
 
     // let config: config::ConfigFile = serde_yaml::from_reader(std::fs::File::open(path)?)?;
 
-    let config = config::Config::read_from_file(path)?;
+    // let config = config::Config::read_from_file(path)?;
 
-    debug!("config = {:#?}", config);
+    // debug!("config = {:#?}", config);
 
     // let path = "example.json";
-    // let path = "example2.json";
+    let path = "example2.json";
     // let path = "example3.json";
 
-    // // let msg: bambulab::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
-    // let msg: mqtt::message::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
+    // let msg: bambulab::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
+    let msg: mqtt::message::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
 
-    // debug!("msg = {:#?}", msg);
+    debug!("msg = {:#?}", msg);
 
     Ok(())
 }
