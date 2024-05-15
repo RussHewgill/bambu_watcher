@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use egui::Vec2;
+use egui::{Color32, Sense, Vec2};
 
 use crate::{
     config::PrinterConfig,
-    status::{PrinterState, PrinterType},
+    status::{AmsUnit, PrinterState, PrinterType},
 };
 
 /// MARK: icons
@@ -159,4 +159,40 @@ pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
     };
     let thumbnail = egui::Image::new(src).max_width(size).max_height(size);
     ui.add(thumbnail);
+}
+
+pub fn ams_icons_single(ui: &mut egui::Ui, size: f32, wide: bool, ams: &AmsUnit) {
+    let n = if wide { 4 } else { 8 };
+    let size = if wide { size } else { size / 2. };
+    ui.columns(n, |uis| {
+        for i in 0..4 {
+            paint_ams_icons(&mut uis[i], i, size, ams);
+        }
+    });
+}
+
+pub fn ams_icons_double(ui: &mut egui::Ui, size: f32, ams0: &AmsUnit, ams1: &AmsUnit) {
+    ui.columns(8, |uis| {
+        for i in 0..4 {
+            paint_ams_icons(&mut uis[i], i, size / 2., ams0);
+        }
+        for i in 4..8 {
+            paint_ams_icons(&mut uis[i], i - 4, size / 2., ams1);
+        }
+    });
+}
+
+fn paint_ams_icons(ui: &mut egui::Ui, i: usize, size: f32, ams: &AmsUnit) {
+    let size = Vec2::splat(size);
+    let (response, painter) = ui.allocate_painter(size, Sense::hover());
+    let rect = response.rect;
+    let c = rect.center();
+    // let r = rect.width() / 2.0 - 1.0;
+    let r = size.x / 2.0 - 1.0;
+
+    if let Some(slot) = ams.slots[i].as_ref() {
+        painter.circle_filled(c, r, slot.color);
+    } else {
+        painter.circle_stroke(c, r, egui::Stroke::new(1.0, Color32::from_gray(120)));
+    }
 }

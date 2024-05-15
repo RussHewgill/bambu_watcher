@@ -515,8 +515,9 @@ impl App {
         let size = 30.;
 
         let num_ams = ams.units.len();
-        let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+        // let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
 
+        #[cfg(feature = "nope")]
         ui.horizontal(|ui| {
             if ui.button("-").clicked() {
                 if *ams_id == 0 {
@@ -563,17 +564,57 @@ impl App {
         //         });
         //     });
 
-        let Some(unit) = ams.units.get(*ams_id) else {
+        // let Some(unit) = ams.units.get(0) else {
+        //     ui.label("No AMS Connected");
+        //     return;
+        // };
+
+        if num_ams == 0 {
             ui.label("No AMS Connected");
             return;
-        };
+        } else if num_ams == 1 {
+            ams_icons_single(ui, size, true, ams.units.get(0).unwrap())
+        } else if num_ams == 2 {
+            ams_icons_double(
+                ui,
+                size,
+                ams.units.get(0).unwrap(),
+                ams.units.get(1).unwrap(),
+            );
+        } else if num_ams == 3 {
+            ams_icons_double(
+                ui,
+                size,
+                ams.units.get(0).unwrap(),
+                ams.units.get(1).unwrap(),
+            );
+            ams_icons_single(ui, size, false, ams.units.get(2).unwrap())
+            // ams_icons(ui, false, ams.units.get(0).unwrap());
+            // ams_icons(ui, false, ams.units.get(1).unwrap());
+            // ams_icons(ui, false, ams.units.get(2).unwrap());
+        } else {
+            ams_icons_double(
+                ui,
+                size,
+                ams.units.get(0).unwrap(),
+                ams.units.get(1).unwrap(),
+            );
+            ams_icons_double(
+                ui,
+                size,
+                ams.units.get(2).unwrap(),
+                ams.units.get(3).unwrap(),
+            );
+        }
 
         ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+        #[cfg(feature = "nope")]
         ui.horizontal(|ui| {
-            #[cfg(feature = "nope")]
-            ui.vertical(|ui| {});
+            let n = 4 * ams.units.len();
 
-            ui.columns(4, |uis| {
+            let size = size / ams.units.len() as f32;
+
+            ui.columns(n, |uis| {
                 // let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
 
                 #[cfg(feature = "nope")]
@@ -598,27 +639,34 @@ impl App {
                     // }
                 }
 
-                for i in 0..4 {
-                    let ui = &mut uis[i];
-                    // let size = Vec2::splat(size_x / 4.0 - 10.0);
-                    let size = Vec2::splat(size);
-                    let (response, painter) = ui.allocate_painter(size, Sense::hover());
+                for ams_id in 0..ams.units.len().min(2) {
+                    for i in 0..4 {
+                        let ui = &mut uis[ams_id * 4 + i];
+                        // let size = Vec2::splat(size_x / 4.0 - 10.0);
+                        let size = Vec2::splat(size);
+                        let (response, painter) = ui.allocate_painter(size, Sense::hover());
 
-                    let rect = response.rect;
-                    let c = rect.center();
-                    // let r = rect.width() / 2.0 - 1.0;
-                    let r = size.x / 2.0 - 1.0;
+                        let rect = response.rect;
+                        let c = rect.center();
+                        // let r = rect.width() / 2.0 - 1.0;
+                        let r = size.x / 2.0 - 1.0;
 
-                    if let Some(slot) = unit.slots[i].as_ref() {
-                        painter.circle_filled(c, r, slot.color);
-                    } else {
-                        painter.circle_stroke(
-                            c,
-                            r,
-                            egui::Stroke::new(1.0, Color32::from_gray(120)),
-                        );
+                        let Some(unit) = ams.units.get(ams_id) else {
+                            error!("AMS unit not found");
+                            panic!("AMS unit not found");
+                        };
+
+                        if let Some(slot) = unit.slots[i].as_ref() {
+                            painter.circle_filled(c, r, slot.color);
+                        } else {
+                            painter.circle_stroke(
+                                c,
+                                r,
+                                egui::Stroke::new(1.0, Color32::from_gray(120)),
+                            );
+                        }
+                        // ui.allocate_space(ui.available_size());
                     }
-                    // ui.allocate_space(ui.available_size());
                 }
             });
             ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);

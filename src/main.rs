@@ -185,7 +185,7 @@ fn main() -> eframe::Result<()> {
     let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
 
     /// debug printer state
-    #[cfg(feature = "nope")]
+    // #[cfg(feature = "nope")]
     {
         warn!("adding debug printer state");
 
@@ -209,28 +209,75 @@ fn main() -> eframe::Result<()> {
             status.chamber_fan_speed = Some(80);
 
             status.ams = Some(status::AmsStatus {
-                units: vec![status::AmsUnit {
-                    id: 0,
-                    humidity: 0,
-                    temp: 0.,
-                    slots: [
-                        Some(status::AmsSlot {
-                            material: "PLA".to_string(),
-                            k: 0.03,
-                            color: egui::Color32::RED,
-                        }),
-                        None,
-                        None,
-                        None,
-                    ],
-                }],
+                units: vec![
+                    status::AmsUnit {
+                        id: 0,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::RED,
+                            }),
+                            None,
+                            None,
+                            None,
+                        ],
+                    },
+                    status::AmsUnit {
+                        id: 1,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::GREEN,
+                            }),
+                            None,
+                            None,
+                            None,
+                        ],
+                    },
+                    status::AmsUnit {
+                        id: 2,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::BLUE,
+                            }),
+                            None,
+                            None,
+                            None,
+                        ],
+                    },
+                    status::AmsUnit {
+                        id: 3,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::YELLOW,
+                            }),
+                            None,
+                            None,
+                            None,
+                        ],
+                    },
+                ],
                 current_tray: Some(status::AmsCurrentSlot::Tray {
                     ams_id: 0,
                     tray_id: 0,
                 }),
             });
 
-            let serial = config.printers[0].serial.clone();
+            let serial = config.printers()[0].serial.clone();
             printer_states.insert(serial, status);
         }
 
@@ -242,7 +289,7 @@ fn main() -> eframe::Result<()> {
             status.state = status::PrinterState::Idle;
             // status.eta = Some(chrono::Local::now() + chrono::Duration::minutes(10));
 
-            let serial = config.printers[1].serial.clone();
+            let serial = config.printers()[1].serial.clone();
             printer_states.insert(serial, status);
         }
     }
@@ -252,7 +299,7 @@ fn main() -> eframe::Result<()> {
 
     let cmd_tx2 = cmd_tx.clone();
 
-    // #[cfg(feature = "nope")]
+    #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
