@@ -103,25 +103,12 @@ impl eframe::App for App {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.current_tab, Tab::Main, "Dashboard");
                 // ui.selectable_value(&mut self.current_tab, Tab::Graphs, "Graphs");
-                ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
+                // ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
                 ui.selectable_value(&mut self.current_tab, Tab::Options, "Options");
             });
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            // ui.label("test");
-
-            match self.current_tab {
-                Tab::Main => self.show_dashboard(ui),
-                Tab::Graphs => self.show_graphs(ui),
-                Tab::Printers => self.show_printers_config(ui),
-                Tab::Options => self.show_options(ui),
-                Tab::Debugging => {
-                    self.show_debugging(ui);
-                }
-            }
-        });
-
+        #[cfg(feature = "nope")]
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 // egui::widgets::global_dark_light_mode_switch(ui);
@@ -157,6 +144,34 @@ impl eframe::App for App {
             // let printer_cfg = &self.config.printers[0];
         });
 
+        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+            ui.label("bottom");
+        });
+
+        match self.current_tab {
+            Tab::Main => {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    // ui.label("test");
+                    self.show_dashboard(ui);
+                });
+            }
+            Tab::Graphs => {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    self.show_graphs(ui);
+                });
+            }
+            Tab::Printers => {
+                self.show_printers_config(ctx);
+            }
+            Tab::Options => {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    self.show_options(ui);
+                });
+            } // Tab::Debugging => {
+              //     // self.show_debugging(ui);
+              //     egui::CentralPanel::default().show(ctx, |ui| todo!())
+              // }
+        }
         //
     }
 }

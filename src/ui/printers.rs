@@ -4,10 +4,40 @@ use tracing::{debug, error, info, trace, warn};
 use crate::{config::PrinterConfig, conn_manager::PrinterConnCmd, ui_types::App};
 
 impl App {
-    pub fn show_printers_config(&mut self, ui: &mut egui::Ui) {
+    pub fn show_printers_config(&mut self, ctx: &egui::Context) {
+        egui::panel::SidePanel::left("printer_list")
+            .min_width(400.)
+            .max_width(400.)
+            .show(ctx, |ui| {
+                let row_height = 30.;
 
-        // egui::panel::SidePanel::left("printer_list")
-        //     .show()
+                let num_rows = self.config.printers().len();
+
+                egui::ScrollArea::vertical().auto_shrink(false).show_rows(
+                    ui,
+                    row_height,
+                    num_rows,
+                    |ui, row_range| {
+                        for row in row_range {
+                            let printer = &self.config.printers()[row];
+                            let name = &printer.name;
+                            let id = &printer.serial;
+                            // ui.label(name);
+                            ui.selectable_value(
+                                &mut self.options.selected_printer,
+                                Some(id.clone()),
+                                &format!("{}", name),
+                            );
+                        }
+                        ui.allocate_space(ui.available_size());
+                        //
+                    },
+                );
+            });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            //
+        });
     }
 
     #[cfg(feature = "nope")]

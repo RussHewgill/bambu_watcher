@@ -4,7 +4,13 @@ use tracing::{debug, error, info, trace, warn};
 use egui::{Align, Color32, Layout, Margin, Response, Rounding, Sense, Stroke, Vec2};
 
 use dashmap::DashMap;
-use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc, time::Duration};
+use std::{
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+    rc::Rc,
+    sync::Arc,
+    time::Duration,
+};
 
 use crate::{
     config::{ConfigArc, PrinterConfig},
@@ -29,7 +35,7 @@ impl App {
 
         egui::containers::ScrollArea::both()
             .auto_shrink(false)
-            .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysVisible)
+            // .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysVisible)
             .show(ui, |ui| {
                 let mut max_rect = ui.max_rect();
 
@@ -402,7 +408,17 @@ impl App {
 
         ui.separator();
         // self.show_ams(frame_size, ui, &status, printer, &printer_state);
-        self.show_ams(frame_size, ui, &status, printer.clone());
+        drop(status);
+        drop(printer_state);
+        self.show_ams(
+            frame_size,
+            ui,
+            // &status,
+            printer.clone(),
+            // &mut self.selected_ams,
+        );
+
+        ui.separator();
 
         //
         resp
@@ -473,13 +489,19 @@ impl App {
     }
 
     fn show_ams(
-        &self,
+        &mut self,
         frame_size: Vec2,
         ui: &mut egui::Ui,
-        status: &PrinterStatus,
+        // status: &PrinterStatus,
         printer: Arc<PrinterConfig>,
+        // selected_ams: &mut HashMap<PrinterId, usize>,
         // printer_state: &PrinterStatus,
     ) {
+        let Some(status) = self.printer_states.get(&printer.serial) else {
+            warn!("Printer not found: {}", printer.serial);
+            panic!();
+        };
+
         let Some(ams) = status.ams.as_ref() else {
             return;
         };
@@ -495,19 +517,90 @@ impl App {
 
         let size = 30.;
 
-        ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+        ui.style_mut().spacing.item_spacing = Vec2::new(0., 1.);
         ui.horizontal(|ui| {
-            ui.vertical(|ui| {
-                // let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
-                // if ui.button("+").clicked() {
-                //     *ams_id += 1;
-                // }
-                // ui.label(&format!("{}", ams_id));
-                // if ui.button("-").clicked() {
-                //     *ams_id -= 1;
-                // }
-            });
+            // let layout = Layout::top_down(Align::Min)
+            //     // .with_main_justify(true)
+            //     // .with_cross_justify(true)
+            //     .with_cross_align(Align::Center)
+            //     // .with_main_justify(true)
+            //     ;
+
+            // ui.with_layout(layout, |ui| {
+            //     let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+            //     if ui.button("+").clicked() {
+            //         *ams_id += 1;
+            //     }
+            //     ui.label(&format!("{}", ams_id));
+            //     if ui.button("-").clicked() {
+            //         *ams_id -= 1;
+            //     }
+            // });
+
+            // let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+
+            // egui::Grid::new(format!("ams_grid_{}", printer.serial)).show(ui, |ui| {
+            //     if ui.button("+").clicked() {
+            //         *ams_id += 1;
+            //     }
+            //     ui.label(&format!("{}", ams_id));
+            //     if ui.button("-").clicked() {
+            //         *ams_id -= 1;
+            //     }
+            // });
+
+            // egui_extras::StripBuilder::new(ui)
+            //     .size(egui_extras::Size::exact(8.))
+            //     .size(egui_extras::Size::exact(24.))
+            //     .size(egui_extras::Size::exact(8.))
+            //     .vertical(|mut strip| {
+            //         strip.cell(|ui| {
+            //             if ui.button("+").clicked() {
+            //                 *ams_id += 1;
+            //             }
+            //         });
+
+            //         strip.cell(|ui| {
+            //             ui.label(&format!("{}", ams_id));
+            //         });
+
+            //         strip.cell(|ui| {
+            //             if ui.button("-").clicked() {
+            //                 *ams_id -= 1;
+            //             }
+            //         });
+
+            //
+            // });
+
+            #[cfg(feature = "nope")]
+            ui.vertical(|ui| {});
+
             ui.columns(4, |uis| {
+                let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+
+                #[cfg(feature = "nope")]
+                {
+                    let ui = &mut uis[0];
+
+                    ui.add(
+                        // egui::Slider::new(ams_id, 0..=ams.units.len())
+                        //     .show_value(false)
+                        //     .vertical(),
+                        egui::DragValue::new(ams_id)
+                            // .speed(1.0)
+                            .clamp_range(0..=ams.units.len() - 1),
+                    );
+
+                    // if ui.button("+").clicked() {
+                    //     *ams_id += 1;
+                    // }
+                    // ui.label(&format!("{}", ams_id));
+                    // if ui.button("-").clicked() {
+                    //     *ams_id -= 1;
+                    // }
+                }
+
                 for i in 0..4 {
                     let ui = &mut uis[i];
                     // let size = Vec2::splat(size_x / 4.0 - 10.0);

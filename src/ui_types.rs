@@ -20,7 +20,7 @@ pub enum Tab {
     Graphs,
     Printers,
     Options,
-    Debugging,
+    // Debugging,
 }
 
 impl Default for Tab {
@@ -77,6 +77,7 @@ pub struct App {
 pub struct AppOptions {
     // pub dark_mode: bool,
     pub dashboard_size: (usize, usize),
+    pub selected_printer: Option<PrinterId>,
 }
 
 impl Default for AppOptions {
@@ -84,6 +85,7 @@ impl Default for AppOptions {
         Self {
             // dark_mode: false,
             dashboard_size: (4, 2),
+            selected_printer: None,
         }
     }
 }
