@@ -18,6 +18,7 @@ example*.json
 !assets/icons8-pause-squared-100.png
 !assets/icons8-warning-96.png
 !assets/icons8-play-96.png
+!assets/icons/*.svg
 !assets/monitor_fan_off.svg
 !assets/monitor_fan_on.svg
 !assets/monitor_bed_temp.svg
