@@ -207,7 +207,7 @@ impl PrinterConnManager {
                 // .await
             }
             Message::Info(info) => {
-                // debug!("printer info: {:?}", info);
+                // debug!("printer info for {:?}: {:?}", &printer.name, info);
                 debug!("got printer info for printer: {:?}", &printer.name);
 
                 let mut entry = self
@@ -216,6 +216,13 @@ impl PrinterConnManager {
                     .or_default();
 
                 for module in info.info.module.iter() {
+                    // debug!("module {:?} = {:?}", module.name, module.project_name);
+
+                    let mut module = module.clone();
+                    module.sn = "redacted".to_string();
+
+                    debug!("module {:?} = {:?}", module.name, module);
+
                     if module.name == "mc" {
                         // debug!("project_name = {:?}", module.project_name);
                         match module.project_name.as_ref() {
@@ -238,7 +245,6 @@ impl PrinterConnManager {
                         }
                         debug!("set printer type: {:?}", entry.printer_type);
                     }
-                    // debug!("module {:?} = {:?}", module.name, module.project_name);
                 }
                 // entry.printer_type
 
