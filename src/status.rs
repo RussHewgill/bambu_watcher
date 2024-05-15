@@ -6,7 +6,10 @@ use egui::Color32;
 
 // use bambulab::PrintData;
 use crate::mqtt::message::{PrintAms, PrintData};
-use std::time::{Duration, Instant};
+use std::{
+    collections::HashMap,
+    time::{Duration, Instant},
+};
 
 // use crate::app_types::StatusIcon;
 
@@ -217,12 +220,21 @@ impl PrinterStatus {
 
                 let id = unit.id.parse::<i64>()?;
 
-                out.units.push(AmsUnit {
+                // out.units.push(AmsUnit {
+                //     id,
+                //     humidity: unit.humidity.parse().unwrap_or(0),
+                //     temp: unit.temp.parse().unwrap_or(0.),
+                //     slots,
+                // });
+                out.units.insert(
                     id,
-                    humidity: unit.humidity.parse().unwrap_or(0),
-                    temp: unit.temp.parse().unwrap_or(0.),
-                    slots,
-                });
+                    AmsUnit {
+                        id,
+                        humidity: unit.humidity.parse().unwrap_or(0),
+                        temp: unit.temp.parse().unwrap_or(0.),
+                        slots,
+                    },
+                );
             }
         }
 
@@ -376,7 +388,8 @@ impl PrintError {
 
 #[derive(Debug, Default, Clone)]
 pub struct AmsStatus {
-    pub units: Vec<AmsUnit>,
+    // pub units: Vec<AmsUnit>,
+    pub units: HashMap<i64, AmsUnit>,
     pub current_tray: Option<AmsCurrentSlot>,
     // pub id: Option<i64>,
     // pub humidity: Option<i64>,

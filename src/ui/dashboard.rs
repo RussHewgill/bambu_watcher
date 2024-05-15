@@ -573,22 +573,22 @@ impl App {
             ui.label("No AMS Connected");
             return;
         } else if num_ams == 1 {
-            ams_icons_single(ui, size, true, ams.units.get(0).unwrap())
+            ams_icons_single(ui, size, true, ams.units.get(&0).unwrap())
         } else if num_ams == 2 {
             ams_icons_double(
                 ui,
                 size,
-                ams.units.get(0).unwrap(),
-                ams.units.get(1).unwrap(),
+                ams.units.get(&0).unwrap(),
+                ams.units.get(&1).unwrap(),
             );
         } else if num_ams == 3 {
             ams_icons_double(
                 ui,
                 size,
-                ams.units.get(0).unwrap(),
-                ams.units.get(1).unwrap(),
+                ams.units.get(&0).unwrap(),
+                ams.units.get(&1).unwrap(),
             );
-            ams_icons_single(ui, size, false, ams.units.get(2).unwrap())
+            ams_icons_single(ui, size, false, ams.units.get(&2).unwrap())
             // ams_icons(ui, false, ams.units.get(0).unwrap());
             // ams_icons(ui, false, ams.units.get(1).unwrap());
             // ams_icons(ui, false, ams.units.get(2).unwrap());
@@ -596,14 +596,14 @@ impl App {
             ams_icons_double(
                 ui,
                 size,
-                ams.units.get(0).unwrap(),
-                ams.units.get(1).unwrap(),
+                ams.units.get(&0).unwrap(),
+                ams.units.get(&1).unwrap(),
             );
             ams_icons_double(
                 ui,
                 size,
-                ams.units.get(2).unwrap(),
-                ams.units.get(3).unwrap(),
+                ams.units.get(&2).unwrap(),
+                ams.units.get(&3).unwrap(),
             );
         } else {
             ui.label(format!("Too many AMS units: {}", num_ams));
