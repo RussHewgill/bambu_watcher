@@ -5,6 +5,13 @@ use crate::{config::PrinterConfig, conn_manager::PrinterConnCmd, ui_types::App};
 
 impl App {
     pub fn show_printers_config(&mut self, ui: &mut egui::Ui) {
+
+        // egui::panel::SidePanel::left("printer_list")
+        //     .show()
+    }
+
+    #[cfg(feature = "nope")]
+    pub fn show_printers_config(&mut self, ui: &mut egui::Ui) {
         ui.label("TODO: Printer Config");
 
         egui::Grid::new("printer_config_grid").show(ui, |ui| {
