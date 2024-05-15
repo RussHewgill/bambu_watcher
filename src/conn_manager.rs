@@ -22,7 +22,8 @@ use crate::{
 };
 
 /// The serial number of a printer
-pub type PrinterId = String;
+// pub type PrinterId = String;
+pub type PrinterId = Arc<String>;
 
 /// messages from PrinterConnManager to UI
 #[derive(Debug, Clone)]
@@ -108,12 +109,13 @@ impl PrinterConnManager {
         // Ok(())
     }
 
-    async fn add_printer(&mut self, printer: PrinterConfig, from_cfg: bool) -> Result<()> {
+    async fn add_printer(&mut self, printer: Arc<PrinterConfig>, from_cfg: bool) -> Result<()> {
         if !from_cfg {
+            // self.config.add_printer(printer.unwrap_or_clone()));
             self.config.add_printer(printer.clone());
         }
 
-        let client = Self::start_printer_listener(self.tx.clone(), &printer).await?;
+        let client = Self::start_printer_listener(self.tx.clone(), printer.clone()).await?;
         self.printers.insert(printer.serial.clone(), client);
 
         Ok(())
@@ -121,9 +123,9 @@ impl PrinterConnManager {
 
     async fn start_printer_listener(
         msg_tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
-        printer: &PrinterConfig,
+        printer: Arc<PrinterConfig>,
     ) -> Result<BambuClient> {
-        let mut client = crate::mqtt::BambuClient::new_and_init(&printer, msg_tx).await?;
+        let mut client = crate::mqtt::BambuClient::new_and_init(printer, msg_tx).await?;
         Ok(client)
     }
 }
@@ -289,7 +291,7 @@ impl PrinterConnManager {
     async fn handle_command(&mut self, cmd: PrinterConnCmd) -> Result<()> {
         match cmd {
             PrinterConnCmd::AddPrinter(printer) => {
-                self.add_printer(printer, false).await?;
+                self.add_printer(Arc::new(printer), false).await?;
                 // unimplemented!()
             }
             PrinterConnCmd::ReportInfo(id) => {

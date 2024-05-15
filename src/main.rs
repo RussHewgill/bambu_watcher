@@ -47,30 +47,35 @@ fn main() -> Result<()> {
     logging::init_logs();
 
     let path = "config.yaml";
+    // let path = "config_test.yaml";
 
     // let printer0 = config::PrinterConfig {
     //     name: "bambu".to_string(),
     //     host: env::var("BAMBU_IP")?,
     //     access_code: env::var("BAMBU_ACCESS_CODE")?,
-    //     serial: env::var("BAMBU_IDENT")?,
+    //     serial: Arc::new(env::var("BAMBU_IDENT")?),
     // };
 
-    // let config = config::Configs { printers: vec![printer0] };
+    // let config = config::ConfigFile {
+    //     printers: vec![printer0],
+    // };
 
     // serde_yaml::to_writer(std::fs::File::create(path)?, &config)?;
 
-    // let config: config::Config = serde_yaml::from_reader(std::fs::File::open(path)?)?;
+    // let config: config::ConfigFile = serde_yaml::from_reader(std::fs::File::open(path)?)?;
 
-    // debug!("config = {:#?}", config);
+    let config = config::Config::read_from_file(path)?;
 
-    let path = "example.json";
-    let path = "example2.json";
-    let path = "example3.json";
+    debug!("config = {:#?}", config);
 
-    // let msg: bambulab::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
-    let msg: mqtt::message::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
+    // let path = "example.json";
+    // let path = "example2.json";
+    // let path = "example3.json";
 
-    debug!("msg = {:#?}", msg);
+    // // let msg: bambulab::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
+    // let msg: mqtt::message::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
+
+    // debug!("msg = {:#?}", msg);
 
     Ok(())
 }
@@ -153,14 +158,18 @@ fn main() -> eframe::Result<()> {
 
     // static VISIBLE: std::sync::Mutex<bool> = std::sync::Mutex::new(true);
 
-    let config: config::Config =
-        match serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()) {
-            Ok(config) => config,
-            Err(e) => {
-                warn!("error reading config: {:?}", e);
-                panic!("error reading config: {:?}", e);
-            }
-        };
+    // let config: config::Config =
+    //     match serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()) {
+    //     };
+
+    let config = match config::Config::read_from_file("config.yaml") {
+        Ok(config) => config,
+        Err(e) => {
+            warn!("error reading config: {:?}", e);
+            panic!("error reading config: {:?}", e);
+        }
+    };
+
     let config = ConfigArc::new(config);
     let config2 = config.clone();
 

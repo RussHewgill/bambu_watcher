@@ -51,6 +51,7 @@ impl App {
                     for x in 0..self.options.dashboard_size.0 {
                         let i = x + y * self.options.dashboard_size.0;
 
+                        // #[cfg(feature = "nope")]
                         ui.allocate_ui_at_rect(max_rect_row, |ui| {
                             let frame = egui::Frame::group(ui.style());
 
@@ -81,14 +82,32 @@ impl App {
                                         return;
                                     };
 
+                                    if self.printer_states.contains_key(id) {
+                                        let resp = self.show_printer(
+                                            (x, y),
+                                            frame_size,
+                                            ui,
+                                            // id,
+                                            printer.clone(),
+                                            // &printer_state,
+                                        );
+                                    } else {
+                                        ui.label("Printer not found");
+                                        // ui.allocate_space(Vec2::new(w, h));
+                                        ui.allocate_space(ui.available_size());
+                                        return;
+                                    }
+
+                                    #[cfg(feature = "nope")]
                                     match self.printer_states.get(id) {
-                                        Some(printer_state) => {
+                                        Some(_printer_state) => {
                                             let resp = self.show_printer(
                                                 (x, y),
                                                 frame_size,
                                                 ui,
-                                                &printer,
-                                                &printer_state,
+                                                // id,
+                                                printer.clone(),
+                                                // &printer_state,
                                             );
 
                                             // /// TODO: Preview
@@ -253,19 +272,34 @@ impl App {
         //
     }
 
+    // #[cfg(feature = "nope")]
     /// MARK: show_printer
     pub fn show_printer(
-        &self,
+        &mut self,
         pos: (usize, usize),
         frame_size: Vec2,
         ui: &mut egui::Ui,
-        printer: &PrinterConfig,
-        printer_state: &PrinterStatus,
+        // id: &PrinterId,
+        printer: Arc<PrinterConfig>,
+        // printer_state: &PrinterStatus,
     ) -> Response {
+        let Some(printer) = self
+            .config
+            .printers()
+            .into_iter()
+            .find(|p| p.serial == printer.serial)
+        else {
+            warn!("Printer not found: {}", &printer.serial);
+            return ui.label("Printer not found");
+            // return Response::;
+        };
+
         let Some(status) = self.printer_states.get(&printer.serial) else {
             warn!("Printer not found: {}", printer.serial);
             panic!();
         };
+        /// checked at call site
+        let printer_state = self.printer_states.get(&printer.serial).unwrap();
 
         let resp = ui
             .dnd_drag_source(
@@ -291,7 +325,7 @@ impl App {
 
         ui.columns(2, |uis| {
             if let Some(t) = printer_state.printer_type {
-                uis[0].add(thumbnail_printer(printer, &t, uis[0].ctx()));
+                uis[0].add(thumbnail_printer(printer.clone(), &t, uis[0].ctx()));
             }
 
             uis[1].vertical(|ui| {
@@ -350,7 +384,7 @@ impl App {
 
         /// current print
         if let PrinterState::Printing = status.state {
-            self.show_current_print(frame_size, ui, &status, printer, printer_state);
+            self.show_current_print(frame_size, ui, &status, printer.clone(), &printer_state);
         } else {
             egui::Grid::new(format!("grid_{}", printer.serial)).show(ui, |ui| {
                 ui.label("No print in progress");
@@ -364,10 +398,11 @@ impl App {
         }
 
         ui.separator();
-        self.show_controls(frame_size, ui, &status, printer, printer_state);
+        self.show_controls(frame_size, ui, &status, printer.clone(), &printer_state);
 
         ui.separator();
-        self.show_ams(frame_size, ui, &status, printer, printer_state);
+        // self.show_ams(frame_size, ui, &status, printer, &printer_state);
+        self.show_ams(frame_size, ui, &status, printer.clone());
 
         //
         resp
@@ -378,7 +413,7 @@ impl App {
         frame_size: Vec2,
         ui: &mut egui::Ui,
         status: &PrinterStatus,
-        printer: &PrinterConfig,
+        printer: Arc<PrinterConfig>,
         printer_state: &PrinterStatus,
     ) {
         let pause = match &status.state {
@@ -442,8 +477,8 @@ impl App {
         frame_size: Vec2,
         ui: &mut egui::Ui,
         status: &PrinterStatus,
-        printer: &PrinterConfig,
-        printer_state: &PrinterStatus,
+        printer: Arc<PrinterConfig>,
+        // printer_state: &PrinterStatus,
     ) {
         let Some(ams) = status.ams.as_ref() else {
             return;
@@ -461,27 +496,43 @@ impl App {
         let size = 30.;
 
         ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
-        ui.columns(4, |uis| {
-            for i in 0..4 {
-                let ui = &mut uis[i];
-                // let size = Vec2::splat(size_x / 4.0 - 10.0);
-                let size = Vec2::splat(size);
-                let (response, painter) = ui.allocate_painter(size, Sense::hover());
+        ui.horizontal(|ui| {
+            ui.vertical(|ui| {
+                // let mut ams_id = self.selected_ams.entry(printer.serial.clone()).or_default();
+                // if ui.button("+").clicked() {
+                //     *ams_id += 1;
+                // }
+                // ui.label(&format!("{}", ams_id));
+                // if ui.button("-").clicked() {
+                //     *ams_id -= 1;
+                // }
+            });
+            ui.columns(4, |uis| {
+                for i in 0..4 {
+                    let ui = &mut uis[i];
+                    // let size = Vec2::splat(size_x / 4.0 - 10.0);
+                    let size = Vec2::splat(size);
+                    let (response, painter) = ui.allocate_painter(size, Sense::hover());
 
-                let rect = response.rect;
-                let c = rect.center();
-                // let r = rect.width() / 2.0 - 1.0;
-                let r = size.x / 2.0 - 1.0;
+                    let rect = response.rect;
+                    let c = rect.center();
+                    // let r = rect.width() / 2.0 - 1.0;
+                    let r = size.x / 2.0 - 1.0;
 
-                if let Some(slot) = unit.slots[i].as_ref() {
-                    painter.circle_filled(c, r, slot.color);
-                } else {
-                    painter.circle_stroke(c, r, egui::Stroke::new(1.0, Color32::from_gray(120)));
+                    if let Some(slot) = unit.slots[i].as_ref() {
+                        painter.circle_filled(c, r, slot.color);
+                    } else {
+                        painter.circle_stroke(
+                            c,
+                            r,
+                            egui::Stroke::new(1.0, Color32::from_gray(120)),
+                        );
+                    }
+                    // ui.allocate_space(ui.available_size());
                 }
-                // ui.allocate_space(ui.available_size());
-            }
+            });
+            ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
         });
-        ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
 
         //
     }
@@ -492,7 +543,7 @@ impl App {
         frame_size: Vec2,
         ui: &mut egui::Ui,
         status: &PrinterStatus,
-        printer: &PrinterConfig,
+        printer: Arc<PrinterConfig>,
         printer_state: &PrinterStatus,
     ) {
         let Some(eta) = status.eta else {

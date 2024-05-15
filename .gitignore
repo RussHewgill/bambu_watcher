@@ -3,7 +3,7 @@ tasks.json
 .env
 certs*
 *.png
-config.yaml
+config*.yaml
 example.ron
 example*.json
 *.log

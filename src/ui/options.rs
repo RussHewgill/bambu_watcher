@@ -98,18 +98,22 @@ impl App {
         }
     }
 
+    /// currently keeps printers in place even when rows/cols are hidden
     pub fn change_rows(&mut self, add: bool) {
         if add {
-            // self.options.dashboard_size.1 += 1;
+            self.options.dashboard_size.1 += 1;
         } else {
             if self.options.dashboard_size.1 == 1 {
                 return;
             }
-            warn!("TODO: what to do if printer is in removed row?");
+            // warn!("TODO: what to do if printer is in removed row?");
 
-            for x in 0..self.options.dashboard_size.0 {
-                let pos = GridLocation::new(x, self.options.dashboard_size.1 - 1);
-            }
+            // for x in 0..self.options.dashboard_size.0 {
+            //     let pos = GridLocation::new(x, self.options.dashboard_size.1 - 1);
+            //     if let Some(id) = self.printer_order.get(&pos) {
+            //         warn!("printer {:?} at {:?}", id, pos);
+            //     }
+            // }
 
             self.options.dashboard_size.1 -= 1;
         }
@@ -122,7 +126,7 @@ impl App {
             if self.options.dashboard_size.0 == 1 {
                 return;
             }
-            warn!("TODO: what to do if printer is in removed column?");
+            // warn!("TODO: what to do if printer is in removed column?");
             self.options.dashboard_size.0 -= 1;
         }
     }

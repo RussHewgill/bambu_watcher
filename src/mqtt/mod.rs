@@ -82,7 +82,7 @@ impl rumqttc::tokio_rustls::rustls::client::danger::ServerCertVerifier
 }
 
 pub struct BambuClient {
-    config: PrinterConfig,
+    config: Arc<PrinterConfig>,
 
     // client: paho_mqtt::AsyncClient,
     // stream: paho_mqtt::AsyncReceiver<Option<paho_mqtt::Message>>,
@@ -96,7 +96,7 @@ pub struct BambuClient {
 
 impl BambuClient {
     pub async fn new_and_init(
-        printer_cfg: &PrinterConfig,
+        printer_cfg: Arc<PrinterConfig>,
         tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
         // rx: tokio::sync::broadcast::Receiver<Command>,
     ) -> Result<Self> {
@@ -110,7 +110,7 @@ impl BambuClient {
             // .with_root_certificates(root_cert_store)
             .dangerous()
             .with_custom_certificate_verifier(Arc::new(NoCertificateVerification {
-                serial: printer_cfg.serial.clone(),
+                serial: (*printer_cfg.serial).clone(),
             }))
             .with_no_client_auth();
 
@@ -191,7 +191,7 @@ impl BambuClient {
 }
 
 struct ClientListener {
-    printer_cfg: PrinterConfig,
+    printer_cfg: Arc<PrinterConfig>,
     client: rumqttc::AsyncClient,
     eventloop: rumqttc::EventLoop,
     tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
@@ -201,7 +201,7 @@ struct ClientListener {
 
 impl ClientListener {
     pub fn new(
-        printer_cfg: PrinterConfig,
+        printer_cfg: Arc<PrinterConfig>,
         client: rumqttc::AsyncClient,
         eventloop: rumqttc::EventLoop,
         tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,

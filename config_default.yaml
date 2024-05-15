@@ -1,9 +1,0 @@
-printers:
-- name: printer1
-  host: XXX.XXX.XXX.XXX
-  access_code: 12341234
-  serial: XXXXXXXXXXXXXXX
-- name: printer2
-  host: XXX.XXX.XXX.XXX
-  access_code: 56785678
-  serial: XXXXXXXXXXXXXXX

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use egui::Vec2;
 
 use crate::{
@@ -33,7 +35,7 @@ pub fn icon_stop() -> egui::Image<'static> {
 }
 
 pub fn thumbnail_printer(
-    printer: &PrinterConfig,
+    printer: Arc<PrinterConfig>,
     printer_type: &PrinterType,
     ctx: &egui::Context,
 ) -> egui::Image<'static> {
