@@ -218,10 +218,9 @@ impl PrinterConnManager {
                 for module in info.info.module.iter() {
                     // debug!("module {:?} = {:?}", module.name, module.project_name);
 
-                    let mut module = module.clone();
-                    module.sn = "redacted".to_string();
-
-                    debug!("module {:?} = {:?}", module.name, module);
+                    // let mut module = module.clone();
+                    // module.sn = "redacted".to_string();
+                    // debug!("module {:?} = {:?}", module.name, module);
 
                     if module.name == "mc" {
                         // debug!("project_name = {:?}", module.project_name);

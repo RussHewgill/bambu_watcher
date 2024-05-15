@@ -215,8 +215,8 @@ pub struct InfoData {
     pub command: String,
     pub sequence_id: String,
     pub module: Vec<InfoModule>,
-    pub result: String,
-    pub reason: String,
+    pub result: Option<String>,
+    pub reason: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

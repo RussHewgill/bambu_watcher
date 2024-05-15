@@ -65,7 +65,7 @@ fn main() -> Result<()> {
 
     let path = "example.json";
     let path = "example2.json";
-    // let path = "example3.json";
+    let path = "example3.json";
 
     // let msg: bambulab::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
     let msg: mqtt::message::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
