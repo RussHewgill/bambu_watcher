@@ -185,7 +185,7 @@ fn main() -> eframe::Result<()> {
     let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
 
     /// debug printer state
-    // #[cfg(feature = "nope")]
+    #[cfg(feature = "nope")]
     {
         warn!("adding debug printer state");
 
@@ -299,7 +299,7 @@ fn main() -> eframe::Result<()> {
 
     let cmd_tx2 = cmd_tx.clone();
 
-    #[cfg(feature = "nope")]
+    // #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
