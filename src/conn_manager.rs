@@ -148,7 +148,7 @@ impl PrinterConnManager {
 
                 let prev_error = entry.is_error();
 
-                entry.update(&report.print)?;
+                entry.update(&printer, &report.print)?;
 
                 // debug!("is_error: {:?}", entry.is_error());
 

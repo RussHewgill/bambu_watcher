@@ -5,7 +5,10 @@ use chrono::{DateTime, Local, TimeDelta};
 use egui::Color32;
 
 // use bambulab::PrintData;
-use crate::mqtt::message::{PrintAms, PrintData};
+use crate::{
+    config::PrinterConfig,
+    mqtt::message::{PrintAms, PrintData},
+};
 use std::{
     collections::HashMap,
     time::{Duration, Instant},
@@ -83,15 +86,29 @@ impl PrinterStatus {
         }
     }
 
-    pub fn update(&mut self, report: &PrintData) -> Result<()> {
-        if let Some(s) = Self::get_state(report) {
-            self.state = s;
-        }
-
+    pub fn update(&mut self, printer: &PrinterConfig, report: &PrintData) -> Result<()> {
         self.last_report = Some(Instant::now());
 
         if let Some(f) = report.gcode_file.as_ref() {
             self.current_file = Some(f.clone());
+        }
+
+        if let Some(s) = Self::get_state(report) {
+            if self.state != s && s == PrinterState::Finished {
+                let _ = notify_rust::Notification::new()
+                    .summary(&format!("Print Complete on {}", printer.name))
+                    .body(&format!(
+                        "{}",
+                        self.current_file
+                            .as_ref()
+                            .unwrap_or(&"Unknown File".to_string())
+                    ))
+                    // .icon("thunderbird")
+                    .appname("Bambu Watcher")
+                    .timeout(0)
+                    .show();
+            }
+            self.state = s;
         }
 
         // if let Some(s) = report.gcode_state.as_ref() {
@@ -255,7 +272,7 @@ pub enum PrinterType {
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrinterState {
     Idle,
-    // Finished,
+    Finished,
     Paused,
     Printing,
     Error(String),
@@ -273,7 +290,7 @@ impl PrinterState {
     pub fn to_text(&self) -> &'static str {
         match self {
             PrinterState::Idle => "Idle",
-            // PrinterState::Finished => "Finished",
+            PrinterState::Finished => "Finished",
             PrinterState::Printing => "Printing",
             PrinterState::Error(_) => "Error",
             PrinterState::Paused => "Paused",

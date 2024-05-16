@@ -121,6 +121,7 @@ pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
     let src = match state {
         // PrinterState::Idle => egui::include_image!("../assets/icons/check-circle_poly.svg"),
         PrinterState::Idle => egui::include_image!("../assets/icons/frown_poly.svg"),
+        PrinterState::Finished => egui::include_image!("../assets/icons/frown_poly.svg"),
         PrinterState::Paused => egui::include_image!("../assets/icons/pause-circle_poly.svg"),
         PrinterState::Printing => egui::include_image!("../assets/icons/play-circle_poly.svg"),
         PrinterState::Error(_) => {
