@@ -696,15 +696,15 @@ impl App {
         // let dt = time - chrono::Local::now().naive_local().time();
         let dt = eta - chrono::Local::now();
 
-        // let Some(p) = status.print_percent else {
-        //     warn!("no print percent found");
-        //     return;
-        // };
-        // ui.add(
-        //     egui::ProgressBar::new(p as f32 / 100.0)
-        //         .desired_width(ui.available_width() - 10.)
-        //         .text(format!("{}%", p)),
-        // );
+        let Some(p) = status.print_percent else {
+            warn!("no print percent found");
+            return;
+        };
+        ui.add(
+            egui::ProgressBar::new(p as f32 / 100.0)
+                .desired_width(ui.available_width() - 0.)
+                .text(format!("{}%", p)),
+        );
 
         egui::Grid::new(format!("grid_{}", printer.serial))
             .min_col_width(ui.available_width() - 4.)
