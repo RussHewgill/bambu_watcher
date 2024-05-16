@@ -15,6 +15,7 @@ impl Default for ConfigArc {
     fn default() -> Self {
         Self(Arc::new(RwLock::new(Config {
             logged_in: false,
+            auth: crate::auth::AuthDb::empty(),
             printers: HashMap::new(),
         })))
     }
@@ -27,6 +28,16 @@ impl ConfigArc {
 
     pub fn logged_in(&self) -> bool {
         self.0.read().logged_in
+    }
+
+    pub fn read_auth(&self) {
+        // let path = "auth.db";
+
+        // let mut db = auth::AuthDb::read_or_create("auth.db")?;
+    }
+
+    pub fn get_token(&self) -> Result<Option<crate::auth::Token>> {
+        self.0.read().auth.get_token()
     }
 
     pub fn add_printer(&mut self, printer: Arc<PrinterConfig>) {
@@ -58,14 +69,16 @@ impl ConfigArc {
 }
 
 // #[derive(Debug, Default, Clone, Serialize, Deserialize)]
-#[derive(Debug, Clone)]
+// #[derive(Clone)]
 pub struct Config {
     logged_in: bool,
+    // auth: Option<crate::auth::AuthDb>,
+    auth: crate::auth::AuthDb,
     // pub printers: Vec<Arc<PrinterConfig>>,
     printers: HashMap<PrinterId, Arc<PrinterConfig>>,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ConfigFile {
     pub printers: Vec<PrinterConfig>,
 }
@@ -76,8 +89,11 @@ impl Config {
         let reader = std::io::BufReader::new(file);
         let config: ConfigFile = serde_yaml::from_reader(reader)?;
 
+        let auth = crate::auth::AuthDb::read_or_create("auth.db")?;
+
         let mut out = Self {
             logged_in: false,
+            auth,
             printers: HashMap::new(),
         };
 
@@ -90,7 +106,7 @@ impl Config {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PrinterConfig {
     pub name: String,
     pub host: String,

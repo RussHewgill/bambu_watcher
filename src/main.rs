@@ -140,14 +140,14 @@ fn main() {
 }
 
 /// cloud test
-// #[cfg(feature = "nope")]
+#[cfg(feature = "nope")]
 // #[tokio::main]
 fn main() -> Result<()> {
-    dotenv::dotenv()?;
+    dotenvy::dotenv()?;
     logging::init_logs();
 
-    // let username = env::var("CLOUD_USERNAME")?;
-    // let password = env::var("CLOUD_PASSWORD")?;
+    let username = env::var("CLOUD_USERNAME")?;
+    let password = env::var("CLOUD_PASSWORD")?;
 
     // let username = "test_user";
     // let password = "test_pass";
@@ -286,14 +286,16 @@ fn main() -> Result<()> {
     debug!("reading auth file");
     let mut db = auth::AuthDb::read_or_create("auth.db")?;
 
-    let token = db.get_token()?.unwrap();
+    db.login_and_get_token(&username, &password)?;
+
+    // let token = db.get_token()?.unwrap();
     // debug!("token = {:?}", token.get_token());
 
     // let _ = cloud::get_machines_list(&token)?;
     // let _ = cloud::get_printer_status(&token)?;
     // let _ = cloud::get_project_list(&token)?;
 
-    let _ = cloud::get_subtask_info(&token, "157720277")?;
+    // let _ = cloud::get_subtask_info(&token, "157720277")?;
 
     // let s = std::fs::read_to_string("example4.json")?;
 
@@ -321,9 +323,9 @@ fn main() -> Result<()> {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-#[cfg(feature = "nope")]
+// #[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
-    // dotenv::dotenv().unwrap();
+    dotenvy::dotenv().unwrap();
     logging::init_logs();
 
     let native_options = eframe::NativeOptions {
@@ -440,9 +442,6 @@ fn main() -> eframe::Result<()> {
             printer_states.insert(serial, status);
         }
     }
-
-    // let (handle_tx, handle_rx) = tokio::sync::oneshot::channel::<std::num::NonZeroIsize>();
-    // let (alert_tx, mut alert_rx) = tokio::sync::mpsc::channel::<(String, String)>(2);
 
     let cmd_tx2 = cmd_tx.clone();
 

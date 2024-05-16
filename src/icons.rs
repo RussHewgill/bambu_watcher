@@ -34,6 +34,15 @@ pub fn icon_stop() -> egui::Image<'static> {
         .max_height(size)
 }
 
+// pub fn thumbnail_print<'a>(
+//     printer: Arc<PrinterConfig>,
+//     printer_type: &PrinterType,
+//     ctx: &'a egui::Context,
+// ) -> egui::Image<'a> {
+//     let src = std::env::var("TEST_IMG").unwrap();
+//     egui::Image::new(src)
+// }
+
 pub fn thumbnail_printer(
     printer: Arc<PrinterConfig>,
     printer_type: &PrinterType,

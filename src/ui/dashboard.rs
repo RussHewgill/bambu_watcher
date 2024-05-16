@@ -330,7 +330,14 @@ impl App {
         // });
 
         ui.columns(2, |uis| {
-            if let Some(t) = printer_state.printer_type {
+            if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
+                let size = 80.;
+                let img = egui::Image::new(url)
+                    .fit_to_exact_size(Vec2::new(size, size))
+                    .max_width(size)
+                    .max_height(size);
+                uis[0].add(img);
+            } else if let Some(t) = printer_state.printer_type {
                 uis[0].add(thumbnail_printer(printer.clone(), &t, uis[0].ctx()));
             }
 

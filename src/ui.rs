@@ -90,6 +90,28 @@ impl eframe::App for App {
         eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
+    #[cfg(feature = "nope")]
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        }
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.label("test");
+            // self.show_dashboard(ui);
+
+            let src = std::env::var("TEST_IMG").unwrap();
+            // debug!("src: {}", src);
+            let size = 80.;
+            let img = egui::Image::new(&src)
+                .fit_to_exact_size(Vec2::new(size, size))
+                .max_width(size)
+                .max_height(size);
+            ui.add(img);
+        });
+    }
+
+    // #[cfg(feature = "nope")]
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         // ctx.style_mut(|s| {
         //     s.visuals.dark_mode = true;

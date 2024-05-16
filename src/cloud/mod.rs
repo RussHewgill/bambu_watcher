@@ -32,46 +32,44 @@ const URL_TTCODE: &'static str = "/v1/iot-service/api/user/ttcode";
 /// POST /v1/iot-service/api/user/ttcode
 ///     Gets the TTCode for the printer. This is used for authentication to the webcam stream.
 
-pub fn get_response(token: &Token, url: &str) -> Result<serde_json::Value> {
-    let client = reqwest::blocking::ClientBuilder::new()
-        .use_rustls_tls()
-        .build()?;
+pub async fn get_response(token: &Token, url: &str) -> Result<serde_json::Value> {
+    let client = reqwest::ClientBuilder::new().use_rustls_tls().build()?;
     let res = client
         .get(format!("{}{}", BASE, url))
         .header("Authorization", &format!("Bearer {}", token.get_token()))
-        .send()?;
+        .send()
+        .await?;
 
     if !res.status().is_success() {
         debug!("res {:#?}", res);
         bail!("Failed to get response, url = {}", url);
     }
 
-    let json: serde_json::Value = res.json()?;
+    let json: serde_json::Value = res.json().await?;
 
     Ok(json)
 }
 
-pub fn get_project_list(token: &Token) -> Result<()> {
-    let json = get_response(token, URL_PROJECTS)?;
+pub async fn get_project_list(token: &Token) -> Result<()> {
+    let json = get_response(token, URL_PROJECTS).await?;
     debug!("json {:#?}", json);
     Ok(())
 }
 
-pub fn get_printer_status(token: &Token) -> Result<()> {
-    let json = get_response(token, URL_PRINT)?;
+pub async fn get_printer_status(token: &Token) -> Result<()> {
+    let json = get_response(token, URL_PRINT).await?;
     debug!("json {:#?}", json);
     Ok(())
 }
 
-pub fn get_subtask_info(token: &Token, project_id: &str) -> Result<cloud_types::SubtaskInfo> {
+pub async fn get_subtask_info(token: &Token, project_id: &str) -> Result<cloud_types::SubtaskInfo> {
     let url = format!("{}{}", URL_TASK, project_id);
-    let client = reqwest::blocking::ClientBuilder::new()
-        .use_rustls_tls()
-        .build()?;
+    let client = reqwest::ClientBuilder::new().use_rustls_tls().build()?;
     let res = client
         .get(format!("{}{}", BASE, url))
         .header("Authorization", &format!("Bearer {}", token.get_token()))
-        .send()?;
+        .send()
+        .await?;
 
     if !res.status().is_success() {
         debug!("res {:#?}", res);
@@ -80,7 +78,7 @@ pub fn get_subtask_info(token: &Token, project_id: &str) -> Result<cloud_types::
     // let json = get_response(token, &url)?;
     // debug!("json {:#?}", json);
 
-    let json: cloud_types::SubtaskInfo = res.json()?;
+    let json: cloud_types::SubtaskInfo = res.json().await?;
 
     Ok(json)
 }

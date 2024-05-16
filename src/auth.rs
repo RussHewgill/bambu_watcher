@@ -68,8 +68,8 @@ impl From<cookie::Expiration> for Expiration {
 #[cfg_attr(debug_assertions, derive(Debug))]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct AuthInner {
-    user: String,
-    pass: String,
+    // user: String,
+    // pass: String,
     token: Option<Token>,
     refresh_token: Option<Token>,
 }
@@ -88,13 +88,41 @@ pub struct AuthDb {
 }
 
 impl AuthDb {
+    pub fn empty() -> Self {
+        // let key = std::env::var("COCOON_KEY").unwrap();
+        let key = env!("COCOON_KEY");
+        let seed = rand::thread_rng().gen::<[u8; 32]>();
+        let mut cocoon = MiniCocoon::from_key(key.as_bytes(), &seed);
+        Self {
+            path: PathBuf::new(),
+            cocoon,
+        }
+    }
+
     pub fn read_or_create(path: &str) -> Result<Self> {
         let path: PathBuf = Path::new(path).to_path_buf();
 
-        let key = std::env::var("COCOON_KEY")?;
+        let key_path: PathBuf = Path::new("auth.key").to_path_buf();
+
+        // let key = std::env::var("COCOON_KEY")?;
+        // let key = env!("COCOON_KEY");
+        /// MARK: TODO: generate key if not exists
+        let key = if key_path.exists() {
+            use std::io::Read;
+            let mut file = File::open(&key_path)?;
+            let mut key = [0; 32];
+            file.read_exact(&mut key)?;
+            key
+        } else {
+            let key = rand::thread_rng().gen::<[u8; 32]>();
+            use std::io::Write;
+            let mut file = File::create(&key_path)?;
+            file.write_all(&key)?;
+            key
+        };
         let seed = rand::thread_rng().gen::<[u8; 32]>();
 
-        let mut cocoon = MiniCocoon::from_key(key.as_bytes(), &seed);
+        let mut cocoon = MiniCocoon::from_key(&key, &seed);
 
         if path.exists() {
             let mut file = std::fs::File::open(&path)?;
@@ -103,7 +131,7 @@ impl AuthDb {
 
             Ok(out)
         } else {
-            let file = std::fs::File::create(&path)?;
+            // let file = std::fs::File::create(&path)?;
             Ok(Self { path, cocoon })
         }
     }
@@ -148,10 +176,11 @@ impl AuthDb {
         Ok(())
     }
 
+    #[cfg(feature = "nope")]
     fn set_credentials(&mut self, username: &str, pass: &str) -> Result<()> {
         let auth = AuthInner {
-            user: username.to_string(),
-            pass: pass.to_string(),
+            // user: username.to_string(),
+            // pass: pass.to_string(),
             token: None,
             refresh_token: None,
         };
@@ -161,17 +190,37 @@ impl AuthDb {
         Ok(())
     }
 
-    fn set_token(&mut self, token: Option<Token>, refresh: bool) -> Result<()> {
-        if let Some(mut auth) = self.get_auth()?.0 {
-            if refresh {
-                auth.refresh_token = token;
-            } else {
-                auth.token = token;
+    fn set_tokens(&mut self, tokens: Option<(Token, Token)>) -> Result<()> {
+        let auth = if let Some((t, r)) = tokens {
+            if t.expiry.expired() {
+                bail!("Token expired")
             }
-            self.set_auth(Auth(Some(auth)))?;
+            if r.expiry.expired() {
+                bail!("Refresh token expired")
+            }
+
+            AuthInner {
+                token: Some(t),
+                refresh_token: Some(r),
+            }
         } else {
-            bail!("No credentials set")
+            AuthInner {
+                token: None,
+                refresh_token: None,
+            }
         };
+
+        self.set_auth(Auth(Some(auth)))?;
+        // if let Some(mut auth) = self.get_auth()?.0 {
+        //     if refresh {
+        //         auth.refresh_token = token;
+        //     } else {
+        //         auth.token = token;
+        //     }
+        //     self.set_auth(Auth(Some(auth)))?;
+        // } else {
+        //     bail!("No credentials set")
+        // };
         Ok(())
     }
 
@@ -189,7 +238,7 @@ impl AuthDb {
     }
 
     pub fn login_and_get_token(&mut self, username: &str, pass: &str) -> Result<Token> {
-        self.set_credentials(username, pass)?;
+        // self.set_credentials(username, pass)?;
 
         const URL: &'static str = "https://bambulab.com/api/sign-in/form";
 
@@ -239,9 +288,9 @@ impl AuthDb {
         let t = chrono::Utc::now() + chrono::TimeDelta::new(expires, 0).unwrap();
         refresh_token.expiry = Expiration::Timestamp(t.timestamp());
 
-        self.set_token(Some(token.clone()), false)?;
-
-        self.set_token(Some(refresh_token), true)?;
+        self.set_tokens(Some((token.clone(), refresh_token)))?;
+        // self.set_token(Some(token.clone()), false)?;
+        // self.set_token(Some(refresh_token), true)?;
 
         Ok(token)
     }

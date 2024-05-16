@@ -29,6 +29,7 @@ pub struct PrinterStatus {
 
     pub current_file: Option<String>,
     pub subtask_id: Option<String>,
+    pub current_task_thumbnail_url: Option<String>,
     // pub gcode_state: Option<GcodeState>,
     pub print_error: Option<PrintError>,
     pub print_percent: Option<i64>,
@@ -95,20 +96,20 @@ impl PrinterStatus {
         }
 
         if let Some(s) = Self::get_state(report) {
-            if self.state != s && s == PrinterState::Finished {
-                let _ = notify_rust::Notification::new()
-                    .summary(&format!("Print Complete on {}", printer.name))
-                    .body(&format!(
-                        "{}",
-                        self.current_file
-                            .as_ref()
-                            .unwrap_or(&"Unknown File".to_string())
-                    ))
-                    // .icon("thunderbird")
-                    .appname("Bambu Watcher")
-                    .timeout(0)
-                    .show();
-            }
+            // if self.state != s && s == PrinterState::Finished {
+            //     let _ = notify_rust::Notification::new()
+            //         .summary(&format!("Print Complete on {}", printer.name))
+            //         .body(&format!(
+            //             "{}",
+            //             self.current_file
+            //                 .as_ref()
+            //                 .unwrap_or(&"Unknown File".to_string())
+            //         ))
+            //         // .icon("thunderbird")
+            //         .appname("Bambu Watcher")
+            //         .timeout(0)
+            //         .show();
+            // }
             self.state = s;
         }
 
