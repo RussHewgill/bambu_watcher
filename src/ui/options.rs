@@ -1,17 +1,29 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use egui::ViewportBuilder;
 use egui_phosphor::fill;
 use tracing::{debug, error, info, trace, warn};
 
-use crate::ui_types::{App, GridLocation};
+use crate::ui_types::{App, AppLogin, GridLocation};
 
 /// display
 impl App {
     pub fn show_options(&mut self, ui: &mut egui::Ui) {
-        ui.label("TODO: Options");
+        // ui.label("TODO: Options");
 
         // egui::widgets::global_dark_light_mode_buttons(ui);
 
-        // ui.separator();
+        if self.config.logged_in() {
+        } else {
+            ui.label("Not logged in");
+            if ui.button("Login").clicked() {
+                self.login_window = Some(AppLogin::default());
+            }
+            if self.login_window.is_some() {
+                self.show_login_window(ui);
+            }
+        }
+
+        ui.separator();
 
         egui::Grid::new("options_grid").show(ui, |ui| {
             ui.label("Rows");
@@ -69,6 +81,56 @@ impl App {
 
             ui.end_row();
         });
+    }
+
+    fn show_login_window(&mut self, ui: &mut egui::Ui) {
+        let builder = ViewportBuilder::default()
+            .with_title("Bambu Cloud Login")
+            .with_inner_size([300., 200.]);
+        ui.ctx().show_viewport_immediate(
+            egui::ViewportId::from_hash_of("login_window"),
+            builder,
+            |ctx, _| {
+                if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    self.login_window = None;
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    return;
+                }
+
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let Some(login_window) = self.login_window.as_mut() else {
+                        return;
+                    };
+                    egui::Grid::new("login_grid").show(ui, |ui| {
+                        ui.label("Username");
+                        ui.text_edit_singleline(&mut login_window.username);
+                        ui.end_row();
+
+                        ui.label("Password");
+                        ui.text_edit_singleline(&mut login_window.password);
+                        ui.end_row();
+
+                        ui.allocate_space(ui.available_size());
+                    });
+
+                    if ui.button("Login").clicked() {
+                        //
+                    }
+                    if ui.button("Cancel").clicked() {
+                        self.login_window = None;
+                        ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                        return;
+                    }
+                });
+
+                // if exit {
+                //     drop(login_window);
+                //     self.login_window = None;
+                //     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                //     return;
+                // }
+            },
+        );
     }
 }
 

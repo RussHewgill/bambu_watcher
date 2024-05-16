@@ -28,6 +28,7 @@ pub struct PrinterStatus {
     pub ams: Option<AmsStatus>,
 
     pub current_file: Option<String>,
+    pub subtask_id: Option<String>,
     // pub gcode_state: Option<GcodeState>,
     pub print_error: Option<PrintError>,
     pub print_percent: Option<i64>,
@@ -114,6 +115,12 @@ impl PrinterStatus {
         // if let Some(s) = report.gcode_state.as_ref() {
         //     self.gcode_state = Some(GcodeState::from_str(s));
         // }
+
+        if let Some(id) = report.subtask_id.as_ref() {
+            debug!("printer name = {:?}", printer.name);
+            debug!("subtask_id = {:?}", id);
+            self.subtask_id = Some(id.clone());
+        }
 
         if let Some(p) = report.mc_percent {
             self.print_percent = Some(p);

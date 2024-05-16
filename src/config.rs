@@ -14,6 +14,7 @@ pub struct ConfigArc(Arc<RwLock<Config>>);
 impl Default for ConfigArc {
     fn default() -> Self {
         Self(Arc::new(RwLock::new(Config {
+            logged_in: false,
             printers: HashMap::new(),
         })))
     }
@@ -22,6 +23,10 @@ impl Default for ConfigArc {
 impl ConfigArc {
     pub fn new(config: Config) -> Self {
         Self(Arc::new(RwLock::new(config)))
+    }
+
+    pub fn logged_in(&self) -> bool {
+        self.0.read().logged_in
     }
 
     pub fn add_printer(&mut self, printer: Arc<PrinterConfig>) {
@@ -43,17 +48,9 @@ impl ConfigArc {
             .insert(printer.serial.clone(), printer);
     }
 
-    // pub fn printers(&self) -> Vec<Arc<PrinterConfig>> {
-    //     self.0.read().printers.clone()
-    // }
-
     pub fn printers(&self) -> Vec<Arc<PrinterConfig>> {
         self.0.read().printers.values().cloned().collect()
     }
-
-    // pub fn printer_ids(&self) -> impl Iterator<Item = &str> {
-    //     // self.0.read().printers.iter().map(|p| p.serial.as_str())
-    // }
 
     pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<PrinterConfig>> {
         self.0.read().printers.get(serial).cloned()
@@ -63,6 +60,7 @@ impl ConfigArc {
 // #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[derive(Debug, Clone)]
 pub struct Config {
+    logged_in: bool,
     // pub printers: Vec<Arc<PrinterConfig>>,
     printers: HashMap<PrinterId, Arc<PrinterConfig>>,
 }
@@ -79,6 +77,7 @@ impl Config {
         let config: ConfigFile = serde_yaml::from_reader(reader)?;
 
         let mut out = Self {
+            logged_in: false,
             printers: HashMap::new(),
         };
 

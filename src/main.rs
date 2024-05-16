@@ -10,6 +10,7 @@
 // pub mod app;
 // pub mod app_types;
 pub mod alert;
+pub mod auth;
 pub mod config;
 pub mod conn_manager;
 // pub mod ftp;
@@ -18,6 +19,7 @@ pub mod logging;
 pub mod mqtt;
 pub mod status;
 // pub mod tray;
+pub mod cloud;
 pub mod ui;
 pub mod ui_types;
 // pub mod mqtt_types;
@@ -31,7 +33,7 @@ use futures::StreamExt;
 // use rumqttc::{Client, MqttOptions, QoS};
 use dashmap::DashMap;
 use rumqttc::tokio_rustls::rustls;
-use std::{env, sync::Arc, time::Duration};
+use std::{collections::HashMap, env, sync::Arc, time::Duration};
 
 // use bambulab::{Command, Message};
 
@@ -137,14 +139,189 @@ fn main() {
     //
 }
 
-/// MARK: TODO:
+/// cloud test
+// #[cfg(feature = "nope")]
+// #[tokio::main]
+fn main() -> Result<()> {
+    dotenv::dotenv()?;
+    logging::init_logs();
+
+    // let username = env::var("CLOUD_USERNAME")?;
+    // let password = env::var("CLOUD_PASSWORD")?;
+
+    // let username = "test_user";
+    // let password = "test_pass";
+
+    // debug!("username = {}", username);
+    // debug!("password = {}", password);
+
+    #[cfg(feature = "nope")]
+    {
+        let url = "https://bambulab.com/api/sign-in/form";
+
+        let mut map = HashMap::new();
+        map.insert("account", username);
+        map.insert("password", password);
+        // map.insert("apiError", "".to_string());
+
+        // let client = reqwest::blocking::Client::new();
+        let client = reqwest::blocking::ClientBuilder::new()
+            .use_rustls_tls()
+            // .use_na
+            // .use_rustls_tls()
+            .build()?;
+
+        // let req = client.post(url).json(&map);
+
+        // let json = serde_json::to_string(&map)?;
+        // debug!("json = {}", json);
+        let req = client
+            .post(url)
+            .header("content-type", "application/json")
+            // .header("content-length", format!("{}", json.len()))
+            // .body(json);
+            .json(&map);
+
+        // let req = req.build()?;
+
+        // debug!("req = {:#?}", req);
+
+        // let body = req.body().unwrap().as_bytes().unwrap();
+        // let body = std::str::from_utf8(body).unwrap();
+
+        // debug!("body = {}", body);
+
+        let res = req.send()?;
+
+        debug!("res = {:#?}", res);
+
+        if !res.status().is_success() {
+            debug!("failure");
+            panic!();
+        } else {
+            debug!("success");
+        }
+
+        // debug!("headers = {:#?}", res.headers());
+
+        // let cookies = res.headers().get_all("set-cookie");
+
+        // let mut token = None;
+        // let mut refresh_token = None;
+
+        // for cookie in cookies.iter() {
+        //     let cookie = cookie::Cookie::parse(cookie.to_str()?).unwrap();
+
+        //     if cookie.name() == "token" {
+        //         debug!("expires = {:?}", cookie.expires());
+        //         token = Some(auth::Token::from_cookie(&cookie)?);
+        //     } else if cookie.name() == "refreshToken" {
+        //         refresh_token = Some(auth::Token::from_cookie(&cookie)?);
+        //     }
+        // }
+
+        // let token = token.unwrap();
+        // debug!("token = {:#?}", token.get_token());
+
+        // let refresh_token = refresh_token.unwrap();
+
+        // let set_cookie = res.headers().get("set-cookie").unwrap().to_str()?;
+        // let set_cookie = cookie::Cookie::parse(set_cookie).unwrap();
+
+        // debug!("cookie = {:#?}", set_cookie);
+
+        // let set_cookie = res.headers().get("set-cookie").unwrap().to_str()?;
+        // let set_cookie = cookie::Cookie::parse(set_cookie).unwrap();
+
+        // let token = auth::Token::from_cookie(&cloud_cookie)?;
+
+        // debug!("token = {:#?}", token.get_token());
+
+        //
+    }
+
+    #[cfg(feature = "nope")]
+    {
+        let cloud_cookie = env::var("CLOUD_COOKIE")?;
+        let cloud_cookie = cookie::Cookie::parse(cloud_cookie).unwrap();
+        // debug!("cookie = {:#?}", cloud_cookie);
+        // debug!("token = {}", cloud_cookie.value());
+        // debug!("expires = {:?}", cloud_cookie.expires());
+
+        let token = auth::Token::from_cookie(&cloud_cookie)?;
+
+        let _ = cloud::get_machines_list(&token)?;
+
+        // let
+    }
+
+    #[cfg(feature = "nope")]
+    {
+        debug!("making auth file");
+        let mut db = auth::AuthDb::read_or_create("auth.db")?;
+
+        // let inner = db.get_inner()?;
+
+        // db.set_credentials(&username, &password)?;
+        // debug!("set credentials");
+
+        debug!("reading auth file");
+        let mut db = auth::AuthDb::read_or_create("auth.db")?;
+
+        debug!("logging in");
+
+        db.login_and_get_token(&username, &password)?;
+
+        // debug!("getting auth");
+        // let creds = db.get_auth()?;
+
+        // debug!("creds = {:#?}", creds);
+
+        // debug!("getting token");
+        // let token = db.get_token()?;
+
+        // debug!("token = {:#?}", token);
+    }
+
+    debug!("reading auth file");
+    let mut db = auth::AuthDb::read_or_create("auth.db")?;
+
+    let token = db.get_token()?.unwrap();
+    // debug!("token = {:?}", token.get_token());
+
+    // let _ = cloud::get_machines_list(&token)?;
+    // let _ = cloud::get_printer_status(&token)?;
+    // let _ = cloud::get_project_list(&token)?;
+
+    let _ = cloud::get_subtask_info(&token, "157720277")?;
+
+    // let s = std::fs::read_to_string("example4.json")?;
+
+    // let json: cloud::cloud_types::MainStruct = serde_json::from_str(&s)?;
+
+    // debug!("json = {:#?}", json);
+
+    // "H"
+    // "157442542"
+    // "C"
+    // "157720277"
+
+    // let json = cloud::get_response(&token, "/v1/user-service/my/tasks")?;
+    // let json = cloud::get_response(&token, "/v1/iot-service/api/user/project/157720277")?;
+    // let json = cloud::get_response(&token, "/v1/iot-service/api/user/task/157720277")?;
+    // debug!("json {:#?}", json);
+
+    Ok(())
+}
+
+/// MARK: Main:
 ///     fan speeds
 ///     AMS status
 ///     graphs
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-// #[cfg(feature = "nope")]
+#[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     // dotenv::dotenv().unwrap();
     logging::init_logs();
@@ -208,74 +385,44 @@ fn main() -> eframe::Result<()> {
             status.aux_fan_speed = Some(70);
             status.chamber_fan_speed = Some(80);
 
-            status.ams = Some(status::AmsStatus {
-                units: vec![
-                    status::AmsUnit {
-                        id: 0,
-                        humidity: 0,
-                        temp: 0.,
-                        slots: [
-                            Some(status::AmsSlot {
-                                material: "PLA".to_string(),
-                                k: 0.03,
-                                color: egui::Color32::RED,
-                            }),
-                            None,
-                            None,
-                            None,
-                        ],
-                    },
-                    status::AmsUnit {
-                        id: 1,
-                        humidity: 0,
-                        temp: 0.,
-                        slots: [
-                            Some(status::AmsSlot {
-                                material: "PLA".to_string(),
-                                k: 0.03,
-                                color: egui::Color32::GREEN,
-                            }),
-                            None,
-                            None,
-                            None,
-                        ],
-                    },
-                    status::AmsUnit {
-                        id: 2,
-                        humidity: 0,
-                        temp: 0.,
-                        slots: [
-                            Some(status::AmsSlot {
-                                material: "PLA".to_string(),
-                                k: 0.03,
-                                color: egui::Color32::BLUE,
-                            }),
-                            None,
-                            None,
-                            None,
-                        ],
-                    },
-                    status::AmsUnit {
-                        id: 3,
-                        humidity: 0,
-                        temp: 0.,
-                        slots: [
-                            Some(status::AmsSlot {
-                                material: "PLA".to_string(),
-                                k: 0.03,
-                                color: egui::Color32::YELLOW,
-                            }),
-                            None,
-                            None,
-                            None,
-                        ],
-                    },
-                ],
-                current_tray: Some(status::AmsCurrentSlot::Tray {
-                    ams_id: 0,
-                    tray_id: 0,
-                }),
-            });
+            // status.ams = Some(status::AmsStatus {
+            //     units: vec![
+            //         status::AmsUnit {
+            //             id: 0,
+            //             humidity: 0,
+            //             temp: 0.,
+            //             slots: [
+            //                 Some(status::AmsSlot {
+            //                     material: "PLA".to_string(),
+            //                     k: 0.03,
+            //                     color: egui::Color32::RED,
+            //                 }),
+            //                 None,
+            //                 None,
+            //                 None,
+            //             ],
+            //         },
+            //         status::AmsUnit {
+            //             id: 1,
+            //             humidity: 0,
+            //             temp: 0.,
+            //             slots: [
+            //                 Some(status::AmsSlot {
+            //                     material: "PLA".to_string(),
+            //                     k: 0.03,
+            //                     color: egui::Color32::GREEN,
+            //                 }),
+            //                 None,
+            //                 None,
+            //                 None,
+            //             ],
+            //         },
+            //     ],
+            //     current_tray: Some(status::AmsCurrentSlot::Tray {
+            //         ams_id: 0,
+            //         tray_id: 0,
+            //     }),
+            // });
 
             let serial = config.printers()[0].serial.clone();
             printer_states.insert(serial, status);

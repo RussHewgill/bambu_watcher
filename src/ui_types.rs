@@ -71,6 +71,18 @@ pub struct App {
     pub new_printer: NewPrinterEntry,
 
     pub options: AppOptions,
+
+    #[serde(skip)]
+    pub login_window: Option<AppLogin>,
+
+    #[serde(skip)]
+    pub auth: Option<crate::auth::AuthDb>,
+}
+
+#[derive(Default)]
+pub struct AppLogin {
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Deserialize, Serialize)]
