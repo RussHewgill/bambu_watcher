@@ -49,10 +49,10 @@ pub struct PrinterConnManager {
     config: ConfigArc,
     printers: HashMap<PrinterId, BambuClient>,
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
-    cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
-    cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
+    cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
+    cmd_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnCmd>,
     // msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
-    msg_tx: tokio::sync::mpsc::Sender<PrinterConnMsg>,
+    msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
     ctx: egui::Context,
     // win_handle: std::num::NonZeroIsize,
     // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
@@ -65,15 +65,16 @@ impl PrinterConnManager {
     pub fn new(
         config: ConfigArc,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
-        cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
-        cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
+        cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
+        cmd_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnCmd>,
         // msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
-        msg_tx: tokio::sync::mpsc::Sender<PrinterConnMsg>,
+        msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
         ctx: egui::Context,
         // win_handle: std::num::NonZeroIsize,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
-        let (tx, mut rx) = tokio::sync::mpsc::channel::<(PrinterId, Message)>(25);
+        let channel_size = if cfg!(debug_assertions) { 1 } else { 50 };
+        let (tx, mut rx) = tokio::sync::mpsc::channel::<(PrinterId, Message)>(channel_size);
         Self {
             config,
             printers: HashMap::new(),
@@ -226,21 +227,16 @@ impl PrinterConnManager {
 
                 self.ctx.request_repaint();
 
-                if let Err(e) = self
-                    .msg_tx
-                    .send(PrinterConnMsg::StatusReport(
-                        printer.serial.clone(),
-                        report.print,
-                    ))
-                    .await
-                {
+                if let Err(e) = self.msg_tx.send(PrinterConnMsg::StatusReport(
+                    printer.serial.clone(),
+                    report.print,
+                )) {
                     error!("error sending status report: {:?}", e);
                 }
 
                 if entry.printer_type.is_none() {
                     self.cmd_tx
-                        .send(PrinterConnCmd::ReportInfo(printer.serial.clone()))
-                        .await?;
+                        .send(PrinterConnCmd::ReportInfo(printer.serial.clone()))?;
                 }
 
                 // .await
@@ -365,7 +361,7 @@ impl PrinterConnManager {
 }
 
 async fn login(
-    tx: tokio::sync::mpsc::Sender<PrinterConnMsg>,
+    tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
     config: ConfigArc,
     username: String,
     password: String,

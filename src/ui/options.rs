@@ -12,16 +12,16 @@ impl App {
 
         // egui::widgets::global_dark_light_mode_buttons(ui);
 
-        if self.config.logged_in() {
-            ui.label("Logged in");
-        } else {
-            ui.label("Not logged in");
-            if self.login_window.is_some() {
-                self.show_login(ui);
-            } else if ui.button("Login").clicked() {
-                self.login_window = Some(AppLogin::default());
-            }
-        }
+        // if self.config.logged_in() {
+        //     ui.label("Logged in");
+        // } else {
+        //     ui.label("Not logged in");
+        //     if self.login_window.is_some() {
+        //         self.show_login(ui);
+        //     } else if ui.button("Login").clicked() {
+        //         self.login_window = Some(AppLogin::default());
+        //     }
+        // }
 
         ui.separator();
 
@@ -108,7 +108,7 @@ impl App {
                     return;
                 };
                 if ui.button("Login").clicked() {
-                    let res = self.cmd_tx.as_ref().unwrap().try_send(
+                    let res = self.cmd_tx.as_ref().unwrap().send(
                         crate::conn_manager::PrinterConnCmd::Login(
                             login_window.username.clone(),
                             login_window.password.clone(),

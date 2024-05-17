@@ -358,8 +358,10 @@ fn main() -> eframe::Result<()> {
     let channel_size = if cfg!(debug_assertions) { 1 } else { 50 };
 
     // let (msg_tx, mut msg_rx) = tokio::sync::watch::channel::<PrinterConnMsg>(PrinterConnMsg::Empty);
-    let (msg_tx, mut msg_rx) = tokio::sync::mpsc::channel::<PrinterConnMsg>(channel_size);
-    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(channel_size);
+    // let (msg_tx, mut msg_rx) = tokio::sync::mpsc::channel::<PrinterConnMsg>(channel_size);
+    // let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(channel_size);
+    let (msg_tx, mut msg_rx) = tokio::sync::mpsc::unbounded_channel::<PrinterConnMsg>();
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::unbounded_channel::<PrinterConnCmd>();
 
     let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
     let printer_states2 = printer_states.clone();

@@ -28,7 +28,7 @@ impl App {
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
         config: ConfigArc,
         cc: &eframe::CreationContext<'_>,
-        cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
+        cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
         let mut out = if let Some(storage) = cc.storage {

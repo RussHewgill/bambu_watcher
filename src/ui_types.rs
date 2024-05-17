@@ -50,7 +50,7 @@ pub struct App {
     pub config: ConfigArc,
 
     #[serde(skip)]
-    pub cmd_tx: Option<tokio::sync::mpsc::Sender<PrinterConnCmd>>,
+    pub cmd_tx: Option<tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>>,
 
     #[serde(skip)]
     pub printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
