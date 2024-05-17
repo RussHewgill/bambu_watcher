@@ -316,6 +316,25 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+/// streaming test
+#[cfg(feature = "nope")]
+// #[tokio::main]
+async fn main() -> Result<()> {
+    dotenvy::dotenv()?;
+    logging::init_logs();
+
+    let (config, auth) = match config::Config::read_from_file("config.yaml") {
+        Ok(config) => config,
+        Err(e) => {
+            warn!("error reading config: {:?}", e);
+            panic!("error reading config: {:?}", e);
+        }
+    };
+    let config = ConfigArc::new(config, auth);
+
+    Ok(())
+}
+
 /// MARK: Main:
 ///     fan speeds
 ///     AMS status
@@ -335,21 +354,15 @@ fn main() -> eframe::Result<()> {
         ..Default::default()
     };
 
-    // static VISIBLE: std::sync::Mutex<bool> = std::sync::Mutex::new(true);
-
-    // let config: config::Config =
-    //     match serde_yaml::from_reader(std::fs::File::open("config.yaml").unwrap()) {
-    //     };
-
-    let config = match config::Config::read_from_file("config.yaml") {
-        Ok(config) => config,
+    let (config, auth) = match config::Config::read_from_file("config.yaml") {
+        Ok((config, auth)) => (config, auth),
         Err(e) => {
             warn!("error reading config: {:?}", e);
             panic!("error reading config: {:?}", e);
         }
     };
 
-    let config = ConfigArc::new(config);
+    let config = ConfigArc::new(config, auth);
     let config2 = config.clone();
 
     // let mut _tray_icon = std::rc::Rc::new(std::cell::RefCell::new(None));

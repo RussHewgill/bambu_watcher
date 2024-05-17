@@ -3,87 +3,141 @@ use tracing::{debug, error, info, trace, warn};
 
 use std::{collections::HashMap, sync::Arc};
 
-use parking_lot::RwLock;
+// use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
+use tokio::sync::RwLock;
 
 use crate::conn_manager::PrinterId;
 
 #[derive(Clone)]
-pub struct ConfigArc(Arc<RwLock<Config>>);
+// pub struct ConfigArc(Arc<RwLock<Config>>);
+pub struct ConfigArc {
+    pub config: Arc<RwLock<Config>>,
+    pub auth: Arc<RwLock<crate::auth::AuthDb>>,
+}
 
 impl Default for ConfigArc {
     fn default() -> Self {
         warn!("config default shouldn't be used");
-        Self(Arc::new(RwLock::new(Config {
-            logged_in: false,
-            auth: crate::auth::AuthDb::empty(),
-            printers: HashMap::new(),
-        })))
+        // Self(Arc::new(RwLock::new(Config {
+        //     logged_in: false,
+        //     auth: crate::auth::AuthDb::empty(),
+        //     printers: HashMap::new(),
+        // })))
+        Self {
+            config: Arc::new(RwLock::new(Config {
+                logged_in: false,
+                printers: HashMap::new(),
+            })),
+            auth: Arc::new(RwLock::new(crate::auth::AuthDb::empty())),
+        }
     }
 }
 
 impl ConfigArc {
-    pub fn new(config: Config) -> Self {
-        Self(Arc::new(RwLock::new(config)))
+    pub fn new(config: Config, auth: crate::auth::AuthDb) -> Self {
+        // Self(Arc::new(RwLock::new(config)))
+        Self {
+            config: Arc::new(RwLock::new(config)),
+            auth: Arc::new(RwLock::new(auth)),
+        }
     }
 
     pub fn logged_in(&self) -> bool {
-        self.0.read().logged_in
+        self.config.blocking_read().logged_in
     }
 
-    pub fn read_auth(&self) {
-        // let path = "auth.db";
-
-        // let mut db = auth::AuthDb::read_or_create("auth.db")?;
+    pub async fn logged_in_async(&self) -> bool {
+        self.config.read().await.logged_in
     }
 
-    pub fn get_token(&self) -> Result<Option<crate::auth::Token>> {
-        if let Some(token) = self.0.read().auth.get_token_cached() {
-            Ok(Some(token))
-        } else {
-            self.0.write().auth.get_token()
+    pub async fn get_token_async(&self) -> Result<Option<crate::auth::Token>> {
+        {
+            let token = self.auth.read().await.get_token_cached();
+            if let Some(token) = token {
+                return Ok(Some(token));
+            }
         }
+
+        self.auth.write().await.get_token()
+    }
+
+    #[cfg(feature = "nope")]
+    pub fn get_token(&self) -> Result<Option<crate::auth::Token>> {
+        {
+            let token = self.auth.blocking_read().get_token_cached();
+            if let Some(token) = token {
+                return Ok(Some(token));
+            }
+        }
+
+        self.auth.blocking_write().get_token()
     }
 
     pub async fn fetch_new_token(&self, username: &str, password: &str) -> Result<()> {
-        // self.0.write().auth.login_and_get_token(username, password)
-        unimplemented!()
+        self.auth
+            .write()
+            .await
+            .login_and_get_token(username, password)
+            .await?;
+        Ok(())
     }
 
     pub fn add_printer(&mut self, printer: Arc<PrinterConfig>) {
-        for (id, p) in self.0.read().printers.iter() {
-            if *id == printer.serial {
-                error!("Duplicate printer serial");
-                return;
-            }
-            if p.host == printer.host {
-                error!("Duplicate printer host");
-                return;
+        {
+            for (id, p) in self.config.blocking_read().printers.iter() {
+                if *id == printer.serial {
+                    error!("Duplicate printer serial");
+                    return;
+                }
+                if p.host == printer.host {
+                    error!("Duplicate printer host");
+                    return;
+                }
             }
         }
         // self.0.write().printers.push(Arc::new(printer));
-        self.0
-            .write()
+        self.config
+            .blocking_write()
             .printers
             // .insert(printer.serial.clone(), Arc::new(printer));
             .insert(printer.serial.clone(), printer);
     }
 
-    pub fn printers(&self) -> Vec<Arc<PrinterConfig>> {
-        self.0.read().printers.values().cloned().collect()
+    pub async fn printers_async(&self) -> Vec<Arc<PrinterConfig>> {
+        self.config
+            .read()
+            .await
+            .printers
+            .values()
+            .cloned()
+            .collect()
     }
 
-    pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<PrinterConfig>> {
-        self.0.read().printers.get(serial).cloned()
+    pub fn printers(&self) -> Vec<Arc<PrinterConfig>> {
+        self.config
+            .blocking_read()
+            .printers
+            .values()
+            .cloned()
+            .collect()
     }
+
+    pub async fn get_printer_async(&self, serial: &PrinterId) -> Option<Arc<PrinterConfig>> {
+        self.config.read().await.printers.get(serial).cloned()
+    }
+
+    // pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<PrinterConfig>> {
+    //     self.config.blocking_read().printers.get(serial).cloned()
+    // }
 }
 
 // #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 // #[derive(Clone)]
 pub struct Config {
-    logged_in: bool,
+    pub logged_in: bool,
     // auth: Option<crate::auth::AuthDb>,
-    auth: crate::auth::AuthDb,
+    // auth: crate::auth::AuthDb,
     // pub printers: Vec<Arc<PrinterConfig>>,
     printers: HashMap<PrinterId, Arc<PrinterConfig>>,
 }
@@ -94,7 +148,7 @@ pub struct ConfigFile {
 }
 
 impl Config {
-    pub fn read_from_file(path: &str) -> Result<Self> {
+    pub fn read_from_file(path: &str) -> Result<(Self, crate::auth::AuthDb)> {
         let file = std::fs::File::open(path)?;
         let reader = std::io::BufReader::new(file);
         let config: ConfigFile = serde_yaml::from_reader(reader)?;
@@ -105,7 +159,7 @@ impl Config {
 
         let mut out = Self {
             logged_in,
-            auth,
+            // auth,
             printers: HashMap::new(),
         };
 
@@ -114,7 +168,7 @@ impl Config {
                 .insert(printer.serial.clone(), Arc::new(printer));
         }
 
-        Ok(out)
+        Ok((out, auth))
     }
 }
 

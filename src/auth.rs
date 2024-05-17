@@ -153,6 +153,10 @@ impl AuthDb {
         }
     }
 
+    pub fn clear_token(&mut self) -> Result<()> {
+        self.set_tokens(None)
+    }
+
     fn read_auth(&self) -> Result<AuthInner> {
         let mut file = std::fs::File::open(Self::DB_PATH)?;
         let Ok(inner) = self.cocoon.parse(&mut file) else {

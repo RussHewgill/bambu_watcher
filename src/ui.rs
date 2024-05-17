@@ -183,7 +183,8 @@ impl eframe::App for App {
                 });
             }
             Tab::Printers => {
-                self.show_printers_config(ctx);
+                // self.show_printers_config(ctx);
+                unimplemented!()
             }
             Tab::Options => {
                 egui::CentralPanel::default().show(ctx, |ui| {

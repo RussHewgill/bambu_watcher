@@ -79,11 +79,29 @@ pub struct App {
     pub auth: Option<crate::auth::AuthDb>,
 }
 
-#[derive(Default)]
+// #[derive(Default)]
 pub struct AppLogin {
     pub username: String,
     pub password: String,
     pub sent: bool,
+}
+
+impl Default for AppLogin {
+    fn default() -> Self {
+        if cfg!(debug_assertions) {
+            Self {
+                username: std::env::var("CLOUD_USERNAME").unwrap(),
+                password: std::env::var("CLOUD_PASSWORD").unwrap(),
+                sent: false,
+            }
+        } else {
+            Self {
+                username: String::new(),
+                password: String::new(),
+                sent: false,
+            }
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize)]

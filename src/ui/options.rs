@@ -13,7 +13,13 @@ impl App {
         // egui::widgets::global_dark_light_mode_buttons(ui);
 
         if self.config.logged_in() {
-            ui.label("Logged in");
+            if ui.button("Logout").clicked() {
+                let _ = self
+                    .cmd_tx
+                    .as_ref()
+                    .unwrap()
+                    .send(crate::conn_manager::PrinterConnCmd::Logout);
+            }
         } else {
             ui.label("Not logged in");
             if self.login_window.is_some() {
@@ -194,7 +200,9 @@ impl App {
             self.printer_order.remove(&to),
         ) {
             (Some(id_from), Some(id_to)) => {
-                debug!("TODO: swap printers");
+                // debug!("TODO: swap printers");
+                self.printer_order.insert(*to, id_from);
+                self.printer_order.insert(*from, id_to);
             }
             (Some(id), None) => {
                 debug!("moving printer {} from {:?} to {:?}", id, from, to);

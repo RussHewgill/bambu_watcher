@@ -4,6 +4,7 @@ use tracing::{debug, error, info, trace, warn};
 use crate::{config::PrinterConfig, conn_manager::PrinterConnCmd, ui_types::App};
 
 impl App {
+    #[cfg(feature = "nope")]
     pub fn show_printers_config(&mut self, ctx: &egui::Context) {
         egui::panel::SidePanel::left("printer_list")
             .min_width(400.)
