@@ -10,8 +10,6 @@ impl App {
     pub fn show_options(&mut self, ui: &mut egui::Ui) {
         // ui.label("TODO: Options");
 
-        // egui::widgets::global_dark_light_mode_buttons(ui);
-
         if self.config.logged_in() {
             if ui.button("Logout").clicked() {
                 let _ = self
@@ -32,6 +30,9 @@ impl App {
         ui.separator();
 
         egui::Grid::new("options_grid").show(ui, |ui| {
+            egui::widgets::global_dark_light_mode_buttons(ui);
+            ui.end_row();
+
             ui.label("Rows");
 
             if ui

@@ -331,8 +331,16 @@ impl App {
 
         ui.columns(2, |uis| {
             if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
-                let size = 80.;
+                // debug!("url = {}", url);
+                let size = 80. - 4.;
                 let img = egui::Image::new(url)
+                    .bg_fill(if uis[0].visuals().dark_mode {
+                        Color32::from_gray(128)
+                    } else {
+                        Color32::from_gray(210)
+                    })
+                    .rounding(Rounding::same(4.))
+                    .shrink_to_fit()
                     .fit_to_exact_size(Vec2::new(size, size))
                     .max_width(size)
                     .max_height(size);
@@ -396,6 +404,8 @@ impl App {
         ui.separator();
 
         /// current print
+        self.show_current_print(frame_size, ui, &status, printer.clone(), &printer_state);
+        #[cfg(feature = "nope")]
         if let PrinterState::Printing = status.state {
             self.show_current_print(frame_size, ui, &status, printer.clone(), &printer_state);
         } else {
@@ -701,7 +711,11 @@ impl App {
 
         let time = eta.time();
         // let dt = time - chrono::Local::now().naive_local().time();
-        let dt = eta - chrono::Local::now();
+        let dt = if eta > chrono::Local::now() {
+            chrono::TimeDelta::zero()
+        } else {
+            eta - chrono::Local::now()
+        };
 
         let Some(p) = status.print_percent else {
             warn!("no print percent found");
