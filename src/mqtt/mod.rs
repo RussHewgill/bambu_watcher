@@ -88,7 +88,7 @@ pub struct BambuClient {
     // stream: paho_mqtt::AsyncReceiver<Option<paho_mqtt::Message>>,
     client: rumqttc::AsyncClient,
     // eventloop: rumqttc::EventLoop,
-    tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+    tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     // rx: tokio::sync::broadcast::Receiver<Command>,
     topic_device_request: String,
     topic_device_report: String,
@@ -97,7 +97,7 @@ pub struct BambuClient {
 impl BambuClient {
     pub async fn new_and_init(
         printer_cfg: Arc<PrinterConfig>,
-        tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+        tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
         // rx: tokio::sync::broadcast::Receiver<Command>,
     ) -> Result<Self> {
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
@@ -163,7 +163,6 @@ impl BambuClient {
                     listener
                         .tx
                         .send((listener.printer_cfg.serial.clone(), Message::Disconnected))
-                        .await
                         .unwrap();
                 }
                 listener.eventloop.clean();
@@ -194,7 +193,7 @@ struct ClientListener {
     printer_cfg: Arc<PrinterConfig>,
     client: rumqttc::AsyncClient,
     eventloop: rumqttc::EventLoop,
-    tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+    tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     topic_device_report: String,
     topic_device_request: String,
 }
@@ -204,7 +203,7 @@ impl ClientListener {
         printer_cfg: Arc<PrinterConfig>,
         client: rumqttc::AsyncClient,
         eventloop: rumqttc::EventLoop,
-        tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+        tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
         topic_device_report: String,
         topic_device_request: String,
     ) -> Self {
@@ -260,7 +259,7 @@ impl ClientListener {
                     // debug!("incoming publish");
                     let msg = parse::parse_message(&p);
                     // debug!("incoming publish: {:?}", msg);
-                    self.tx.send((self.printer_cfg.serial.clone(), msg)).await?;
+                    self.tx.send((self.printer_cfg.serial.clone(), msg))?;
                 }
                 Event::Incoming(event) => {
                     debug!("incoming other event: {:?}", event);

@@ -56,8 +56,8 @@ pub struct PrinterConnManager {
     ctx: egui::Context,
     // win_handle: std::num::NonZeroIsize,
     // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
-    tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
-    rx: tokio::sync::mpsc::Receiver<(PrinterId, Message)>,
+    tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
+    rx: tokio::sync::mpsc::UnboundedReceiver<(PrinterId, Message)>,
 }
 
 /// new, start listeners
@@ -73,8 +73,9 @@ impl PrinterConnManager {
         // win_handle: std::num::NonZeroIsize,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
-        let channel_size = if cfg!(debug_assertions) { 1 } else { 50 };
-        let (tx, mut rx) = tokio::sync::mpsc::channel::<(PrinterId, Message)>(channel_size);
+        // let channel_size = if cfg!(debug_assertions) { 1 } else { 50 };
+        // let (tx, mut rx) = tokio::sync::mpsc::channel::<(PrinterId, Message)>(channel_size);
+        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<(PrinterId, Message)>();
         Self {
             config,
             printers: HashMap::new(),
@@ -128,7 +129,7 @@ impl PrinterConnManager {
     }
 
     async fn start_printer_listener(
-        msg_tx: tokio::sync::mpsc::Sender<(PrinterId, Message)>,
+        msg_tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
         printer: Arc<PrinterConfig>,
     ) -> Result<BambuClient> {
         let mut client = crate::mqtt::BambuClient::new_and_init(printer, msg_tx).await?;
