@@ -31,6 +31,7 @@ pub enum PrinterConnMsg {
     Empty,
     /// The current status of a printer
     StatusReport(PrinterId, PrintData),
+    LoggedIn,
 }
 
 /// messages from UI to PrinterConnManager
@@ -40,6 +41,7 @@ pub enum PrinterConnCmd {
     /// get the status of a printer
     ReportStatus(PrinterId),
     ReportInfo(PrinterId),
+    Login(String, String),
 }
 
 pub struct PrinterConnManager {
@@ -49,7 +51,8 @@ pub struct PrinterConnManager {
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
     cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
     cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
-    msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
+    // msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
+    msg_tx: tokio::sync::mpsc::Sender<PrinterConnMsg>,
     ctx: egui::Context,
     // win_handle: std::num::NonZeroIsize,
     // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
@@ -57,13 +60,15 @@ pub struct PrinterConnManager {
     rx: tokio::sync::mpsc::Receiver<(PrinterId, Message)>,
 }
 
+/// new, start listeners
 impl PrinterConnManager {
     pub fn new(
         config: ConfigArc,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
         cmd_tx: tokio::sync::mpsc::Sender<PrinterConnCmd>,
         cmd_rx: tokio::sync::mpsc::Receiver<PrinterConnCmd>,
-        msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
+        // msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
+        msg_tx: tokio::sync::mpsc::Sender<PrinterConnMsg>,
         ctx: egui::Context,
         // win_handle: std::num::NonZeroIsize,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
@@ -100,7 +105,7 @@ impl PrinterConnManager {
                 Some((id, printer_msg)) = self.rx.recv() => {
                     // debug!("got printer_msg, id = {:?} = {:?}", id, printer_msg);
                     if let Some(printer) = self.config.get_printer(&id) {
-                        self.handle_printer_msg(self.config.clone(), printer, printer_msg).await?;
+                        self.handle_printer_msg(printer, printer_msg).await?;
                     }
                 }
             }
@@ -130,10 +135,10 @@ impl PrinterConnManager {
     }
 }
 
+/// handle messages, commands
 impl PrinterConnManager {
     async fn handle_printer_msg(
         &mut self,
-        config: ConfigArc,
         printer: Arc<PrinterConfig>,
         msg: Message,
     ) -> Result<()> {
@@ -175,7 +180,7 @@ impl PrinterConnManager {
                     if entry.state == PrinterState::Printing && entry.subtask_id.is_some() {
                         entry.current_task_thumbnail_url = None;
 
-                        let config2 = config.clone();
+                        let config2 = self.config.clone();
                         let printer2 = printer.clone();
                         let printer_states2 = self.printer_states.clone();
                         let task_id = entry.subtask_id.as_ref().unwrap().clone();
@@ -221,10 +226,14 @@ impl PrinterConnManager {
 
                 self.ctx.request_repaint();
 
-                if let Err(e) = self.msg_tx.send(PrinterConnMsg::StatusReport(
-                    printer.serial.clone(),
-                    report.print,
-                )) {
+                if let Err(e) = self
+                    .msg_tx
+                    .send(PrinterConnMsg::StatusReport(
+                        printer.serial.clone(),
+                        report.print,
+                    ))
+                    .await
+                {
                     error!("error sending status report: {:?}", e);
                 }
 
@@ -340,9 +349,34 @@ impl PrinterConnManager {
                     error!("error publishing status: {:?}", e);
                 }
             }
+            PrinterConnCmd::Login(username, password) => {
+                // self.get_token(username, pass).await?;
+                let tx2 = self.msg_tx.clone();
+                let config2 = self.config.clone();
+                tokio::spawn(async {
+                    if let Err(e) = login(tx2, config2, username, password).await {
+                        error!("error getting token: {:?}", e);
+                    }
+                });
+            }
         }
         Ok(())
     }
+}
+
+async fn login(
+    tx: tokio::sync::mpsc::Sender<PrinterConnMsg>,
+    config: ConfigArc,
+    username: String,
+    password: String,
+) -> Result<()> {
+    if let Err(e) = config.fetch_new_token(&username, &password).await {
+        error!("error fetching token: {:?}", e);
+        return Err(e);
+    };
+    // let token = crate::cloud::get_token(&username, &pass).await?;
+    // config.set_token(token);
+    Ok(())
 }
 
 async fn fetch_printer_task_thumbnail(

@@ -286,7 +286,7 @@ fn main() -> Result<()> {
     debug!("reading auth file");
     let mut db = auth::AuthDb::read_or_create("auth.db")?;
 
-    db.login_and_get_token(&username, &password)?;
+    // db.login_and_get_token(&username, &password)?;
 
     // let token = db.get_token()?.unwrap();
     // debug!("token = {:?}", token.get_token());
@@ -355,8 +355,11 @@ fn main() -> eframe::Result<()> {
     // let mut _tray_icon = std::rc::Rc::new(std::cell::RefCell::new(None));
     // let tray_c = _tray_icon.clone();
 
-    let (msg_tx, mut msg_rx) = tokio::sync::watch::channel::<PrinterConnMsg>(PrinterConnMsg::Empty);
-    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(2);
+    let channel_size = if cfg!(debug_assertions) { 1 } else { 50 };
+
+    // let (msg_tx, mut msg_rx) = tokio::sync::watch::channel::<PrinterConnMsg>(PrinterConnMsg::Empty);
+    let (msg_tx, mut msg_rx) = tokio::sync::mpsc::channel::<PrinterConnMsg>(channel_size);
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<PrinterConnCmd>(channel_size);
 
     let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
     let printer_states2 = printer_states.clone();

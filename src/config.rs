@@ -13,6 +13,7 @@ pub struct ConfigArc(Arc<RwLock<Config>>);
 
 impl Default for ConfigArc {
     fn default() -> Self {
+        warn!("config default shouldn't be used");
         Self(Arc::new(RwLock::new(Config {
             logged_in: false,
             auth: crate::auth::AuthDb::empty(),
@@ -37,7 +38,16 @@ impl ConfigArc {
     }
 
     pub fn get_token(&self) -> Result<Option<crate::auth::Token>> {
-        self.0.read().auth.get_token()
+        if let Some(token) = self.0.read().auth.get_token_cached() {
+            Ok(Some(token))
+        } else {
+            self.0.write().auth.get_token()
+        }
+    }
+
+    pub async fn fetch_new_token(&self, username: &str, password: &str) -> Result<()> {
+        // self.0.write().auth.login_and_get_token(username, password)
+        unimplemented!()
     }
 
     pub fn add_printer(&mut self, printer: Arc<PrinterConfig>) {
@@ -89,10 +99,12 @@ impl Config {
         let reader = std::io::BufReader::new(file);
         let config: ConfigFile = serde_yaml::from_reader(reader)?;
 
-        let auth = crate::auth::AuthDb::read_or_create("auth.db")?;
+        let mut auth = crate::auth::AuthDb::read_or_create()?;
+
+        let logged_in = matches!(auth.get_token(), Ok(Some(_)));
 
         let mut out = Self {
-            logged_in: false,
+            logged_in,
             auth,
             printers: HashMap::new(),
         };

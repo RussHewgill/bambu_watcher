@@ -83,6 +83,7 @@ pub struct App {
 pub struct AppLogin {
     pub username: String,
     pub password: String,
+    pub sent: bool,
 }
 
 #[derive(Deserialize, Serialize)]

@@ -13,13 +13,13 @@ impl App {
         // egui::widgets::global_dark_light_mode_buttons(ui);
 
         if self.config.logged_in() {
+            ui.label("Logged in");
         } else {
             ui.label("Not logged in");
-            if ui.button("Login").clicked() {
-                self.login_window = Some(AppLogin::default());
-            }
             if self.login_window.is_some() {
-                self.show_login_window(ui);
+                self.show_login(ui);
+            } else if ui.button("Login").clicked() {
+                self.login_window = Some(AppLogin::default());
             }
         }
 
@@ -83,7 +83,56 @@ impl App {
         });
     }
 
-    fn show_login_window(&mut self, ui: &mut egui::Ui) {
+    fn show_login(&mut self, ui: &mut egui::Ui) {
+        let Some(login_window) = self.login_window.as_mut() else {
+            return;
+        };
+
+        egui::Grid::new("login_grid").show(ui, |ui| {
+            ui.label("Username");
+            ui.text_edit_singleline(&mut login_window.username);
+            ui.end_row();
+
+            ui.label("Password");
+            ui.text_edit_singleline(&mut login_window.password);
+            ui.end_row();
+
+            ui.allocate_space(ui.available_size());
+        });
+
+        if login_window.sent {
+            ui.label("Logging in...");
+        } else {
+            ui.horizontal(|ui| {
+                let Some(login_window) = self.login_window.as_mut() else {
+                    return;
+                };
+                if ui.button("Login").clicked() {
+                    let res = self.cmd_tx.as_ref().unwrap().try_send(
+                        crate::conn_manager::PrinterConnCmd::Login(
+                            login_window.username.clone(),
+                            login_window.password.clone(),
+                        ),
+                    );
+
+                    if let Err(e) = res {
+                        error!("Failed to send login command: {:?}", e);
+                    } else {
+                        login_window.sent = true;
+                    }
+                }
+                if ui.button("Cancel").clicked() {
+                    self.login_window = None;
+                    return;
+                }
+            });
+        }
+
+        //
+    }
+
+    #[cfg(feature = "nope")]
+    fn show_login(&mut self, ui: &mut egui::Ui) {
         let builder = ViewportBuilder::default()
             .with_title("Bambu Cloud Login")
             .with_inner_size([300., 200.]);
