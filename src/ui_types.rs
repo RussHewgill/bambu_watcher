@@ -77,6 +77,8 @@ pub struct App {
 
     #[serde(skip)]
     pub auth: Option<crate::auth::AuthDb>,
+
+    pub selected_printer_controls: Option<PrinterId>,
 }
 
 // #[derive(Default)]

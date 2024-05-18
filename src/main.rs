@@ -5,7 +5,7 @@
 #![allow(unused_doc_comments)]
 #![allow(unused_labels)]
 #![allow(unexpected_cfgs)]
-// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // pub mod app;
 // pub mod app_types;
@@ -344,7 +344,7 @@ async fn main() -> Result<()> {
 ///     tokio thread, listens for messages from the printer
 // #[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
-    dotenvy::dotenv().unwrap();
+    let _ = dotenvy::dotenv();
     logging::init_logs();
 
     let native_options = eframe::NativeOptions {
