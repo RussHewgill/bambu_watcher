@@ -191,20 +191,6 @@ impl PrinterStatus {
             }
         }
 
-        #[cfg(feature = "nope")]
-        if let Some(g) = report.fan_gear {
-            debug!("fan_gear = {:?}", g);
-
-            let part = (g & 0x00FF0000) >> 16;
-            let aux = (g & 0x0000FF00) >> 8;
-            let chamber = g & 0x000000FF;
-
-            debug!(
-                "part = {:?}, aux = {:?}, chamber = {:?}",
-                part, aux, chamber
-            );
-        }
-
         if let Some(t) = report.big_fan2_speed.as_ref() {
             if let Some(t) = t.parse::<i64>().ok() {
                 let t = (t as f32 / 1.5).round() as i64 * 10;

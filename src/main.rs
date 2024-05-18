@@ -5,7 +5,7 @@
 #![allow(unused_doc_comments)]
 #![allow(unused_labels)]
 #![allow(unexpected_cfgs)]
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // pub mod app;
 // pub mod app_types;
