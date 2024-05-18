@@ -446,6 +446,12 @@ async fn fetch_printer_task_thumbnail(
             if let Some(mut entry) = printer_states.get_mut(&id.serial) {
                 entry.current_task_thumbnail_url = Some(url);
             }
+
+            // let pick_picture = info.context.plates[0].pick_picture.url.clone();
+            // let top_picture = info.context.plates[0].top_picture.url.clone();
+
+            // debug!("pick_picture = {:?}", pick_picture);
+            // debug!("top_picture = {:?}", top_picture);
         }
     }
 

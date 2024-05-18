@@ -78,7 +78,10 @@ pub struct App {
     #[serde(skip)]
     pub auth: Option<crate::auth::AuthDb>,
 
+    /// selected printer, show right panel when Some
     pub selected_printer_controls: Option<PrinterId>,
+    // #[serde(skip)]
+    // pub printer_skip: Option<PrinterSkipping>,
 }
 
 // #[derive(Default)]

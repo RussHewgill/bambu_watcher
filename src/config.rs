@@ -127,9 +127,9 @@ impl ConfigArc {
         self.config.read().await.printers.get(serial).cloned()
     }
 
-    // pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<PrinterConfig>> {
-    //     self.config.blocking_read().printers.get(serial).cloned()
-    // }
+    pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<PrinterConfig>> {
+        self.config.blocking_read().printers.get(serial).cloned()
+    }
 }
 
 // #[derive(Debug, Default, Clone, Serialize, Deserialize)]

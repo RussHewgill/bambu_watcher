@@ -14,14 +14,12 @@ pub mod auth;
 pub mod config;
 pub mod conn_manager;
 // pub mod ftp;
-pub mod icons;
 pub mod logging;
 pub mod mqtt;
 pub mod status;
 // pub mod tray;
 pub mod cloud;
 pub mod ui;
-pub mod ui_types;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
@@ -568,7 +566,7 @@ fn main() -> eframe::Result<()> {
 
             egui_extras::install_image_loaders(&cc.egui_ctx);
 
-            Box::new(ui_types::App::new(
+            Box::new(ui::ui_types::App::new(
                 // tray_c,
                 printer_states,
                 config,

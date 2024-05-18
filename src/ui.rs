@@ -1,7 +1,9 @@
 pub mod dashboard;
+pub mod icons;
 pub mod options;
 pub mod plotting;
 pub mod printers;
+pub mod ui_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
@@ -15,10 +17,14 @@ use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc, time::Duration
 use crate::{
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterId},
-    icons::*,
     status::{PrinterState, PrinterStatus},
-    ui_types::{App, GridLocation, Tab},
+    ui::{
+        icons::*,
+        ui_types::{App, GridLocation, Tab},
+    },
 };
+
+// pub use self::ui_types::;
 
 /// new
 impl App {
@@ -85,14 +91,18 @@ impl App {
     }
 }
 
+/// MARK: update TODO
+/// - wifi signal
+/// - controls on side
+/// - light
+/// - temp targets
+/// - layer progress
+/// - AMS humidity
 impl eframe::App for App {
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
-    /// MARK: update TODO
-    /// - wifi signal
-    /// - controls on side
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         // ctx.style_mut(|s| {
         //     s.visuals.dark_mode = true;
@@ -153,10 +163,7 @@ impl eframe::App for App {
 
         match self.current_tab {
             Tab::Main => {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    // ui.label("test");
-                    self.show_dashboard(ui);
-                });
+                self.show_dashboard(ctx);
             }
             Tab::Graphs => {
                 egui::CentralPanel::default().show(ctx, |ui| {

@@ -3,7 +3,7 @@ use egui::ViewportBuilder;
 use egui_phosphor::fill;
 use tracing::{debug, error, info, trace, warn};
 
-use crate::ui_types::{App, AppLogin, GridLocation};
+use crate::ui::ui_types::{App, AppLogin, GridLocation};
 
 /// display
 impl App {

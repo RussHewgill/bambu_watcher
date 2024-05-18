@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
-use crate::{config::PrinterConfig, conn_manager::PrinterConnCmd, ui_types::App};
+use crate::{config::PrinterConfig, conn_manager::PrinterConnCmd, ui::ui_types::App};
 
 impl App {
     #[cfg(feature = "nope")]
