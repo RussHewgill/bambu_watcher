@@ -3,6 +3,7 @@ use tracing::{debug, error, info, trace, warn};
 
 use chrono::{DateTime, Local, TimeDelta};
 use egui::Color32;
+use tracing_subscriber::field::debug;
 
 // use bambulab::PrintData;
 use crate::{
@@ -178,18 +179,35 @@ impl PrinterStatus {
 
         if let Some(t) = report.cooling_fan_speed.as_ref() {
             if let Some(t) = t.parse::<i64>().ok() {
+                let t = (t as f32 / 1.5).round() as i64 * 10;
                 self.cooling_fan_speed = Some(t);
             }
         }
 
         if let Some(t) = report.big_fan1_speed.as_ref() {
             if let Some(t) = t.parse::<i64>().ok() {
+                let t = (t as f32 / 1.5).round() as i64 * 10;
                 self.aux_fan_speed = Some(t);
             }
         }
 
+        #[cfg(feature = "nope")]
+        if let Some(g) = report.fan_gear {
+            debug!("fan_gear = {:?}", g);
+
+            let part = (g & 0x00FF0000) >> 16;
+            let aux = (g & 0x0000FF00) >> 8;
+            let chamber = g & 0x000000FF;
+
+            debug!(
+                "part = {:?}, aux = {:?}, chamber = {:?}",
+                part, aux, chamber
+            );
+        }
+
         if let Some(t) = report.big_fan2_speed.as_ref() {
             if let Some(t) = t.parse::<i64>().ok() {
+                let t = (t as f32 / 1.5).round() as i64 * 10;
                 self.chamber_fan_speed = Some(t);
             }
         }

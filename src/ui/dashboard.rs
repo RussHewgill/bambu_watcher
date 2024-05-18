@@ -711,7 +711,7 @@ impl App {
 
         let time = eta.time();
         // let dt = time - chrono::Local::now().naive_local().time();
-        let dt = if eta > chrono::Local::now() {
+        let dt = if eta < chrono::Local::now() {
             chrono::TimeDelta::zero()
         } else {
             eta - chrono::Local::now()
@@ -727,6 +727,28 @@ impl App {
                 .text(format!("{}%", p)),
         );
 
+        ui.add(
+            egui::Label::new(
+                status
+                    .current_file
+                    .as_ref()
+                    .map(|s| s.as_str())
+                    .unwrap_or("--"),
+            )
+            .truncate(true),
+        );
+
+        ui.horizontal(|ui| {
+            ui.label(&time.format("%-I:%M %p").to_string());
+            ui.separator();
+            ui.label(&format!(
+                "-{:02}:{:02}",
+                dt.num_hours(),
+                dt.num_minutes() % 60
+            ));
+        });
+
+        #[cfg(feature = "nope")]
         egui::Grid::new(format!("grid_{}", printer.serial))
             .min_col_width(ui.available_width() - 4.)
             .show(ui, |ui| {
