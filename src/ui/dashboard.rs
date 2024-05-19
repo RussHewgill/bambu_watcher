@@ -1,7 +1,9 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
-use egui::{Align, Color32, Layout, Margin, Response, Rounding, Sense, Stroke, Vec2};
+use egui::{
+    Align, Color32, Layout, Margin, Rect, Response, RichText, Rounding, Sense, Stroke, Vec2,
+};
 
 use dashmap::DashMap;
 use std::{
@@ -214,6 +216,7 @@ impl App {
                     .as_ref()
                     .map(|s| s == &printer.serial)
                     .unwrap_or(false);
+                #[cfg(feature = "nope")]
                 if ui
                     .add(egui::Button::image(super::icons::icon_controls()).selected(selected))
                     .clicked()
@@ -233,7 +236,14 @@ impl App {
                     },
                     |ui| {
                         paint_icon(ui, 40., &status.state);
-                        ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
+                        ui.add(
+                            egui::Label::new(&format!(
+                                "{} ({})",
+                                printer.name,
+                                status.state.to_text()
+                            ))
+                            .truncate(true),
+                        );
                     },
                 )
                 .response
@@ -247,9 +257,9 @@ impl App {
         // });
 
         ui.horizontal(|ui| {
+            let size = 80. - 4.;
             if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
                 // debug!("url = {}", url);
-                let size = 80. - 4.;
                 let img = egui::Image::new(url)
                     .bg_fill(if ui.visuals().dark_mode {
                         Color32::from_gray(128)
@@ -257,13 +267,16 @@ impl App {
                         Color32::from_gray(210)
                     })
                     .rounding(Rounding::same(4.))
-                    .shrink_to_fit()
+                    // .shrink_to_fit()
                     .fit_to_exact_size(Vec2::new(size, size))
                     .max_width(size)
                     .max_height(size);
                 ui.add(img);
             } else if let Some(t) = printer_state.printer_type {
-                ui.add(thumbnail_printer(printer.clone(), &t, ui.ctx()));
+                ui.add(
+                    thumbnail_printer(printer.clone(), &t, size, ui.ctx())
+                        .rounding(Rounding::same(4.)),
+                );
             }
 
             /// temperatures
@@ -299,81 +312,52 @@ impl App {
                 // });
             });
         });
-
-        #[cfg(feature = "nope")]
-        ui.columns(2, |uis| {
-            if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
-                // debug!("url = {}", url);
-                let size = 80. - 4.;
-                let img = egui::Image::new(url)
-                    .bg_fill(if uis[0].visuals().dark_mode {
-                        Color32::from_gray(128)
-                    } else {
-                        Color32::from_gray(210)
-                    })
-                    .rounding(Rounding::same(4.))
-                    .shrink_to_fit()
-                    .fit_to_exact_size(Vec2::new(size, size))
-                    .max_width(size)
-                    .max_height(size);
-                uis[0].add(img);
-            } else if let Some(t) = printer_state.printer_type {
-                uis[0].add(thumbnail_printer(printer.clone(), &t, uis[0].ctx()));
-            }
-
-            /// temperatures
-            uis[1].vertical(|ui| {
-                // egui::Frame::none().fill(Color32::RED).show(ui, |ui| {
-                ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
-
-                ui.horizontal(|ui| {
-                    ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                    ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-                });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                    ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-                });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.add(thumbnail_chamber());
-                    ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64));
-                });
-
-                ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-                ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
-                // });
-            });
-        });
-
         ui.separator();
-        // ui.horizontal(|ui| {
-        //     ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
-
-        //     ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-        //     ui.label(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)));
-        //     ui.separator();
-        //     ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-        //     ui.label(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-        //     ui.separator();
-        //     ui.add(thumbnail_chamber());
-        //     ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0)));
-
-        //     ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-        //     ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
-        // });
-        // ui.separator();
 
         /// fans
+        ui.columns(3, |uis| {
+            uis[0].label(RichText::new("Part:").text_style(egui::TextStyle::Small));
+            uis[0].label(&format!("{: >4}%", status.cooling_fan_speed.unwrap_or(0)));
+
+            uis[1].label(RichText::new("Aux:").text_style(egui::TextStyle::Small));
+            uis[1].label(&format!("{: >4}%", status.aux_fan_speed.unwrap_or(0)));
+
+            uis[2].label(RichText::new("Cham:").text_style(egui::TextStyle::Small));
+            uis[2].label(&format!("{: >4}%", status.chamber_fan_speed.unwrap_or(0)));
+        });
+
+        /// fans
+        #[cfg(feature = "nope")]
         ui.horizontal(|ui| {
             ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
-            ui.label(&format!("Part: {}%", status.cooling_fan_speed.unwrap_or(0)));
+
+            ui.vertical(|ui| {
+                ui.label(RichText::new("Part:").text_style(egui::TextStyle::Small));
+                ui.label(&format!("{: >4}%", status.cooling_fan_speed.unwrap_or(0)))
+            });
+
             ui.separator();
-            ui.label(&format!("Aux: {}%", status.aux_fan_speed.unwrap_or(0)));
+            ui.vertical(|ui| {
+                ui.label(RichText::new("Aux:").text_style(egui::TextStyle::Small));
+                ui.label(&format!("{: >4}%", status.aux_fan_speed.unwrap_or(0)))
+            });
+
             ui.separator();
-            ui.label(&format!("Cham: {}%", status.chamber_fan_speed.unwrap_or(0)));
-            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
+            ui.vertical(|ui| {
+                ui.label(RichText::new("Cham:").text_style(egui::TextStyle::Small));
+                ui.label(&format!("{: >4}%", status.chamber_fan_speed.unwrap_or(0)))
+            });
+
+            // ui.label(
+            //     RichText::new(format!("Part: {}%", status.cooling_fan_speed.unwrap_or(0)))
+            //         .text_style(egui::TextStyle::Small),
+            // );
+            // // ui.label(&format!("Part: {}%", status.cooling_fan_speed.unwrap_or(0)));
+            // ui.separator();
+            // ui.label(&format!("Aux: {}%", status.aux_fan_speed.unwrap_or(0)));
+            // ui.separator();
+            // ui.label(&format!("Cham: {}%", status.chamber_fan_speed.unwrap_or(0)));
+            // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
             ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
         });
         ui.separator();

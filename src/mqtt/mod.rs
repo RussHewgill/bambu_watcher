@@ -221,7 +221,14 @@ impl ClientListener {
     async fn poll_eventloop(&mut self) -> Result<()> {
         use rumqttc::Event;
         loop {
-            match self.eventloop.poll().await? {
+            let event = match self.eventloop.poll().await {
+                Ok(event) => event,
+                Err(e) => {
+                    error!("Error in eventloop: {:?}", e);
+                    continue;
+                }
+            };
+            match event {
                 Event::Outgoing(event) => {
                     // debug!("outgoing event: {:?}", event);
                 }

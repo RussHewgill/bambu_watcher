@@ -69,7 +69,7 @@ impl PrinterStatus {
             match s.as_str() {
                 "IDLE" => Some(PrinterState::Idle),
                 "READY" => Some(PrinterState::Idle),
-                "FINISH" => Some(PrinterState::Idle),
+                "FINISH" => Some(PrinterState::Finished),
                 "CREATED" => Some(PrinterState::Printing),
                 "RUNNING" => Some(PrinterState::Printing),
                 "PREPARE" => Some(PrinterState::Printing),

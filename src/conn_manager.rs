@@ -43,6 +43,35 @@ pub enum PrinterConnCmd {
     ReportInfo(PrinterId),
     Login(String, String),
     Logout,
+
+    /// Sent with QoS of 1 for higher priority.
+    Pause,
+    /// Sent with QoS of 1 for higher priority.
+    Stop,
+    /// Sent with QoS of 1 for higher priority.
+    Resume,
+    SetChamberLight(bool),
+    /// 1 = silent
+    /// 2 = standard
+    /// 3 = sport
+    /// 4 = ludicrous
+    ChangeSpeed(u8),
+
+    GCodeLine(String),
+    Calibration,
+
+    UnloadFilament,
+
+    /// tray_id
+    ChangeFilament(i64),
+    ChangeAMSFilamentSetting {
+        ams_id: i64,
+        tray_id: i64,
+        tray_color: [u8; 3],
+        nozzle_temp_min: i64,
+        nozzle_temp_max: i64,
+        tray_type: String,
+    },
 }
 
 pub struct PrinterConnManager {
@@ -166,7 +195,10 @@ impl PrinterConnManager {
                     info!("printer state changed: {:?}", entry.state);
 
                     /// print just finished, send notification
-                    if entry.state == PrinterState::Finished {
+                    if prev_state != PrinterState::Disconnected
+                        && entry.state == PrinterState::Finished
+                    {
+                        warn!("sent finish notification");
                         let _ = notify_rust::Notification::new()
                             .summary(&format!("Print Complete on {}", printer.name))
                             .body(&format!(
@@ -398,6 +430,9 @@ impl PrinterConnManager {
                 if let Err(e) = self.config.auth.write().await.clear_token() {
                     error!("error clearing token: {:?}", e);
                 }
+            }
+            _ => {
+                error!("unhandled command: {:?}", cmd);
             }
         }
         Ok(())

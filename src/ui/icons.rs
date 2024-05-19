@@ -55,10 +55,9 @@ pub fn icon_controls() -> egui::Image<'static> {
 pub fn thumbnail_printer(
     printer: Arc<PrinterConfig>,
     printer_type: &PrinterType,
+    size: f32,
     ctx: &egui::Context,
 ) -> egui::Image<'static> {
-    let size = 80.;
-
     let src = if ctx.style().visuals.dark_mode {
         // egui::include_image!("../../assets/printer_thumbnail_x1.svg")
         match printer_type {
