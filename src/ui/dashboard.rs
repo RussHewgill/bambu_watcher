@@ -216,6 +216,29 @@ impl App {
                     .as_ref()
                     .map(|s| s == &printer.serial)
                     .unwrap_or(false);
+
+                /// cloud button
+                #[cfg(feature = "nope")]
+                {
+                    let cloud = printer.cloud.load(std::sync::atomic::Ordering::Relaxed);
+                    let icon = if cloud {
+                        super::icons::icon_cloud()
+                    } else {
+                        super::icons::icon_lan()
+                    };
+
+                    if ui.add(egui::Button::image(icon)).clicked() {
+                        self.cmd_tx
+                            .as_ref()
+                            .unwrap()
+                            .send(PrinterConnCmd::SetPrinterCloud(
+                                printer.serial.clone(),
+                                !cloud,
+                            ))
+                            .unwrap();
+                    }
+                }
+
                 #[cfg(feature = "nope")]
                 if ui
                     .add(egui::Button::image(super::icons::icon_controls()).selected(selected))

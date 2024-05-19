@@ -1,4 +1,5 @@
 pub mod cloud_types;
+pub mod errors;
 
 use std::collections::HashMap;
 

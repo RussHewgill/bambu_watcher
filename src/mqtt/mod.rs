@@ -13,7 +13,10 @@ use rumqttc::{
 use std::{sync::Arc, time::Duration};
 use tracing_subscriber::field::debug;
 
-use crate::{config::PrinterConfig, conn_manager::PrinterId};
+use crate::{
+    config::{ConfigArc, PrinterConfig},
+    conn_manager::PrinterId,
+};
 
 use self::{command::Command, message::Message};
 
@@ -96,9 +99,74 @@ pub struct BambuClient {
 
 impl BambuClient {
     pub async fn new_and_init(
+        config: ConfigArc,
         printer_cfg: Arc<PrinterConfig>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
-        // rx: tokio::sync::broadcast::Receiver<Command>,
+    ) -> Result<Self> {
+        if config.logged_in_async().await {
+            Self::_new_and_init_cloud(config, printer_cfg, tx).await
+        } else {
+            Self::_new_and_init_lan(printer_cfg, tx).await
+        }
+    }
+
+    async fn _new_and_init_cloud(
+        config: ConfigArc,
+        printer_cfg: Arc<PrinterConfig>,
+        tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
+    ) -> Result<Self> {
+        let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
+
+        let (username, password) = {
+            let db = config.auth.read().await;
+            db.get_cloud_mqtt_creds()?
+        };
+
+        const CLOUD_HOST: &'static str = "us.mqtt.bambulab.com";
+
+        let mut mqttoptions = rumqttc::MqttOptions::new(client_id, CLOUD_HOST, 8883);
+        mqttoptions.set_keep_alive(Duration::from_secs(5));
+        mqttoptions.set_credentials(&username, &password);
+
+        let mut root_cert_store = rustls::RootCertStore::empty();
+        root_cert_store.add_parsable_certificates(
+            rustls_native_certs::load_native_certs().expect("could not load platform certs"),
+        );
+
+        let client_config = rustls::ClientConfig::builder()
+            .with_root_certificates(root_cert_store)
+            .with_no_client_auth();
+
+        let transport = rumqttc::Transport::tls_with_config(rumqttc::TlsConfiguration::Rustls(
+            Arc::new(client_config),
+        ));
+
+        mqttoptions.set_transport(transport);
+        mqttoptions.set_clean_session(true);
+
+        debug!("connecting, printer = {}", &printer_cfg.name);
+        let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
+        debug!("connected, printer = {}", &printer_cfg.name);
+
+        let mut out = Self {
+            config: printer_cfg.clone(),
+            topic_device_request: format!("device/{}/request", &printer_cfg.serial),
+            topic_device_report: format!("device/{}/report", &printer_cfg.serial),
+            client,
+            // eventloop,
+            // stream,
+            tx,
+            // rx,
+        };
+
+        out.init(eventloop).await?;
+
+        Ok(out)
+    }
+
+    async fn _new_and_init_lan(
+        printer_cfg: Arc<PrinterConfig>,
+        tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
 

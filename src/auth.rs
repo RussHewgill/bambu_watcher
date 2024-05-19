@@ -261,6 +261,27 @@ impl AuthDb {
 
         Ok(())
     }
+
+    pub fn get_cloud_mqtt_creds(&self) -> Result<(String, String)> {
+        let token = self.get_token_cached().context("No cached token found")?;
+
+        let ts = token.get_token().split('.').collect::<Vec<&str>>();
+
+        use base64::engine::Engine;
+
+        let claims = base64::prelude::BASE64_URL_SAFE_NO_PAD.decode(ts[1])?;
+        let claims: serde_json::Value = serde_json::from_slice(&claims)?;
+
+        let username = claims
+            .get("username")
+            .context("No username found")?
+            .as_str()
+            .context("Username is not a string")?
+            .to_string();
+        let password = token.get_token().to_string();
+
+        Ok((username, password))
+    }
 }
 
 #[cfg(feature = "nope")]

@@ -38,9 +38,13 @@ pub enum PrinterConnMsg {
 #[derive(Debug)]
 pub enum PrinterConnCmd {
     AddPrinter(PrinterConfig),
+    RemovePrinter(PrinterId),
+    SetPrinterCloud(PrinterId, bool),
+
     /// get the status of a printer
     ReportStatus(PrinterId),
     ReportInfo(PrinterId),
+
     Login(String, String),
     Logout,
 
@@ -155,17 +159,20 @@ impl PrinterConnManager {
             self.config.add_printer(printer.clone());
         }
 
-        let client = Self::start_printer_listener(self.tx.clone(), printer.clone()).await?;
+        let client =
+            Self::start_printer_listener(self.config.clone(), self.tx.clone(), printer.clone())
+                .await?;
         self.printers.insert(printer.serial.clone(), client);
 
         Ok(())
     }
 
     async fn start_printer_listener(
+        config: ConfigArc,
         msg_tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
         printer: Arc<PrinterConfig>,
     ) -> Result<BambuClient> {
-        let mut client = crate::mqtt::BambuClient::new_and_init(printer, msg_tx).await?;
+        let mut client = crate::mqtt::BambuClient::new_and_init(config, printer, msg_tx).await?;
         Ok(client)
     }
 }
@@ -369,6 +376,18 @@ impl PrinterConnManager {
             PrinterConnCmd::AddPrinter(printer) => {
                 self.add_printer(Arc::new(printer), false).await?;
                 // unimplemented!()
+            }
+            PrinterConnCmd::SetPrinterCloud(id, cloud) => {
+                debug!("set printer cloud: {:?}", cloud);
+
+                {
+                    let mut cfg = self.config.config.write().await;
+                    if let Some(printer) = cfg.printer_mut(&id) {
+                        // printer.cloud = cloud;
+                    }
+                }
+
+                //
             }
             PrinterConnCmd::ReportInfo(id) => {
                 let client = self

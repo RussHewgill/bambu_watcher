@@ -170,6 +170,10 @@ impl Config {
 
         Ok((out, auth))
     }
+
+    pub fn printer_mut(&mut self, serial: &PrinterId) -> Option<&mut Arc<PrinterConfig>> {
+        self.printers.get_mut(serial)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -179,4 +183,7 @@ pub struct PrinterConfig {
     pub access_code: String,
     // #[serde(skip)]
     pub serial: Arc<String>,
+    // #[serde(default)]
+    // // pub cloud: bool,
+    // pub cloud: std::sync::atomic::AtomicBool,
 }

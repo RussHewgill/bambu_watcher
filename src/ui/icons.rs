@@ -7,50 +7,24 @@ use crate::{
     status::{AmsUnit, PrinterState, PrinterType},
 };
 
-pub fn icon_resume() -> egui::Image<'static> {
-    let size = 20.;
-    egui::Image::new(egui::include_image!("../../assets/icons8-play-96.png"))
-        .fit_to_exact_size(Vec2::new(size, size))
-        .max_width(size)
-        .max_height(size)
+macro_rules! generate_icon_function {
+    ($name:ident, $path:expr, $size:expr) => {
+        pub fn $name() -> egui::Image<'static> {
+            let size = $size;
+            egui::Image::new(egui::include_image!($path))
+                .fit_to_exact_size(Vec2::new(size, size))
+                .max_width(size)
+                .max_height(size)
+        }
+    };
 }
 
-pub fn icon_pause() -> egui::Image<'static> {
-    let size = 20.;
-    egui::Image::new(egui::include_image!(
-        "../../assets/icons8-pause-squared-100.png"
-    ))
-    .fit_to_exact_size(Vec2::new(size, size))
-    .max_width(size)
-    .max_height(size)
-}
-
-pub fn icon_stop() -> egui::Image<'static> {
-    let size = 20.;
-    egui::Image::new(egui::include_image!(
-        "../../assets/icons8-red-square-96.png"
-    ))
-    .fit_to_exact_size(Vec2::new(size, size))
-    .max_width(size)
-    .max_height(size)
-}
-
-pub fn icon_controls() -> egui::Image<'static> {
-    let size = 20.;
-    egui::Image::new(egui::include_image!("../../assets/icons/sliders_poly.svg"))
-        .fit_to_exact_size(Vec2::new(size, size))
-        .max_width(size)
-        .max_height(size)
-}
-
-// pub fn thumbnail_print<'a>(
-//     printer: Arc<PrinterConfig>,
-//     printer_type: &PrinterType,
-//     ctx: &'a egui::Context,
-// ) -> egui::Image<'a> {
-//     let src = std::env::var("TEST_IMG").unwrap();
-//     egui::Image::new(src)
-// }
+generate_icon_function!(icon_resume, "../../assets/icons8-play-96.png", 20.);
+generate_icon_function!(icon_pause, "../../assets/icons8-pause-squared-100.png", 20.);
+generate_icon_function!(icon_stop, "../../assets/icons8-red-square-96.png", 20.);
+generate_icon_function!(icon_controls, "../../assets/icons/sliders_poly.svg", 20.);
+generate_icon_function!(icon_cloud, "../../assets/icons/cloud-1_poly.svg", 20.);
+generate_icon_function!(icon_lan, "../../assets/icons/wifi-100_poly.svg", 20.);
 
 pub fn thumbnail_printer(
     printer: Arc<PrinterConfig>,

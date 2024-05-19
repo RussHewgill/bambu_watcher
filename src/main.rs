@@ -31,7 +31,7 @@ use futures::StreamExt;
 // use rumqttc::{Client, MqttOptions, QoS};
 use dashmap::DashMap;
 use rumqttc::tokio_rustls::rustls;
-use std::{collections::HashMap, env, sync::Arc, time::Duration};
+use std::{collections::HashMap, env, sync::Arc, time::Duration, usize};
 
 // use bambulab::{Command, Message};
 
@@ -140,7 +140,7 @@ fn main() {
 /// cloud test
 #[cfg(feature = "nope")]
 // #[tokio::main]
-fn main() -> Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv()?;
     logging::init_logs();
 
@@ -281,35 +281,109 @@ fn main() -> Result<()> {
         // debug!("token = {:#?}", token);
     }
 
-    debug!("reading auth file");
-    let mut db = auth::AuthDb::read_or_create("auth.db")?;
+    /// cloud test
+    #[cfg(feature = "nope")]
+    {
+        debug!("reading auth file");
+        let mut db = auth::AuthDb::read_or_create()?;
 
-    // db.login_and_get_token(&username, &password)?;
+        let (username, password) = db.get_cloud_mqtt_creds()?;
 
-    // let token = db.get_token()?.unwrap();
-    // debug!("token = {:?}", token.get_token());
+        let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
 
-    // let _ = cloud::get_machines_list(&token)?;
-    // let _ = cloud::get_printer_status(&token)?;
-    // let _ = cloud::get_project_list(&token)?;
+        let host = "us.mqtt.bambulab.com";
 
-    // let _ = cloud::get_subtask_info(&token, "157720277")?;
+        let mut mqttoptions = rumqttc::MqttOptions::new(client_id, host, 8883);
+        mqttoptions.set_keep_alive(Duration::from_secs(5));
+        mqttoptions.set_credentials(&username, &password);
 
-    // let s = std::fs::read_to_string("example4.json")?;
+        let mut root_cert_store = rustls::RootCertStore::empty();
+        root_cert_store.add_parsable_certificates(
+            rustls_native_certs::load_native_certs().expect("could not load platform certs"),
+        );
 
-    // let json: cloud::cloud_types::MainStruct = serde_json::from_str(&s)?;
+        let client_config = rustls::ClientConfig::builder()
+            .with_root_certificates(root_cert_store)
+            .with_no_client_auth();
 
-    // debug!("json = {:#?}", json);
+        let transport = rumqttc::Transport::tls_with_config(rumqttc::TlsConfiguration::Rustls(
+            Arc::new(client_config),
+        ));
 
-    // "H"
-    // "157442542"
-    // "C"
-    // "157720277"
+        mqttoptions.set_transport(transport);
+        mqttoptions.set_clean_session(true);
 
-    // let json = cloud::get_response(&token, "/v1/user-service/my/tasks")?;
-    // let json = cloud::get_response(&token, "/v1/iot-service/api/user/project/157720277")?;
-    // let json = cloud::get_response(&token, "/v1/iot-service/api/user/task/157720277")?;
-    // debug!("json {:#?}", json);
+        debug!("connecting");
+        let (mut client, mut eventloop) = rumqttc::AsyncClient::new(mqttoptions, 10);
+        debug!("connected");
+
+        let serial = env::var("BAMBU_IDENT")?;
+        let topic_device_request = format!("device/{}/request", &serial);
+        let topic_device_report = format!("device/{}/report", &serial);
+
+        let (tx, mut rx) = tokio::sync::broadcast::channel::<mqtt::message::Message>(50);
+
+        use rumqttc::{Event, Incoming};
+
+        let client2 = client.clone();
+        loop {
+            debug!("looping");
+            match eventloop.poll().await.unwrap() {
+                Event::Outgoing(event) => {
+                    // debug!("outgoing event: {:?}", event);
+                }
+                Event::Incoming(Incoming::PingResp) => {}
+                Event::Incoming(Incoming::ConnAck(c)) => {
+                    debug!("got ConnAck: {:?}", c.code);
+                    if c.code == rumqttc::ConnectReturnCode::Success {
+                        // debug!("Connected to MQTT");
+                        client2
+                            .subscribe(&topic_device_report, rumqttc::QoS::AtMostOnce)
+                            .await
+                            .unwrap();
+                        debug!("sent subscribe to topic");
+                        // self.send_pushall().await?;
+                    } else {
+                        error!("Failed to connect to MQTT: {:?}", c.code);
+                    }
+                }
+                Event::Incoming(Incoming::SubAck(s)) => {
+                    debug!("got SubAck");
+                    if s.return_codes
+                        .iter()
+                        .any(|&r| r == rumqttc::SubscribeReasonCode::Failure)
+                    {
+                        error!("Failed to subscribe to topic");
+                    } else {
+                        debug!("sending pushall");
+                        // self.send_pushall().await?;
+                        client2
+                            .publish(
+                                &topic_device_request,
+                                rumqttc::QoS::AtMostOnce,
+                                false,
+                                mqtt::command::Command::PushAll.get_payload(),
+                            )
+                            .await
+                            .unwrap();
+                        debug!("sent");
+                        // debug!("sending get version");
+                        // self.send_get_version().await?;
+                        // debug!("sent");
+                    }
+                }
+                Event::Incoming(Incoming::Publish(p)) => {
+                    // debug!("incoming publish");
+                    let msg = mqtt::parse::parse_message(&p);
+                    debug!("incoming publish: {:?}", msg);
+                    // self.tx.send((self.printer_cfg.serial.clone(), msg))?;
+                }
+                Event::Incoming(event) => {
+                    debug!("incoming other event: {:?}", event);
+                }
+            }
+        }
+    }
 
     Ok(())
 }
@@ -321,14 +395,14 @@ async fn main() -> Result<()> {
     dotenvy::dotenv()?;
     logging::init_logs();
 
-    let (config, auth) = match config::Config::read_from_file("config.yaml") {
-        Ok(config) => config,
-        Err(e) => {
-            warn!("error reading config: {:?}", e);
-            panic!("error reading config: {:?}", e);
-        }
-    };
-    let config = ConfigArc::new(config, auth);
+    // let (config, auth) = match config::Config::read_from_file("config.yaml") {
+    //     Ok(config) => config,
+    //     Err(e) => {
+    //         warn!("error reading config: {:?}", e);
+    //         panic!("error reading config: {:?}", e);
+    //     }
+    // };
+    // let config = ConfigArc::new(config, auth);
 
     Ok(())
 }

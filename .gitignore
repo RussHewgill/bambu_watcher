@@ -10,6 +10,7 @@ example*.json
 *.svg
 auth.db
 auth.key
+errors.json
 
 !assets/icons8-disconnected-100.png
 !assets/icons8-red-square-96.png
