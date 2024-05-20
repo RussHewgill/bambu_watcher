@@ -553,6 +553,12 @@ fn main() -> eframe::Result<()> {
     let _ = dotenvy::dotenv();
     logging::init_logs();
 
+    std::panic::set_hook(Box::new(|panic_info| {
+        use std::io::Write;
+        let mut file = std::fs::File::create("crash_log.log").unwrap();
+        write!(file, "{}", panic_info).unwrap();
+    }));
+
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([850.0, 750.0])

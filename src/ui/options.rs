@@ -34,8 +34,8 @@ impl App {
                     .auth
                     .blocking_write()
                     .get_token()
-                    .unwrap()
-                    .is_some()
+                    .map(|t| t.is_some())
+                    .unwrap_or(false)
                 {
                     self.config.set_logged_in(true);
                 }
