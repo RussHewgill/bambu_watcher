@@ -110,7 +110,7 @@ impl App {
                                                 frame_size,
                                                 ui,
                                                 // id,
-                                                printer.clone(),
+                                                Arc::new(printer),
                                                 // &printer_state,
                                             );
                                         } else {
@@ -190,17 +190,6 @@ impl App {
         printer: Arc<PrinterConfig>,
         // printer_state: &PrinterStatus,
     ) -> Response {
-        let Some(printer) = self
-            .config
-            .printers()
-            .into_iter()
-            .find(|p| p.serial == printer.serial)
-        else {
-            warn!("Printer not found: {}", &printer.serial);
-            return ui.label("Printer not found");
-            // return Response::;
-        };
-
         let Some(status) = self.printer_states.get(&printer.serial) else {
             warn!("Printer not found: {}", printer.serial);
             panic!();

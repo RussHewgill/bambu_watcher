@@ -126,7 +126,7 @@ impl PrinterConnManager {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        for printer in self.config.printers_async().await.iter() {
+        for printer in self.config.printers() {
             // let client = Self::start_printer_listener(self.tx.clone(), printer).await?;
             // self.printers.insert(printer.serial.clone(), client);
             self.add_printer(printer.clone(), true).await?;
@@ -143,9 +143,10 @@ impl PrinterConnManager {
                 }
                 Some((id, printer_msg)) = self.rx.recv() => {
                     // debug!("got printer_msg, id = {:?} = {:?}", id, printer_msg);
-                    if let Some(printer) = self.config.get_printer_async(&id).await {
-                        self.handle_printer_msg(printer, printer_msg).await?;
-                    }
+                    // if let Some(printer) = self.config.get_printer(&id) {
+                    // }
+                    self.handle_printer_msg(id, printer_msg).await?;
+                    // panic!("TODO: handle printer message");
                 }
             }
         }
@@ -153,7 +154,7 @@ impl PrinterConnManager {
         // Ok(())
     }
 
-    async fn add_printer(&mut self, printer: Arc<PrinterConfig>, from_cfg: bool) -> Result<()> {
+    async fn add_printer(&mut self, printer: PrinterConfig, from_cfg: bool) -> Result<()> {
         if !from_cfg {
             // self.config.add_printer(printer.unwrap_or_clone()));
             self.config.add_printer(printer.clone());
@@ -170,7 +171,7 @@ impl PrinterConnManager {
     async fn start_printer_listener(
         config: ConfigArc,
         msg_tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
-        printer: Arc<PrinterConfig>,
+        printer: PrinterConfig,
     ) -> Result<BambuClient> {
         let mut client = crate::mqtt::BambuClient::new_and_init(config, printer, msg_tx).await?;
         Ok(client)
@@ -181,9 +182,14 @@ impl PrinterConnManager {
 impl PrinterConnManager {
     async fn handle_printer_msg(
         &mut self,
-        printer: Arc<PrinterConfig>,
+        // printer: Arc<PrinterConfig>,
+        id: PrinterId,
         msg: Message,
     ) -> Result<()> {
+        let Some(printer) = self.config.get_printer(&id) else {
+            bail!("printer not found: {:?}", id);
+        };
+
         match msg {
             Message::Print(report) => {
                 // debug!("got print report");
@@ -228,7 +234,7 @@ impl PrinterConnManager {
                 }
 
                 /// logged in and printing, but no thumbnail
-                if self.config.logged_in_async().await
+                if self.config.logged_in()
                     && entry.state == PrinterState::Printing
                     && entry.subtask_id.is_some()
                     && entry.current_task_thumbnail_url.is_none()
@@ -257,8 +263,7 @@ impl PrinterConnManager {
                         .context("no error found?")?;
                     let name = self
                         .config
-                        .get_printer_async(&printer.serial)
-                        .await
+                        .get_printer(&printer.serial)
                         .context("printer not found")?
                         .name
                         .clone();
@@ -374,17 +379,18 @@ impl PrinterConnManager {
     async fn handle_command(&mut self, cmd: PrinterConnCmd) -> Result<()> {
         match cmd {
             PrinterConnCmd::AddPrinter(printer) => {
-                self.add_printer(Arc::new(printer), false).await?;
+                self.add_printer(printer, false).await?;
                 // unimplemented!()
             }
             PrinterConnCmd::SetPrinterCloud(id, cloud) => {
                 debug!("set printer cloud: {:?}", cloud);
 
                 {
-                    let mut cfg = self.config.config.write().await;
-                    if let Some(printer) = cfg.printer_mut(&id) {
-                        // printer.cloud = cloud;
-                    }
+                    // let mut cfg = self.config.config.write().await;
+                    // if let Some(printer) = cfg.printer_mut(&id) {
+                    //     // printer.cloud = cloud;
+                    // }
+                    error!("TODO: set printer cloud");
                 }
 
                 //
@@ -445,7 +451,8 @@ impl PrinterConnManager {
                 });
             }
             PrinterConnCmd::Logout => {
-                self.config.config.write().await.logged_in = false;
+                // self.config.config.write().await.logged_in = false;
+                self.config.set_logged_in(false);
                 if let Err(e) = self.config.auth.write().await.clear_token() {
                     error!("error clearing token: {:?}", e);
                 }
@@ -477,7 +484,8 @@ async fn login(
         return Err(e);
     };
 
-    config.config.write().await.logged_in = true;
+    // config.config.write().await.logged_in = true;
+    config.set_logged_in(true);
 
     // let token = crate::cloud::get_token(&username, &pass).await?;
     // config.set_token(token);

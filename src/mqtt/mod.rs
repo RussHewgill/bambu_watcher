@@ -85,7 +85,7 @@ impl rumqttc::tokio_rustls::rustls::client::danger::ServerCertVerifier
 }
 
 pub struct BambuClient {
-    config: Arc<PrinterConfig>,
+    config: PrinterConfig,
 
     // client: paho_mqtt::AsyncClient,
     // stream: paho_mqtt::AsyncReceiver<Option<paho_mqtt::Message>>,
@@ -100,19 +100,20 @@ pub struct BambuClient {
 impl BambuClient {
     pub async fn new_and_init(
         config: ConfigArc,
-        printer_cfg: Arc<PrinterConfig>,
+        printer_cfg: PrinterConfig,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
-        if config.logged_in_async().await {
-            Self::_new_and_init_cloud(config, printer_cfg, tx).await
+        if config.logged_in() {
+            Self::_new_and_init_cloud(config, &printer_cfg, tx).await
         } else {
-            Self::_new_and_init_lan(printer_cfg, tx).await
+            Self::_new_and_init_lan(&printer_cfg, tx).await
         }
     }
 
     async fn _new_and_init_cloud(
         config: ConfigArc,
-        printer_cfg: Arc<PrinterConfig>,
+        // printer_cfg: Arc<PrinterConfig>,
+        printer_cfg: &PrinterConfig,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
@@ -165,7 +166,8 @@ impl BambuClient {
     }
 
     async fn _new_and_init_lan(
-        printer_cfg: Arc<PrinterConfig>,
+        // printer_cfg: Arc<PrinterConfig>,
+        printer_cfg: &PrinterConfig,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
@@ -258,7 +260,7 @@ impl BambuClient {
 }
 
 struct ClientListener {
-    printer_cfg: Arc<PrinterConfig>,
+    printer_cfg: PrinterConfig,
     client: rumqttc::AsyncClient,
     eventloop: rumqttc::EventLoop,
     tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
@@ -268,7 +270,7 @@ struct ClientListener {
 
 impl ClientListener {
     pub fn new(
-        printer_cfg: Arc<PrinterConfig>,
+        printer_cfg: PrinterConfig,
         client: rumqttc::AsyncClient,
         eventloop: rumqttc::EventLoop,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,

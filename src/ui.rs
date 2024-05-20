@@ -60,7 +60,7 @@ impl App {
         out.unplaced_printers = out
             .config
             .printers()
-            .iter()
+            .into_iter()
             .map(|p| p.serial.clone())
             .collect();
         /// for each printer that isn't in printer_order, queue to add
@@ -116,7 +116,7 @@ impl eframe::App for App {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.current_tab, Tab::Main, "Dashboard");
                 // ui.selectable_value(&mut self.current_tab, Tab::Graphs, "Graphs");
-                // ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
+                ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
                 ui.selectable_value(&mut self.current_tab, Tab::Options, "Options");
             });
         });
@@ -171,8 +171,8 @@ impl eframe::App for App {
                 });
             }
             Tab::Printers => {
-                // self.show_printers_config(ctx);
-                unimplemented!()
+                self.show_printers_config(ctx);
+                // unimplemented!()
             }
             Tab::Options => {
                 egui::CentralPanel::default().show(ctx, |ui| {

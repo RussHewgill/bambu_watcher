@@ -9,7 +9,7 @@ use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    config::ConfigArc,
+    config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterId},
     status::PrinterStatus,
 };
@@ -114,6 +114,7 @@ pub struct AppOptions {
     // pub dark_mode: bool,
     pub dashboard_size: (usize, usize),
     pub selected_printer: Option<PrinterId>,
+    pub selected_printer_cfg: Option<PrinterConfig>,
 }
 
 impl Default for AppOptions {
@@ -122,6 +123,7 @@ impl Default for AppOptions {
             // dark_mode: false,
             dashboard_size: (4, 2),
             selected_printer: None,
+            selected_printer_cfg: None,
         }
     }
 }
