@@ -152,7 +152,13 @@ impl JpegStreamViewer {
                     /// use image crate to write jpeg to file
                     // let mut f = std::fs::File::create("test.jpg")?;
                     // std::io::Write::write_all(&mut f, &img)?;
-                    let image = image::load_from_memory(&img_buf).unwrap();
+                    let image = match image::load_from_memory(&img_buf) {
+                        Ok(image) => image,
+                        Err(e) => {
+                            error!("failed to load image: {}", e);
+                            break;
+                        }
+                    };
                     let img_size = [image.width() as _, image.height() as _];
                     let image_buffer = image.to_rgba8();
                     let pixels = image_buffer.as_flat_samples();

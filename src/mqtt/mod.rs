@@ -119,6 +119,7 @@ impl BambuClient {
         printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
+        debug!("init cloud mqtt listener");
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
 
         let (username, password) = {
@@ -174,6 +175,7 @@ impl BambuClient {
         printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
+        debug!("init lan mqtt listener");
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
 
         let printer = printer_cfg.read().await;

@@ -683,7 +683,6 @@ fn main() -> eframe::Result<()> {
             let (ctx, handles) = ctx_rx.await.unwrap();
 
             /// spawn image streamers
-            #[cfg(feature = "nope")]
             for printer in config2.printer_ids() {
                 let config3 = config2.clone();
 

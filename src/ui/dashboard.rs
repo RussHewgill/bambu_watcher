@@ -271,7 +271,7 @@ impl App {
             let size = 80. - 4.;
 
             // let d = include_bytes!("../../test.jpg");
-            let data = std::fs::read("test.jpg").unwrap();
+            // let data = std::fs::read("test.jpg").unwrap();
 
             // let image = image::load_from_memory(&data).unwrap();
             // let img_size = [image.width() as _, image.height() as _];
@@ -291,21 +291,20 @@ impl App {
             //         handle
             //     });
 
-            // if let Some(entry) = self.printer_textures.get(&printer.serial) {
-            //     let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
-            //         // .bg_fill(if ui.visuals().dark_mode {
-            //         //     Color32::from_gray(128)
-            //         // } else {
-            //         //     Color32::from_gray(210)
-            //         // })
-            //         .rounding(Rounding::same(4.))
-            //         // .shrink_to_fit()
-            //         .fit_to_exact_size(Vec2::new(size, size))
-            //         .max_width(size)
-            //         .max_height(size);
-            //     ui.add(img);
-            // } else
-            if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
+            if let Some(entry) = self.printer_textures.get(&printer.serial) {
+                let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
+                    // .bg_fill(if ui.visuals().dark_mode {
+                    //     Color32::from_gray(128)
+                    // } else {
+                    //     Color32::from_gray(210)
+                    // })
+                    .rounding(Rounding::same(4.))
+                    // .shrink_to_fit()
+                    .fit_to_exact_size(Vec2::new(size, size))
+                    .max_width(size)
+                    .max_height(size);
+                ui.add(img);
+            } else if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
                 // debug!("url = {}", url);
                 let img = egui::Image::new(url)
                     .bg_fill(if ui.visuals().dark_mode {
