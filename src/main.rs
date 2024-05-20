@@ -396,14 +396,147 @@ async fn main() -> Result<()> {
     dotenvy::dotenv()?;
     logging::init_logs();
 
-    // let (config, auth) = match config::Config::read_from_file("config.yaml") {
-    //     Ok(config) => config,
-    //     Err(e) => {
-    //         warn!("error reading config: {:?}", e);
-    //         panic!("error reading config: {:?}", e);
-    //     }
-    // };
-    // let config = ConfigArc::new(config, auth);
+    let host = env::var("BAMBU_IP")?;
+    let serial = env::var("BAMBU_IDENT")?;
+    let access_code = env::var("BAMBU_ACCESS_CODE")?;
+
+    let mut root_cert_store = rustls::RootCertStore::empty();
+    root_cert_store.add_parsable_certificates(
+        rustls_native_certs::load_native_certs().expect("could not load platform certs"),
+    );
+
+    let client_config = rustls::ClientConfig::builder()
+        // .with_root_certificates(root_cert_store)
+        .dangerous()
+        .with_custom_certificate_verifier(Arc::new(mqtt::NoCertificateVerification {
+            serial: serial.clone(),
+        }))
+        .with_no_client_auth();
+
+    let connector = rumqttc::tokio_rustls::TlsConnector::from(Arc::new(client_config));
+
+    let addr = format!("{}:6000", host);
+
+    debug!("Connecting to {}", addr);
+    let stream = tokio::net::TcpStream::connect(addr).await?;
+    debug!("Connected");
+
+    let domain = rustls::pki_types::ServerName::try_from(host).unwrap();
+    let mut tls_stream = connector.connect(domain, stream).await?;
+    debug!("TLS handshake completed");
+
+    let auth_data = {
+        use byteorder::{LittleEndian, WriteBytesExt};
+
+        let username = "bblp";
+
+        let mut auth_data = vec![];
+        auth_data.write_u32::<LittleEndian>(0x40).unwrap();
+        auth_data.write_u32::<LittleEndian>(0x3000).unwrap();
+        auth_data.write_u32::<LittleEndian>(0).unwrap();
+        auth_data.write_u32::<LittleEndian>(0).unwrap();
+
+        for &b in username.as_bytes() {
+            auth_data.push(b);
+        }
+        for _ in 0..(32 - username.len()) {
+            auth_data.push(0);
+        }
+
+        for &b in access_code.as_bytes() {
+            auth_data.push(b);
+        }
+        for _ in 0..(32 - access_code.len()) {
+            auth_data.push(0);
+        }
+        auth_data
+    };
+
+    let jpeg_start = vec![0xff, 0xd8, 0xff, 0xe0];
+    let jpeg_end = vec![0xff, 0xd9];
+
+    /// 4096 is the max we'll get even if we increase this.
+    const READ_CHUNK_SIZE: usize = 4096;
+
+    debug!("writing auth data");
+    /// Payload format for each image is:
+    /// 16 byte header:
+    ///   Bytes 0:3   = little endian payload size for the jpeg image (does not include this header).
+    ///   Bytes 4:7   = 0x00000000
+    ///   Bytes 8:11  = 0x00000001
+    ///   Bytes 12:15 = 0x00000000
+    /// These first 16 bytes are always delivered by themselves.
+    ///
+    /// Bytes 16:19                       = jpeg_start magic bytes
+    /// Bytes 20:payload_size-2           = jpeg image bytes
+    /// Bytes payload_size-2:payload_size = jpeg_end magic bytes
+    ///
+    /// Further attempts to receive data will get SSLWantReadError until a new image is ready (1-2 seconds later)
+    tokio::io::AsyncWriteExt::write_all(&mut tls_stream, &auth_data).await?;
+
+    debug!("getting socket status");
+    let status = tls_stream.get_ref().0.take_error()?;
+    debug!("status = {:?}", status);
+
+    let mut buf = [0u8; READ_CHUNK_SIZE];
+
+    let mut payload_size = 0;
+
+    let mut img: Vec<u8> = vec![];
+
+    let mut got_header = false;
+
+    use tokio::io::AsyncReadExt;
+    loop {
+        buf.fill(0);
+        tls_stream.get_ref().0.readable().await?;
+        let n = tls_stream.read(&mut buf).await?;
+
+        if got_header {
+            // debug!("extending image by {}", n);
+            img.extend_from_slice(&buf[..n]);
+
+            if img.len() > payload_size {
+                warn!(
+                    "unexpected image payload received: {} > {}",
+                    img.len(),
+                    payload_size,
+                );
+                break;
+            } else if img.len() == payload_size {
+                if &img[0..4] != &jpeg_start {
+                    warn!("missing jpeg start bytes");
+                    break;
+                } else if &img[payload_size - 2..payload_size - 0] != &jpeg_end {
+                    warn!("missing jpeg end bytes");
+                    break;
+                }
+
+                debug!("got image");
+                /// use image crate to write jpeg to file
+                let mut f = std::fs::File::create("test.jpg")?;
+                std::io::Write::write_all(&mut f, &img)?;
+
+                break;
+            }
+        } else if n == 16 {
+            debug!("got header");
+            // img.extend_from_slice(&buf);
+
+            // payload_size = int.from_bytes(dr[0:3], byteorder='little')
+            // payload_size = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]) as usize;
+            payload_size =
+                <byteorder::LittleEndian as byteorder::ByteOrder>::read_u32(&buf[0..4]) as usize;
+
+            debug!("payload_size = {}", payload_size);
+            got_header = true;
+        }
+
+        if n == 0 {
+            debug!("wrong access code");
+            break;
+        }
+    }
 
     Ok(())
 }
@@ -449,10 +582,14 @@ fn main() -> eframe::Result<()> {
     let (msg_tx, mut msg_rx) = tokio::sync::mpsc::unbounded_channel::<PrinterConnMsg>();
     let (cmd_tx, cmd_rx) = tokio::sync::mpsc::unbounded_channel::<PrinterConnCmd>();
 
+    let (img_tx, img_rx) = tokio::sync::watch::channel::<Vec<u8>>(vec![]);
+
     let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
     let printer_states2 = printer_states.clone();
 
-    let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
+    // let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
+    let (ctx_tx, ctx_rx) =
+        tokio::sync::oneshot::channel::<(egui::Context, HashMap<PrinterId, egui::TextureHandle>)>();
 
     /// debug printer state
     #[cfg(feature = "nope")]
@@ -536,12 +673,30 @@ fn main() -> eframe::Result<()> {
 
     let cmd_tx2 = cmd_tx.clone();
 
+    // let handles2 = handles.clone();
+
     // #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async move {
-            let ctx = ctx_rx.await.unwrap();
+            let (ctx, handles) = ctx_rx.await.unwrap();
+
+            /// spawn image streamers
+            for printer in config2.printer_ids() {
+                let config3 = config2.clone();
+
+                let handle = handles.get(&printer).unwrap().clone();
+                tokio::task::spawn(async move {
+                    let mut streamer =
+                        crate::cloud::streaming::JpegStreamViewer::new(config3, printer, handle)
+                            .await
+                            .unwrap();
+
+                    streamer.run().await.unwrap();
+                });
+            }
+
             let mut manager =
                 PrinterConnManager::new(config2, printer_states2, cmd_tx2, cmd_rx, msg_tx, ctx);
             // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
@@ -571,8 +726,22 @@ fn main() -> eframe::Result<()> {
 
             let context = cc.egui_ctx.clone();
 
-            ctx_tx.send(context.clone()).unwrap();
-            // handle_tx.send(handle.hwnd).unwrap();
+            let mut handles: HashMap<PrinterId, egui::TextureHandle> = HashMap::new();
+            for printer in config.printer_ids() {
+                let image = egui::ColorImage::new([80, 80], egui::Color32::from_gray(220));
+                let handle = cc.egui_ctx.load_texture(
+                    format!("{}_texture", &printer),
+                    image,
+                    Default::default(),
+                );
+                handles.insert(printer.clone(), handle.clone());
+            }
+
+            ctx_tx
+                .send((context.clone(), handles.clone()))
+                .ok()
+                .context("sending context")
+                .unwrap();
 
             // tray-icon crate
             // https://docs.rs/tray-icon/0.12.0/tray_icon/struct.TrayIconEvent.html#method.set_event_handler
@@ -648,6 +817,7 @@ fn main() -> eframe::Result<()> {
                 cc,
                 // alert_tx,
                 cmd_tx,
+                handles,
             ))
         }),
     )

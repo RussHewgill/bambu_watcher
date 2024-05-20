@@ -82,6 +82,10 @@ pub struct App {
     pub selected_printer_controls: Option<PrinterId>,
     // #[serde(skip)]
     // pub printer_skip: Option<PrinterSkipping>,
+    #[serde(skip)]
+    pub printer_textures: HashMap<PrinterId, egui::TextureHandle>,
+    // #[serde(skip)]
+    // pub printer_texture_rxs: HashMap<PrinterId, tokio::sync::watch::Receiver<Vec<u8>>>,
 }
 
 // #[derive(Default)]

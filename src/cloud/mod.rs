@@ -1,5 +1,6 @@
 pub mod cloud_types;
 pub mod errors;
+pub mod streaming;
 
 use std::collections::HashMap;
 

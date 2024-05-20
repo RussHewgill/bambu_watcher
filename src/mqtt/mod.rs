@@ -22,7 +22,7 @@ use self::{command::Command, message::Message};
 
 /// scary, insecure, do not allow outside of local network
 #[derive(Debug)]
-struct NoCertificateVerification {
+pub struct NoCertificateVerification {
     pub serial: String,
 }
 

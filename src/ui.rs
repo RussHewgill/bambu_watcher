@@ -12,7 +12,13 @@ use egui::{Align, Color32, Layout, Margin, Response, Rounding, Sense, Stroke, Ve
 use egui_phosphor::fill;
 
 use dashmap::DashMap;
-use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc, time::Duration};
+use std::{
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+    rc::Rc,
+    sync::Arc,
+    time::Duration,
+};
 
 use crate::{
     config::{ConfigArc, PrinterConfig},
@@ -36,6 +42,7 @@ impl App {
         cc: &eframe::CreationContext<'_>,
         cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
+        printer_textures: HashMap<PrinterId, egui::TextureHandle>,
     ) -> Self {
         let mut out = if let Some(storage) = cc.storage {
             eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
@@ -62,6 +69,8 @@ impl App {
         for (_, id) in out.printer_order.iter() {
             out.unplaced_printers.retain(|p| p != id);
         }
+
+        out.printer_textures = printer_textures;
 
         /// remove printers that were previously placed but are no longer in the config
         {
