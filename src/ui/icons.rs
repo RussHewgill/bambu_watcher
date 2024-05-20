@@ -27,7 +27,7 @@ generate_icon_function!(icon_cloud, "../../assets/icons/cloud-1_poly.svg", 20.);
 generate_icon_function!(icon_lan, "../../assets/icons/wifi-100_poly.svg", 20.);
 
 pub fn thumbnail_printer(
-    printer: Arc<PrinterConfig>,
+    printer: &PrinterConfig,
     printer_type: &PrinterType,
     size: f32,
     ctx: &egui::Context,
@@ -35,7 +35,8 @@ pub fn thumbnail_printer(
     let src = if ctx.style().visuals.dark_mode {
         // egui::include_image!("../../assets/printer_thumbnail_x1.svg")
         match printer_type {
-            PrinterType::X1 => egui::include_image!("../../assets/printer_thumbnail_x1.svg"),
+            PrinterType::X1C => egui::include_image!("../../assets/printer_thumbnail_x1.svg"),
+            PrinterType::X1E => egui::include_image!("../../assets/printer_thumbnail_x1.svg"),
             PrinterType::P1P => egui::include_image!("../../assets/printer_thumbnail_p1p.svg"),
             PrinterType::P1S => egui::include_image!("../../assets/printer_thumbnail_p1s.svg"),
             PrinterType::A1 => egui::include_image!("../../assets/printer_thumbnail_n2s.svg"),
@@ -45,7 +46,8 @@ pub fn thumbnail_printer(
     } else {
         // egui::include_image!("../../assets/printer_thumbnail_x1_dark.svg")
         match printer_type {
-            PrinterType::X1 => egui::include_image!("../../assets/printer_thumbnail_x1_dark.svg"),
+            PrinterType::X1C => egui::include_image!("../../assets/printer_thumbnail_x1_dark.svg"),
+            PrinterType::X1E => egui::include_image!("../../assets/printer_thumbnail_x1_dark.svg"),
             PrinterType::P1P => egui::include_image!("../../assets/printer_thumbnail_p1p_dark.svg"),
             PrinterType::P1S => egui::include_image!("../../assets/printer_thumbnail_p1s_dark.svg"),
             PrinterType::A1 => egui::include_image!("../../assets/printer_thumbnail_n2s_dark.svg"),

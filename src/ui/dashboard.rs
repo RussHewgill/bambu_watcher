@@ -105,14 +105,19 @@ impl App {
                                         };
 
                                         if self.printer_states.contains_key(id) {
-                                            let resp = self.show_printer(
-                                                (x, y),
-                                                frame_size,
-                                                ui,
-                                                // id,
-                                                Arc::new(printer),
-                                                // &printer_state,
-                                            );
+                                            let resp = if let Ok(printer) = printer.try_read() {
+                                                self.show_printer(
+                                                    (x, y),
+                                                    frame_size,
+                                                    ui,
+                                                    // id,
+                                                    &printer,
+                                                    // &printer_state,
+                                                )
+                                            } else {
+                                                warn!("Printer not found");
+                                                panic!();
+                                            };
                                         } else {
                                             ui.label("Printer not found");
                                             // ui.allocate_space(Vec2::new(w, h));
@@ -187,7 +192,7 @@ impl App {
         frame_size: Vec2,
         ui: &mut egui::Ui,
         // id: &PrinterId,
-        printer: Arc<PrinterConfig>,
+        printer: &PrinterConfig,
         // printer_state: &PrinterStatus,
     ) -> Response {
         let Some(status) = self.printer_states.get(&printer.serial) else {
@@ -262,12 +267,6 @@ impl App {
             })
             .response;
 
-        // /// printer name
-        // ui.horizontal(|ui| {
-        //     paint_icon(ui, 40., &status.state);
-        //     ui.label(&format!("{} ({})", printer.name, status.state.to_text()));
-        // });
-
         ui.horizontal(|ui| {
             let size = 80. - 4.;
             if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
@@ -286,8 +285,7 @@ impl App {
                 ui.add(img);
             } else if let Some(t) = printer_state.printer_type {
                 ui.add(
-                    thumbnail_printer(printer.clone(), &t, size, ui.ctx())
-                        .rounding(Rounding::same(4.)),
+                    thumbnail_printer(&printer, &t, size, ui.ctx()).rounding(Rounding::same(4.)),
                 );
             }
 
@@ -375,7 +373,7 @@ impl App {
         ui.separator();
 
         /// current print
-        self.show_current_print(frame_size, ui, &status, printer.clone(), &printer_state);
+        self.show_current_print(frame_size, ui, &status, &printer, &printer_state);
         #[cfg(feature = "nope")]
         if let PrinterState::Printing = status.state {
             self.show_current_print(frame_size, ui, &status, printer.clone(), &printer_state);
@@ -392,17 +390,15 @@ impl App {
         }
 
         ui.separator();
-        self.show_controls(frame_size, ui, &status, printer.clone(), &printer_state);
+        self.show_controls(frame_size, ui, &status, printer, &printer_state);
 
         ui.separator();
         // self.show_ams(frame_size, ui, &status, printer, &printer_state);
         drop(status);
         drop(printer_state);
         self.show_ams(
-            frame_size,
-            ui,
-            // &status,
-            printer.clone(),
+            frame_size, ui, // &status,
+            printer,
             // &mut self.selected_ams,
         );
 
@@ -418,7 +414,7 @@ impl App {
         frame_size: Vec2,
         ui: &mut egui::Ui,
         status: &PrinterStatus,
-        printer: Arc<PrinterConfig>,
+        printer: &PrinterConfig,
         printer_state: &PrinterStatus,
     ) {
         let pause = match &status.state {
@@ -483,7 +479,7 @@ impl App {
         frame_size: Vec2,
         ui: &mut egui::Ui,
         // status: &PrinterStatus,
-        printer: Arc<PrinterConfig>,
+        printer: &PrinterConfig,
         // selected_ams: &mut HashMap<PrinterId, usize>,
         // printer_state: &PrinterStatus,
     ) {
@@ -673,7 +669,7 @@ impl App {
         frame_size: Vec2,
         ui: &mut egui::Ui,
         status: &PrinterStatus,
-        printer: Arc<PrinterConfig>,
+        printer: &PrinterConfig,
         printer_state: &PrinterStatus,
     ) {
         let Some(eta) = status.eta else {

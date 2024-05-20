@@ -57,12 +57,7 @@ impl App {
 
         out.cmd_tx = Some(cmd_tx);
 
-        out.unplaced_printers = out
-            .config
-            .printers()
-            .into_iter()
-            .map(|p| p.serial.clone())
-            .collect();
+        out.unplaced_printers = out.config.printer_ids();
         /// for each printer that isn't in printer_order, queue to add
         for (_, id) in out.printer_order.iter() {
             out.unplaced_printers.retain(|p| p != id);
@@ -72,9 +67,9 @@ impl App {
         {
             let current_printers = out
                 .config
-                .printers()
-                .iter()
-                .map(|c| c.serial.clone())
+                .printer_ids()
+                .into_iter()
+                // .map(|c| c.serial.clone())
                 .collect::<HashSet<_>>();
 
             out.unplaced_printers

@@ -1,7 +1,8 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use tracing::{debug, error, info, trace, warn};
+
 use egui::ViewportBuilder;
 use egui_phosphor::fill;
-use tracing::{debug, error, info, trace, warn};
 
 use crate::ui::ui_types::{App, AppLogin, GridLocation};
 

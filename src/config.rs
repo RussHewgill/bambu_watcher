@@ -36,7 +36,7 @@ impl Default for ConfigArc {
             //     printers: HashMap::new(),
             // })),
             config: Config {
-                printers: DashMap::new(),
+                printers: Arc::new(HashMap::new()),
             },
             auth: Arc::new(RwLock::new(crate::auth::AuthDb::empty())),
             logged_in: Arc::new(AtomicBool::new(false)),
@@ -89,7 +89,7 @@ impl ConfigArc {
 }
 
 impl ConfigArc {
-    pub fn add_printer(&mut self, printer: PrinterConfig) {
+    pub fn add_printer(&mut self, printer: Arc<RwLock<PrinterConfig>>) {
         unimplemented!()
     }
 
@@ -102,28 +102,43 @@ impl ConfigArc {
             .collect()
     }
 
-    pub fn printers(&self) -> Vec<PrinterConfig> {
-        self.config
-            .printers
-            .iter()
-            .map(|v| v.value().clone())
-            .collect()
+    pub fn printer_ids(&self) -> Vec<PrinterId> {
+        self.config.printers.keys().cloned().collect()
     }
 
+    pub fn printers(&self) -> Vec<Arc<RwLock<PrinterConfig>>> {
+        self.config
+            .printers
+            .values()
+            // .map(|v| v.value().clone())
+            .cloned()
+            .collect()
+        // unimplemented!()
+    }
+
+    #[cfg(feature = "nope")]
     /// will get stale after config update, so will need to restart the printer's connection
-    pub fn get_printer(&self, serial: &PrinterId) -> Option<PrinterConfig> {
+    pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<PrinterConfig>> {
         if let Some(p) = self.config.printers.get(serial) {
             Some(p.clone())
         } else {
             None
         }
     }
+
+    pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<RwLock<PrinterConfig>>> {
+        // unimplemented!()
+        self.config.printers.get(serial).cloned()
+    }
 }
 
 #[derive(Clone)]
 pub struct Config {
     // printers: HashMap<PrinterId, Arc<PrinterConfig>>,
-    printers: DashMap<PrinterId, PrinterConfig>,
+    // printers: DashMap<PrinterId, PrinterConfig>,
+    // printers: Arc<DashMap<PrinterId, RwLock<PrinterConfig>>>,
+    // printers: Arc<DashMap<PrinterId, Arc<RwLock<PrinterConfig>>>>,
+    printers: Arc<HashMap<PrinterId, Arc<RwLock<PrinterConfig>>>>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -141,17 +156,17 @@ impl Config {
 
         let logged_in = matches!(auth.get_token(), Ok(Some(_)));
 
+        let mut printers = HashMap::new();
+
+        for mut printer in config.printers.into_iter() {
+            printers.insert(printer.serial.clone(), Arc::new(RwLock::new(printer)));
+        }
+
         let mut out = Self {
             // logged_in,
             // auth,
-            printers: DashMap::new(),
+            printers: Arc::new(printers),
         };
-
-        for mut printer in config.printers.into_iter() {
-            out.printers
-                // .insert(printer.serial.clone(), Arc::new(printer));
-                .insert(printer.serial.clone(), printer);
-        }
 
         Ok((out, auth))
     }

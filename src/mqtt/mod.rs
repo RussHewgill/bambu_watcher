@@ -3,6 +3,7 @@ pub mod message;
 pub mod parse;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use tokio::sync::RwLock;
 use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
@@ -11,7 +12,6 @@ use rumqttc::{
     AsyncClient, EventLoop, Incoming, MqttOptions,
 };
 use std::{sync::Arc, time::Duration};
-use tracing_subscriber::field::debug;
 
 use crate::{
     config::{ConfigArc, PrinterConfig},
@@ -85,7 +85,8 @@ impl rumqttc::tokio_rustls::rustls::client::danger::ServerCertVerifier
 }
 
 pub struct BambuClient {
-    config: PrinterConfig,
+    // config: PrinterConfig,
+    config: Arc<RwLock<PrinterConfig>>,
 
     // client: paho_mqtt::AsyncClient,
     // stream: paho_mqtt::AsyncReceiver<Option<paho_mqtt::Message>>,
@@ -100,20 +101,22 @@ pub struct BambuClient {
 impl BambuClient {
     pub async fn new_and_init(
         config: ConfigArc,
-        printer_cfg: PrinterConfig,
+        // printer_cfg: PrinterConfig,
+        printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
         if config.logged_in() {
-            Self::_new_and_init_cloud(config, &printer_cfg, tx).await
+            Self::_new_and_init_cloud(config, printer_cfg, tx).await
         } else {
-            Self::_new_and_init_lan(&printer_cfg, tx).await
+            Self::_new_and_init_lan(printer_cfg, tx).await
         }
     }
 
     async fn _new_and_init_cloud(
         config: ConfigArc,
         // printer_cfg: Arc<PrinterConfig>,
-        printer_cfg: &PrinterConfig,
+        // printer_cfg: &PrinterConfig,
+        printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
@@ -145,14 +148,14 @@ impl BambuClient {
         mqttoptions.set_transport(transport);
         mqttoptions.set_clean_session(true);
 
-        debug!("connecting, printer = {}", &printer_cfg.name);
+        debug!("connecting, printer = {}", &printer_cfg.read().await.name);
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-        debug!("connected, printer = {}", &printer_cfg.name);
+        debug!("connected, printer = {}", &printer_cfg.read().await.name);
 
         let mut out = Self {
             config: printer_cfg.clone(),
-            topic_device_request: format!("device/{}/request", &printer_cfg.serial),
-            topic_device_report: format!("device/{}/report", &printer_cfg.serial),
+            topic_device_request: format!("device/{}/request", &printer_cfg.read().await.serial),
+            topic_device_report: format!("device/{}/report", &printer_cfg.read().await.serial),
             client,
             // eventloop,
             // stream,
@@ -167,20 +170,23 @@ impl BambuClient {
 
     async fn _new_and_init_lan(
         // printer_cfg: Arc<PrinterConfig>,
-        printer_cfg: &PrinterConfig,
+        // printer_cfg: &PrinterConfig,
+        printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     ) -> Result<Self> {
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
 
-        let mut mqttoptions = MqttOptions::new(client_id, &printer_cfg.host, 8883);
+        let printer = printer_cfg.read().await;
+
+        let mut mqttoptions = MqttOptions::new(client_id, &printer.host, 8883);
         mqttoptions.set_keep_alive(Duration::from_secs(5));
-        mqttoptions.set_credentials("bblp", &printer_cfg.access_code);
+        mqttoptions.set_credentials("bblp", &printer.access_code);
 
         let client_config = rumqttc::tokio_rustls::rustls::ClientConfig::builder()
             // .with_root_certificates(root_cert_store)
             .dangerous()
             .with_custom_certificate_verifier(Arc::new(NoCertificateVerification {
-                serial: (*printer_cfg.serial).clone(),
+                serial: (*printer.serial).clone(),
             }))
             .with_no_client_auth();
 
@@ -192,14 +198,14 @@ impl BambuClient {
         mqttoptions.set_transport(transport);
         mqttoptions.set_clean_session(true);
 
-        debug!("connecting, printer = {}", &printer_cfg.name);
+        debug!("connecting, printer = {}", &printer.name);
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-        debug!("connected, printer = {}", &printer_cfg.name);
+        debug!("connected, printer = {}", &printer.name);
 
         let mut out = Self {
             config: printer_cfg.clone(),
-            topic_device_request: format!("device/{}/request", &printer_cfg.serial),
-            topic_device_report: format!("device/{}/report", &printer_cfg.serial),
+            topic_device_request: format!("device/{}/request", &printer.serial),
+            topic_device_report: format!("device/{}/report", &printer.serial),
             client,
             // eventloop,
             // stream,
@@ -232,7 +238,10 @@ impl BambuClient {
                     error!("Error in listener: {:?}", e);
                     listener
                         .tx
-                        .send((listener.printer_cfg.serial.clone(), Message::Disconnected))
+                        .send((
+                            listener.printer_cfg.read().await.serial.clone(),
+                            Message::Disconnected,
+                        ))
                         .unwrap();
                 }
                 listener.eventloop.clean();
@@ -260,7 +269,8 @@ impl BambuClient {
 }
 
 struct ClientListener {
-    printer_cfg: PrinterConfig,
+    // printer_cfg: PrinterConfig,
+    printer_cfg: Arc<RwLock<PrinterConfig>>,
     client: rumqttc::AsyncClient,
     eventloop: rumqttc::EventLoop,
     tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
@@ -270,7 +280,8 @@ struct ClientListener {
 
 impl ClientListener {
     pub fn new(
-        printer_cfg: PrinterConfig,
+        // printer_cfg: PrinterConfig,
+        printer_cfg: Arc<RwLock<PrinterConfig>>,
         client: rumqttc::AsyncClient,
         eventloop: rumqttc::EventLoop,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
@@ -336,7 +347,8 @@ impl ClientListener {
                     // debug!("incoming publish");
                     let msg = parse::parse_message(&p);
                     // debug!("incoming publish: {:?}", msg);
-                    self.tx.send((self.printer_cfg.serial.clone(), msg))?;
+                    self.tx
+                        .send((self.printer_cfg.read().await.serial.clone(), msg))?;
                 }
                 Event::Incoming(event) => {
                     debug!("incoming other event: {:?}", event);

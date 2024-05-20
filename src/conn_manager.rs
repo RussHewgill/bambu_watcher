@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use tokio::sync::RwLock;
 use tracing::{debug, error, info, trace, warn};
 
 // use bambulab::{Client as BambuClient, Message};
@@ -40,6 +41,8 @@ pub enum PrinterConnCmd {
     AddPrinter(PrinterConfig),
     RemovePrinter(PrinterId),
     SetPrinterCloud(PrinterId, bool),
+
+    UpdatePrinterConfig(PrinterId, PrinterConfig),
 
     /// get the status of a printer
     ReportStatus(PrinterId),
@@ -154,7 +157,11 @@ impl PrinterConnManager {
         // Ok(())
     }
 
-    async fn add_printer(&mut self, printer: PrinterConfig, from_cfg: bool) -> Result<()> {
+    async fn add_printer(
+        &mut self,
+        printer: Arc<RwLock<PrinterConfig>>,
+        from_cfg: bool,
+    ) -> Result<()> {
         if !from_cfg {
             // self.config.add_printer(printer.unwrap_or_clone()));
             self.config.add_printer(printer.clone());
@@ -163,7 +170,8 @@ impl PrinterConnManager {
         let client =
             Self::start_printer_listener(self.config.clone(), self.tx.clone(), printer.clone())
                 .await?;
-        self.printers.insert(printer.serial.clone(), client);
+        self.printers
+            .insert(printer.read().await.serial.clone(), client);
 
         Ok(())
     }
@@ -171,7 +179,8 @@ impl PrinterConnManager {
     async fn start_printer_listener(
         config: ConfigArc,
         msg_tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
-        printer: PrinterConfig,
+        // printer: PrinterConfig,
+        printer: Arc<RwLock<PrinterConfig>>,
     ) -> Result<BambuClient> {
         let mut client = crate::mqtt::BambuClient::new_and_init(config, printer, msg_tx).await?;
         Ok(client)
@@ -193,6 +202,8 @@ impl PrinterConnManager {
         match msg {
             Message::Print(report) => {
                 // debug!("got print report");
+
+                let printer = printer.read().await;
 
                 let mut entry = self
                     .printer_states
@@ -240,13 +251,14 @@ impl PrinterConnManager {
                     && entry.current_task_thumbnail_url.is_none()
                 {
                     let config2 = self.config.clone();
-                    let printer2 = printer.clone();
+                    // let printer2 = printer.clone();
+                    let serial = printer.serial.clone();
                     let printer_states2 = self.printer_states.clone();
                     let task_id = entry.subtask_id.as_ref().unwrap().clone();
                     // warn!("skipping fetch thumnail");
                     warn!("spawning fetch thumnail");
                     tokio::spawn(async {
-                        fetch_printer_task_thumbnail(config2, printer2, printer_states2, task_id)
+                        fetch_printer_task_thumbnail(config2, serial, printer_states2, task_id)
                             .await;
                     });
                     warn!("spawned fetch thumnail");
@@ -265,6 +277,8 @@ impl PrinterConnManager {
                         .config
                         .get_printer(&printer.serial)
                         .context("printer not found")?
+                        .read()
+                        .await
                         .name
                         .clone();
 
@@ -298,13 +312,19 @@ impl PrinterConnManager {
             }
             Message::Info(info) => {
                 // debug!("printer info for {:?}: {:?}", &printer.name, info);
-                debug!("got printer info for printer: {:?}", &printer.name);
+                debug!(
+                    "got printer info for printer: {:?}",
+                    &printer.read().await.name
+                );
 
                 let mut entry = self
                     .printer_states
-                    .entry(printer.serial.clone())
+                    .entry(printer.read().await.serial.clone())
                     .or_default();
 
+                entry.printer_type = Some(crate::utils::get_printer_type(&info.info));
+
+                #[cfg(feature = "nope")]
                 for module in info.info.module.iter() {
                     // debug!("module {:?} = {:?}", module.name, module.project_name);
 
@@ -312,6 +332,7 @@ impl PrinterConnManager {
                     // module.sn = "redacted".to_string();
                     // debug!("module {:?} = {:?}", module.name, module);
 
+                    #[cfg(feature = "nope")]
                     if module.name == "mc" {
                         // debug!("project_name = {:?}", module.project_name);
                         match module.project_name.as_ref() {
@@ -344,30 +365,34 @@ impl PrinterConnManager {
                 Some(unknown) => warn!("unknown message: {:?}", unknown),
                 _ => trace!("unknown message: None"),
             },
-            Message::Connecting => debug!("printer connecting: {:?}", &printer.name),
+            Message::Connecting => debug!("printer connecting: {:?}", &printer.read().await.name),
             Message::Connected => {
-                info!("printer connected: {:?}", &printer.name);
+                let name = &printer.read().await.name;
+                info!("printer connected: {:?}", &name);
+
                 let client = self
                     .printers
-                    .get(&printer.serial)
-                    .with_context(|| format!("printer not found: {:?}", &printer.name))?;
+                    .get(&printer.read().await.serial)
+                    .with_context(|| format!("printer not found: {:?}", &name))?;
                 if let Err(e) = client.publish(Command::PushAll).await {
                     error!("error publishing status: {:?}", e);
                 }
                 let mut entry = self
                     .printer_states
-                    .entry(printer.serial.clone())
+                    .entry(printer.read().await.serial.clone())
                     .or_default();
                 entry.reset();
                 self.ctx.request_repaint();
             }
-            Message::Reconnecting => warn!("printer reconnecting: {:?}", &printer.name),
+            Message::Reconnecting => {
+                warn!("printer reconnecting: {:?}", &printer.read().await.name)
+            }
             Message::Disconnected => {
-                error!("printer disconnected: {:?}", &printer.name);
+                error!("printer disconnected: {:?}", &printer.read().await.name);
 
                 let mut entry = self
                     .printer_states
-                    .entry(printer.serial.clone())
+                    .entry(printer.read().await.serial.clone())
                     .or_default();
                 entry.state = PrinterState::Disconnected;
                 self.ctx.request_repaint();
@@ -379,7 +404,8 @@ impl PrinterConnManager {
     async fn handle_command(&mut self, cmd: PrinterConnCmd) -> Result<()> {
         match cmd {
             PrinterConnCmd::AddPrinter(printer) => {
-                self.add_printer(printer, false).await?;
+                self.add_printer(Arc::new(RwLock::new(printer)), false)
+                    .await?;
                 // unimplemented!()
             }
             PrinterConnCmd::SetPrinterCloud(id, cloud) => {
@@ -495,7 +521,7 @@ async fn login(
 
 async fn fetch_printer_task_thumbnail(
     config: ConfigArc,
-    id: Arc<PrinterConfig>,
+    id: PrinterId,
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
     task_id: String,
 ) {
@@ -505,7 +531,7 @@ async fn fetch_printer_task_thumbnail(
         if let Ok(info) = crate::cloud::get_subtask_info(&token, &task_id).await {
             debug!("got subtask info");
             let url = info.context.plates[0].thumbnail.url.clone();
-            if let Some(mut entry) = printer_states.get_mut(&id.serial) {
+            if let Some(mut entry) = printer_states.get_mut(&id) {
                 entry.current_task_thumbnail_url = Some(url);
             }
 

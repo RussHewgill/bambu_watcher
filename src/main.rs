@@ -20,6 +20,7 @@ pub mod status;
 // pub mod tray;
 pub mod cloud;
 pub mod ui;
+pub mod utils;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
