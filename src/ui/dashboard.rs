@@ -269,26 +269,6 @@ impl App {
 
         ui.horizontal(|ui| {
             let size = 80. - 4.;
-            #[cfg(feature = "nope")]
-            if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
-                // debug!("url = {}", url);
-                let img = egui::Image::new(url)
-                    .bg_fill(if ui.visuals().dark_mode {
-                        Color32::from_gray(128)
-                    } else {
-                        Color32::from_gray(210)
-                    })
-                    .rounding(Rounding::same(4.))
-                    // .shrink_to_fit()
-                    .fit_to_exact_size(Vec2::new(size, size))
-                    .max_width(size)
-                    .max_height(size);
-                ui.add(img);
-            } else if let Some(t) = printer_state.printer_type {
-                ui.add(
-                    thumbnail_printer(&printer, &t, size, ui.ctx()).rounding(Rounding::same(4.)),
-                );
-            }
 
             // let d = include_bytes!("../../test.jpg");
             let data = std::fs::read("test.jpg").unwrap();
@@ -311,20 +291,38 @@ impl App {
             //         handle
             //     });
 
-            let entry = self.printer_textures.get(&printer.serial).unwrap();
-
-            let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
-                // .bg_fill(if ui.visuals().dark_mode {
-                //     Color32::from_gray(128)
-                // } else {
-                //     Color32::from_gray(210)
-                // })
-                .rounding(Rounding::same(4.))
-                // .shrink_to_fit()
-                .fit_to_exact_size(Vec2::new(size, size))
-                .max_width(size)
-                .max_height(size);
-            ui.add(img);
+            if let Some(entry) = self.printer_textures.get(&printer.serial) {
+                let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
+                    // .bg_fill(if ui.visuals().dark_mode {
+                    //     Color32::from_gray(128)
+                    // } else {
+                    //     Color32::from_gray(210)
+                    // })
+                    .rounding(Rounding::same(4.))
+                    // .shrink_to_fit()
+                    .fit_to_exact_size(Vec2::new(size, size))
+                    .max_width(size)
+                    .max_height(size);
+                ui.add(img);
+            } else if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
+                // debug!("url = {}", url);
+                let img = egui::Image::new(url)
+                    .bg_fill(if ui.visuals().dark_mode {
+                        Color32::from_gray(128)
+                    } else {
+                        Color32::from_gray(210)
+                    })
+                    .rounding(Rounding::same(4.))
+                    // .shrink_to_fit()
+                    .fit_to_exact_size(Vec2::new(size, size))
+                    .max_width(size)
+                    .max_height(size);
+                ui.add(img);
+            } else if let Some(t) = printer_state.printer_type {
+                ui.add(
+                    thumbnail_printer(&printer, &t, size, ui.ctx()).rounding(Rounding::same(4.)),
+                );
+            }
 
             /// temperatures
             ui.vertical(|ui| {

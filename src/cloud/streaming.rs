@@ -113,11 +113,12 @@ impl JpegStreamViewer {
         tokio::io::AsyncWriteExt::write_all(&mut self.tls_stream, &self.auth_data).await?;
 
         debug!("getting socket status");
-        let status = self.tls_stream.get_ref().0.take_error()?;
-        if !status.is_none() {
+        let status = self.tls_stream.get_ref().0.take_error();
+        if !matches!(status, Ok(None)) {
             error!("socket status = {:?}", status);
             bail!("socket status = {:?}", status);
         }
+        debug!("socket status ok, running loop");
 
         let mut payload_size = 0;
         let mut img_buf: Vec<u8> = vec![];
