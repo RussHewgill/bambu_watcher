@@ -56,13 +56,13 @@ impl JpegStreamViewer {
 
         let connector = rumqttc::tokio_rustls::TlsConnector::from(Arc::new(client_config));
 
-        debug!("Jpeg Viewer Connecting");
+        // debug!("Jpeg Viewer Connecting");
         let stream = tokio::net::TcpStream::connect(addr).await?;
-        debug!("Jpeg Viewer Connected");
+        // debug!("Jpeg Viewer Connected");
 
         let domain = rustls::pki_types::ServerName::try_from(host).unwrap();
         let mut tls_stream = connector.connect(domain, stream).await?;
-        debug!("TLS handshake completed");
+        // debug!("TLS handshake completed");
 
         let auth_data = {
             use byteorder::{LittleEndian, WriteBytesExt};

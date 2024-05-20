@@ -28,6 +28,18 @@ impl App {
                     .send(crate::conn_manager::PrinterConnCmd::Logout);
             }
         } else {
+            {
+                if self
+                    .config
+                    .auth
+                    .blocking_write()
+                    .get_token()
+                    .unwrap()
+                    .is_some()
+                {
+                    self.config.set_logged_in(true);
+                }
+            }
             ui.label("Not logged in");
             if self.login_window.is_some() {
                 self.show_login(ui);
