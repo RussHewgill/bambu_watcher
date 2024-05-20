@@ -147,7 +147,7 @@ impl BambuClient {
         ));
 
         mqttoptions.set_transport(transport);
-        mqttoptions.set_clean_session(true);
+        // mqttoptions.set_clean_session(true);
 
         debug!("connecting, printer = {}", &printer_cfg.read().await.name);
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
@@ -198,7 +198,7 @@ impl BambuClient {
         ));
 
         mqttoptions.set_transport(transport);
-        mqttoptions.set_clean_session(true);
+        // mqttoptions.set_clean_session(true);
 
         debug!("connecting, printer = {}", &printer.name);
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
