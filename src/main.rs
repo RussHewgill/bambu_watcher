@@ -688,12 +688,14 @@ fn main() -> eframe::Result<()> {
 
                 let handle = handles.get(&printer).unwrap().clone();
                 tokio::task::spawn(async move {
-                    let mut streamer =
+                    if let Ok(mut streamer) =
                         crate::cloud::streaming::JpegStreamViewer::new(config3, printer, handle)
                             .await
-                            .unwrap();
-
-                    streamer.run().await.unwrap();
+                    {
+                        if let Err(e) = streamer.run().await {
+                            error!("streamer error: {:?}", e);
+                        }
+                    }
                 });
             }
 

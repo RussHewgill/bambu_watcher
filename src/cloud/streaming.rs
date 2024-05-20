@@ -115,6 +115,7 @@ impl JpegStreamViewer {
         debug!("getting socket status");
         let status = self.tls_stream.get_ref().0.take_error()?;
         if !status.is_none() {
+            error!("socket status = {:?}", status);
             bail!("socket status = {:?}", status);
         }
 

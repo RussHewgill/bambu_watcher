@@ -19,7 +19,10 @@ pub fn init_logs() {
 }
 
 pub fn init_logs() {
-    let trace_file = tracing_appender::rolling::never(".", "output.log").with_max_level(tracing::Level::TRACE);
+    let _ = std::fs::rename("output.log", "output_prev.log");
+
+    let trace_file =
+        tracing_appender::rolling::never(".", "output.log").with_max_level(tracing::Level::TRACE);
 
     // LogTracer::init().unwrap();
 
@@ -31,7 +34,9 @@ pub fn init_logs() {
         .with_target(true)
         .with_level(true)
         .compact()
-        .with_filter(tracing_subscriber::filter::EnvFilter::new("info,bambu_watcher=trace,eframe=warn"));
+        .with_filter(tracing_subscriber::filter::EnvFilter::new(
+            "info,bambu_watcher=trace,eframe=warn",
+        ));
 
     let stderr_layer = tracing_subscriber::fmt::layer()
         .with_writer(std::io::stderr)
@@ -40,7 +45,9 @@ pub fn init_logs() {
         .with_line_number(true)
         .with_target(false)
         .compact()
-        .with_filter(tracing_subscriber::filter::EnvFilter::new("info,bambu_watcher=debug,eframe=warn"));
+        .with_filter(tracing_subscriber::filter::EnvFilter::new(
+            "info,bambu_watcher=debug,eframe=warn",
+        ));
 
     let subscriber = tracing_subscriber::registry()
         .with(file_layer)
