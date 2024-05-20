@@ -108,7 +108,7 @@ impl eframe::App for App {
         //     s.visuals.dark_mode = true;
         // });
         // ctx.set_visuals(egui::Visuals::dark());
-        if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+        if cfg!(debug_assertions) && ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
 

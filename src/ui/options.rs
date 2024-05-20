@@ -10,6 +10,14 @@ impl App {
     pub fn show_options(&mut self, ui: &mut egui::Ui) {
         // ui.label("TODO: Options");
 
+        if cfg!(debug_assertions) {
+            ui.label(format!("Git commit: {}", env!("VERGEN_GIT_SHA")));
+
+            ui.label(format!("Build date: {}", env!("VERGEN_GIT_COMMIT_DATE")));
+
+            ui.separator();
+        }
+
         if self.config.logged_in() {
             if ui.button("Logout").clicked() {
                 let _ = self

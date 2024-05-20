@@ -336,8 +336,8 @@ impl PrinterConnManager {
             }
             Message::System(system) => debug!("printer system: {:?}", system),
             Message::Unknown(unknown) => match unknown {
-                Some(unknown) => warn!("unknown message: {}", unknown),
-                _ => warn!("unknown message: None"),
+                Some(unknown) => warn!("unknown message: {:?}", unknown),
+                _ => trace!("unknown message: None"),
             },
             Message::Connecting => debug!("printer connecting: {:?}", &printer.name),
             Message::Connected => {

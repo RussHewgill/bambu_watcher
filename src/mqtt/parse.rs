@@ -6,8 +6,13 @@ pub(crate) fn parse_message(message: &rumqttc::mqttbytes::v4::Publish) -> Messag
     if let Ok(parsed_message) = serde_json::from_slice::<Message>(&payload) {
         parsed_message
     } else {
+        if payload.len() == 0 {
+            return Message::Unknown(None);
+        }
         if let Ok(message_str) = String::from_utf8(payload.to_vec()) {
-            return Message::Unknown(Some(message_str));
+            if &message_str != "{}" {
+                return Message::Unknown(Some(message_str));
+            }
         }
         Message::Unknown(None)
     }
