@@ -25,6 +25,8 @@ generate_icon_function!(icon_stop, "../../assets/icons8-red-square-96.png", 20.)
 generate_icon_function!(icon_controls, "../../assets/icons/sliders_poly.svg", 20.);
 generate_icon_function!(icon_cloud, "../../assets/icons/cloud-1_poly.svg", 20.);
 generate_icon_function!(icon_lan, "../../assets/icons/wifi-100_poly.svg", 20.);
+generate_icon_function!(icon_sort_up, "../../assets/icons/sort-up_poly.svg", 20.);
+generate_icon_function!(icon_sort_down, "../../assets/icons/sort-down_poly.svg", 20.);
 
 pub fn thumbnail_printer(
     printer: &PrinterConfig,

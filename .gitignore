@@ -7,6 +7,8 @@ config*.yaml
 example.ron
 example*.json
 project*.json
+task*.json
+printer*.json
 *.log
 *.svg
 auth.db

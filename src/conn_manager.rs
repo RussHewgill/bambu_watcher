@@ -598,9 +598,7 @@ async fn sync_projects(
         project_list.push(project);
     }
 
-    let project_list = ProjectsList {
-        projects: project_list,
-    };
+    let project_list = ProjectsList::new(project_list);
     msg_tx.send(PrinterConnMsg::SyncedProjects(project_list))?;
     Ok(())
 }

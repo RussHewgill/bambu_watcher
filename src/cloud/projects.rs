@@ -91,12 +91,55 @@ impl project_data::ProjectData {
             chrono::NaiveDateTime::parse_from_str(&json.create_time, "%Y-%m-%d %H:%M:%S")?
                 .and_utc();
 
+        let mut plates = vec![];
+
+        for plate in json.profiles[0].context.plates.iter() {
+            let mut filaments = vec![];
+
+            if let Some(filaments_json) = plate.filaments.as_ref() {
+                for filament in filaments_json.iter() {
+                    let c = egui::Color32::from_hex(&filament.color).unwrap_or_default();
+                    filaments.push(project_data::Filament {
+                        color: [c.r(), c.g(), c.b()],
+                        id: filament.id.parse()?,
+                        type_field: filament.type_field.clone(),
+                        used_g: filament.used_g.parse()?,
+                        used_m: filament.used_m.parse()?,
+                    });
+                }
+            }
+
+            plates.push(project_data::Plate {
+                index: plate.index,
+                pick_picture: plate.pick_picture.clone(),
+                top_picture: plate.top_picture.clone(),
+                thumbnail: plate.thumbnail.clone(),
+                weight: plate.weight.unwrap_or_default(),
+                filaments,
+            });
+        }
+
+        let mut content = vec![];
+
+        let c: Value = serde_json::from_str(&json.content)?;
+        for plate in c
+            .get("printed_plates")
+            .context("")?
+            .as_array()
+            .context("")?
+        {
+            let plate = plate.get("plate").context("")?;
+            content.push(plate.as_u64().unwrap() as usize);
+        }
+
         Ok(Self {
             name: json.name,
+            content,
             project_id: json.project_id,
             profile_id: json.profiles[0].profile_id.clone(),
             create_time,
             materials,
+            plates,
         })
     }
 }
@@ -105,31 +148,29 @@ pub mod project_data {
     use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
 
+    use super::project_data_json::Thumbnail;
+
     #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
     pub struct ProjectData {
         pub name: String,
+        /// "content": "{\"printed_plates\": [{\"plate\": 1}]}"
+        pub content: Vec<usize>,
         pub project_id: String,
         pub profile_id: String,
         pub create_time: DateTime<Utc>,
         pub materials: Vec<([u8; 3], String)>,
+        pub plates: Vec<Plate>,
     }
 
     #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
     pub struct Plate {
         pub index: i64,
-        pub pick_picture: Picture,
-        pub thumbnail: Picture,
-        pub top_picture: Picture,
+        pub pick_picture: Thumbnail,
+        pub thumbnail: Thumbnail,
+        pub top_picture: Thumbnail,
         pub weight: f64,
         // pub objects:
-        // pub filaments:
-    }
-
-    #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-    pub struct Picture {
-        pub dir: String,
-        pub name: String,
-        pub url: String,
+        pub filaments: Vec<Filament>,
     }
 
     #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -230,11 +271,11 @@ pub mod project_data_json {
         pub label_object_enabled: bool,
         pub name: String,
         pub objects: Vec<Object>,
-        pub pick_picture: PickPicture,
+        pub pick_picture: Thumbnail,
         pub prediction: Option<i64>,
         pub skipped_objects: Value,
         pub thumbnail: Thumbnail,
-        pub top_picture: TopPicture,
+        pub top_picture: Thumbnail,
         #[serde(default, deserialize_with = "default_on_null")]
         pub warning: Vec<Warning>,
         pub weight: Option<f64>,
@@ -273,21 +314,7 @@ pub mod project_data_json {
     }
 
     #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-    pub struct PickPicture {
-        pub dir: String,
-        pub name: String,
-        pub url: String,
-    }
-
-    #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
     pub struct Thumbnail {
-        pub dir: String,
-        pub name: String,
-        pub url: String,
-    }
-
-    #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-    pub struct TopPicture {
         pub dir: String,
         pub name: String,
         pub url: String,

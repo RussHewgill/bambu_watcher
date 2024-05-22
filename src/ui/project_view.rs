@@ -1,7 +1,9 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use egui::Sense;
+use egui::{Color32, Sense};
 use egui_extras::Column;
 use tracing::{debug, error, info, trace, warn};
+
+use crate::cloud::projects::ProjectData;
 
 use super::ui_types::App;
 
@@ -30,12 +32,14 @@ impl App {
     }
 
     fn project_list(&mut self, ui: &mut egui::Ui) {
+        let row_height = 80.0;
+        let thumbnail_size = 80.0;
+
         let mut table = egui_extras::TableBuilder::new(ui)
             .striped(true)
             .resizable(false)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-            .column(Column::auto())
-            .column(Column::auto())
+            .column(Column::exact(thumbnail_size))
             .column(Column::auto())
             .column(Column::auto())
             .column(Column::auto())
@@ -52,24 +56,79 @@ impl App {
 
         /// Columns:
         /// Thumbnail
-        /// Printer
+        /// // Printer
         /// Name
+        /// Date
         /// Status ?
         /// Time
         /// Material
         /// Plate
-        /// Time
         table
             .header(40., |mut header| {
                 header.col(|ui| {
                     ui.strong("Thumbnail");
                 });
+                // header.col(|ui| {
+                //     ui.strong("Printer");
+                // });
+                if header
+                    .col(|ui| {
+                        ui.strong("Name");
+                    })
+                    .1
+                    .clicked()
+                {
+                    debug!("sort by name");
+                    // match self.projects.sorted() {
+                    //     // Some((0, true)) => {
+                    //     //     self.projects.sort_name(false);
+                    //     // }
+                    //     // Some((0, false)) => {
+                    //     //     self.projects.sort_name();
+                    //     // }
+                    //     // _ => {
+                    //     //     self.projects.sort_name(false);
+                    //     // }
+                    // }
+                    // self.projects.sort_name(reverse)
+                };
+
                 header.col(|ui| {
-                    ui.strong("Printer");
+                    let but = match self.projects.sorted() {
+                        Some((super::ui_types::SortType::Date, false)) => {
+                            egui::Button::image_and_text(super::icon_sort_down(), "Date")
+                        }
+                        Some((super::ui_types::SortType::Date, true)) => {
+                            egui::Button::image_and_text(super::icon_sort_up(), "Date")
+                        }
+                        _ => egui::Button::new("Date"),
+                    };
+                    if ui.add(but).clicked() {
+                        debug!("sort by date");
+                        self.projects.sort_date();
+                    }
                 });
-                header.col(|ui| {
-                    ui.strong("Name");
-                });
+
+                #[cfg(feature = "nope")]
+                if header
+                    .col(|ui| {
+                        ui.strong("Date");
+                        match self.projects.sorted() {
+                            Some((super::ui_types::SortType::Date, false)) => {
+                                ui.add(super::icon_sort_down());
+                            }
+                            Some((super::ui_types::SortType::Date, true)) => {
+                                ui.add(super::icon_sort_up());
+                            }
+                            _ => {}
+                        }
+                    })
+                    .1
+                    .clicked()
+                {
+                    debug!("sort by date");
+                    self.projects.sort_date();
+                };
                 header.col(|ui| {
                     ui.strong("Status");
                 });
@@ -87,7 +146,88 @@ impl App {
                 });
             })
             .body(|mut body| {
-                //
+                body.rows(row_height, self.projects.projects.len(), |mut row| {
+                    let row_index = row.index();
+                    let p = &self.projects.projects[row_index];
+
+                    let Some(plate) = p.plates.iter().find(|p| p.filaments.len() > 0) else {
+                        return;
+                    };
+
+                    row.col(|ui| {
+                        ui.add(
+                            egui::Image::new(&plate.thumbnail.url)
+                                .bg_fill(ui.visuals().panel_fill)
+                                .rounding(5.),
+                        );
+                    });
+                    row.col(|ui| {
+                        ui.label(&p.name);
+                    });
+                    row.col(|ui| {
+                        ui.label(&format!("{}", p.create_time.format("%Y-%m-%d %H:%M:%S")));
+                    });
+                    row.col(|ui| {
+                        // ui.label(&p.status);
+                    });
+                    row.col(|ui| {
+                        // ui.label(&p.status);
+                    });
+                    row.col(|ui| {
+                        ui.label(&format!("{:.1}", plate.weight));
+                    });
+                    row.col(|ui| {
+                        // ui.label(&plate.name);
+                    });
+
+                    //
+                });
             });
+    }
+}
+
+// struct ProjectRowViewer;
+
+#[cfg(feature = "nope")]
+impl egui_data_table::RowViewer<ProjectData> for ProjectRowViewer {
+    fn num_columns(&mut self) -> usize {
+        7
+    }
+
+    #[rustfmt::skip]
+    fn column_name(&mut self, column: usize) -> std::borrow::Cow<'static, str> {
+        [
+            "Preview",
+            "Name",
+            "Status",
+            "Time",
+            "Material",
+        ][column]
+            .into()
+    }
+
+    fn is_sortable_column(&mut self, column: usize) -> bool {
+        [false, true, true, true, true][column]
+    }
+
+    fn show_cell_view(&mut self, ui: &mut egui::Ui, row: &ProjectData, column: usize) {
+        unimplemented!()
+    }
+
+    fn show_cell_editor(
+        &mut self,
+        ui: &mut egui::Ui,
+        row: &mut ProjectData,
+        column: usize,
+    ) -> Option<egui::Response> {
+        unimplemented!()
+    }
+
+    fn set_cell_value(&mut self, src: &ProjectData, dst: &mut ProjectData, column: usize) {
+        unimplemented!()
+    }
+
+    fn new_empty_row(&mut self) -> ProjectData {
+        unimplemented!()
     }
 }

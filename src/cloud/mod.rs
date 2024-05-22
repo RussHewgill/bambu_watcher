@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use serde::de::DeserializeOwned;
+use serde_json::Value;
 use tracing::{debug, error, info, trace, warn};
 
 use crate::auth::Token;
@@ -18,6 +19,7 @@ const URL_PRINT: &'static str = "/v1/iot-service/api/user/print";
 const URL_PROJECTS: &'static str = "/v1/iot-service/api/user/project";
 const URL_TASK: &'static str = "/v1/iot-service/api/user/task/";
 const URL_PROJECT: &'static str = "/v1/iot-service/api/user/project/";
+const URL_MESSAGES: &'static str = "/v1/user-service/my/messages";
 const URL_TTCODE: &'static str = "/v1/iot-service/api/user/ttcode";
 
 /// GET /v1/iot-service/api/user/bind
@@ -45,7 +47,8 @@ pub async fn get_response<T: DeserializeOwned>(token: &Token, url: &str) -> Resu
         .await?;
 
     if !res.status().is_success() {
-        debug!("res {:#?}", res);
+        // debug!("res {:#?}", res);
+        debug!("status {:#?}", res.status());
         bail!("Failed to get response, url = {}", url);
     }
 
@@ -72,7 +75,13 @@ pub async fn get_response(token: &Token, url: &str) -> Result<serde_json::Value>
 }
 
 pub async fn get_project_list(token: &Token) -> Result<Vec<projects::ProjectInfo>> {
-    let json = get_response(token, URL_PROJECTS).await?;
+    let json: projects::ProjectsInfo = get_response(token, URL_PROJECTS).await?;
+    // debug!("json {:#?}", json);
+    Ok(json.projects)
+}
+
+pub async fn get_task_list(token: &Token) -> Result<serde_json::Value> {
+    let json = get_response(token, "/v1/user-service/my/tasks").await?;
     // debug!("json {:#?}", json);
     Ok(json)
 }
@@ -87,18 +96,22 @@ pub async fn get_project_info(
     Ok(json)
 }
 
-pub async fn get_printer_status(token: &Token) -> Result<()> {
+pub async fn get_printer_status(token: &Token) -> Result<Value> {
     let json = get_response(token, URL_PRINT).await?;
-    debug!("json {:#?}", json);
-    Ok(())
+    // debug!("json {:#?}", json);
+    Ok(json)
 }
 
 pub async fn get_subtask_info(token: &Token, project_id: &str) -> Result<cloud_types::SubtaskInfo> {
     let url = format!("{}{}", URL_TASK, project_id);
 
     let json: cloud_types::SubtaskInfo = get_response(token, &url).await?;
+    // let json: Value = get_response(token, &url).await?;
+
+    // debug!("json {:#?}", json);
 
     Ok(json)
+    // unimplemented!()
 }
 
 #[cfg(feature = "nope")]

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubtaskInfo {
@@ -15,8 +16,8 @@ pub struct SubtaskInfo {
     pub profile_id: String,
     pub project_id: String,
     pub status: String,
-    pub sub_task: Vec<SubTask>,
-    pub subtask: Vec<SubTask>,
+    pub sub_task: Vec<Value>,
+    pub subtask: Vec<Value>,
     pub update_time: String,
 }
 
@@ -114,6 +115,3 @@ pub struct Warning {
     pub level: String,
     pub msg: String,
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SubTask {}

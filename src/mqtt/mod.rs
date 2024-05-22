@@ -409,140 +409,109 @@ impl ClientListener {
     }
 }
 
-#[cfg(feature = "nope")]
-mod paho {
+pub async fn debug_get_printer_report(printer: PrinterConfig) -> Result<()> {
+    let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
 
-    #[derive(Clone)]
-    pub struct Client {
-        config: PrinterConfig,
+    let mut mqttoptions = MqttOptions::new(client_id, &printer.host, 8883);
+    mqttoptions.set_keep_alive(Duration::from_secs(5));
+    mqttoptions.set_credentials("bblp", &printer.access_code);
 
-        client: paho_mqtt::AsyncClient,
-        stream: paho_mqtt::AsyncReceiver<Option<paho_mqtt::Message>>,
+    let client_config = rumqttc::tokio_rustls::rustls::ClientConfig::builder()
+        // .with_root_certificates(root_cert_store)
+        .dangerous()
+        .with_custom_certificate_verifier(Arc::new(NoCertificateVerification {
+            serial: (*printer.serial).clone(),
+        }))
+        .with_no_client_auth();
 
-        tx: tokio::sync::broadcast::Sender<Message>,
+    // let transport = rumqttc::Transport::tls_with_config(rumqttc::TlsConfiguration::Native);
+    let transport = rumqttc::Transport::tls_with_config(rumqttc::TlsConfiguration::Rustls(
+        Arc::new(client_config),
+    ));
 
-        topic_device_request: String,
-        topic_device_report: String,
-    }
+    mqttoptions.set_transport(transport);
+    // mqttoptions.set_clean_session(true);
 
-    impl BambuClient {
-        /// Creates a new Bambu printer MQTT client.
-        ///
-        /// # Panics
-        ///
-        /// Panics if the MQTT client cannot be created.
-        pub fn new(
-            printer_cfg: &PrinterConfig,
-            tx: tokio::sync::broadcast::Sender<Message>,
-        ) -> Self {
-            let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
+    debug!("connecting, printer = {}", &printer.name);
+    let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
+    debug!("connected, printer = {}", &printer.name);
 
-            let create_opts = paho_mqtt::CreateOptionsBuilder::new()
-                .server_uri(&printer_cfg.host)
-                .client_id(client_id)
-                .max_buffered_messages(25)
-                .finalize();
+    let topic_device_request = format!("device/{}/request", &printer.serial);
+    let topic_device_report = format!("device/{}/report", &printer.serial);
 
-            let mut client =
-                paho_mqtt::AsyncClient::new(create_opts).expect("Failed to create client");
-            let stream = client.get_stream(25);
+    use rumqttc::Event;
 
-            Self {
-                config: printer_cfg.clone(),
-                topic_device_request: format!("device/{}/request", &printer_cfg.serial),
-                topic_device_report: format!("device/{}/report", &printer_cfg.serial),
-                client,
-                stream,
-                tx,
-            }
-        }
-
-        /// Polls for a message from the MQTT event loop.
-        /// You need to poll periodically to receive messages
-        /// and to keep the connection alive.
-        /// This function also handles reconnects.
-        ///
-        /// **NOTE** Don't block this while iterating
-        ///
-        /// # Errors
-        ///
-        /// Returns an error if there was a problem polling for a message or parsing the event.
-        async fn poll(&mut self) -> Result<()> {
-            let msg_opt = self.stream.next().await.flatten();
-
-            if let Some(msg) = msg_opt {
-                self.tx.send(self::parse::parse_message(&msg))?;
-            } else {
-                // A "None" means we were disconnected. Try to reconnect...
-                self.tx.send(Message::Disconnected)?;
-
-                while (self.client.reconnect().await).is_err() {
-                    tokio::time::sleep(Duration::from_secs(1)).await;
-                    self.tx.send(Message::Reconnecting)?;
+    loop {
+        match eventloop.poll().await? {
+            Event::Outgoing(event) => {}
+            Event::Incoming(Incoming::PingResp) => {}
+            Event::Incoming(Incoming::ConnAck(c)) => {
+                debug!("got ConnAck: {:?}", c.code);
+                if c.code == rumqttc::ConnectReturnCode::Success {
+                    // debug!("Connected to MQTT");
+                    client
+                        .subscribe(&topic_device_report, rumqttc::QoS::AtMostOnce)
+                        .await?;
+                    debug!("sent subscribe to topic");
+                    // self.send_pushall().await?;
+                } else {
+                    error!("Failed to connect to MQTT: {:?}", c.code);
                 }
-
-                self.tx.send(Message::Connected)?;
             }
+            Event::Incoming(Incoming::SubAck(s)) => {
+                debug!("got SubAck");
+                if s.return_codes
+                    .iter()
+                    .any(|&r| r == rumqttc::SubscribeReasonCode::Failure)
+                {
+                    error!("Failed to subscribe to topic");
+                } else {
+                    debug!("sending pushall");
+                    // self.send_pushall().await?;
+                    let command = Command::PushAll;
+                    let payload = command.get_payload();
 
-            Ok(())
-        }
-
-        async fn connect(&self) -> Result<()> {
-            let ssl_opts = paho_mqtt::SslOptionsBuilder::new()
-                .disable_default_trust_store(true)
-                .enable_server_cert_auth(false)
-                .verify(false)
-                .finalize();
-
-            let conn_opts = paho_mqtt::ConnectOptionsBuilder::new()
-                .ssl_options(ssl_opts)
-                .keep_alive_interval(Duration::from_secs(5))
-                .connect_timeout(Duration::from_secs(3))
-                .user_name("bblp")
-                .password(&self.config.access_code)
-                .finalize();
-
-            self.tx.send(Message::Connecting)?;
-            self.client.connect(conn_opts).await?;
-            self.tx.send(Message::Connected)?;
-
-            Ok(())
-        }
-
-        fn subscibe_to_device_report(&self) {
-            self.client
-                .subscribe(&self.topic_device_report, paho_mqtt::QOS_0);
-        }
-
-        /// Runs the Bambu MQTT client.
-        /// You should run this in a tokio task.
-        ///
-        /// # Errors
-        ///
-        /// Returns an error if there was a problem connecting to the MQTT broker
-        /// or subscribing to the device report topic.
-        pub async fn run(&mut self) -> Result<()> {
-            self.connect().await?;
-            self.subscibe_to_device_report();
-
-            loop {
-                Self::poll(self).await?;
+                    let qos = rumqttc::QoS::AtMostOnce;
+                    client
+                        .publish(&topic_device_request, qos, false, payload)
+                        .await?;
+                    debug!("sent");
+                    // debug!("sending get version");
+                    // self.send_get_version().await?;
+                    // debug!("sent");
+                }
             }
-        }
+            Event::Incoming(Incoming::Publish(p)) => {
+                // debug!("incoming publish");
 
-        /// Publishes a command to the Bambu MQTT broker.
-        ///
-        /// # Errors
-        ///
-        /// Returns an error if there was a problem publishing the command.
-        pub async fn publish(&self, command: Command) -> Result<()> {
-            let payload = command.get_payload();
+                let payload = &p.payload;
 
-            let msg =
-                paho_mqtt::Message::new(&self.topic_device_request, payload, paho_mqtt::QOS_0);
-            self.client.publish(msg).await?;
+                let parsed_message = serde_json::from_slice::<serde_json::Value>(&payload)?;
 
-            Ok(())
+                let s = serde_json::to_string_pretty(&parsed_message).unwrap();
+                std::fs::write("printer_report.json", s)?;
+                panic!()
+
+                // let msg = parse::parse_message(&p);
+                // match msg {
+                //     Message::Report(report) => {
+                //         debug!("incoming report: {:#?}", report);
+                //         let s = serde_json::to_string_pretty(report).unwrap();
+                //         std::fs::write("printer_report.json", s)?;
+                //     }
+                //     _ => {
+                //         debug!("incoming publish: {:#?}", msg);
+                //     }
+                // }
+                // debug!("incoming publish: {:#?}", msg);
+                // self.tx
+                //     .send((self.printer_cfg.read().await.serial.clone(), msg))?;
+            }
+            Event::Incoming(event) => {
+                debug!("incoming other event: {:?}", event);
+            }
         }
     }
+
+    // Ok(())
 }

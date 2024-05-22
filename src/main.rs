@@ -389,22 +389,58 @@ async fn main() -> Result<()> {
     debug!("reading auth file");
     let mut db = auth::AuthDb::read_or_create()?;
 
-    // // db.login_and_get_token(&username, &password).await?;
+    // // // db.login_and_get_token(&username, &password).await?;
 
     let token = db.get_token()?.unwrap();
+
     // let projects = cloud::get_project_list(&token).await?;
+    // let s = serde_json::to_string_pretty(&projects)?;
+    // std::fs::write("projects.json", s)?;
 
-    // // // debug!("projects = {:#?}", projects);
+    // let tasks = cloud::get_task_list(&token).await?;
+    // debug!("tasks = {:#?}", tasks);
 
-    let project_id = "81753675";
+    // let project_id = "82911955";
+    // let project_id = "79930702";
+
+    /// projects list:
+    ///     "project_id": 81857163
+    /// task_list:
+    ///     "id": 82911955
+    ///     "profileId": 79930702
+    /// project_data:
+    ///     "project_id": "81753675",
+    /// printer_report:
+    ///     "task_id": "161481157",
+    ///     "subtask_id": "161481158",
+    /// none work with get_subtask_info
+    /// projects_list project_id works with get_project_info
+    /// printer_reprt task_id works with get_subtask_info
+    ///
+    // let project_id = "81857163";
+    // let project_id = "82911955";
+    // let project_id = "79930702";
+    // let project_id = "161481157";
+    // let project_id = "161481158";
 
     // let s = cloud::get_subtask_info(&token, project_id).await?;
-    let s = cloud::get_project_info(&token, project_id).await?;
+    // let s = cloud::get_project_info(&token, project_id).await?;
 
-    debug!("s = {:#?}", s);
+    // let s: serde_json::Value = cloud::get_response(&token, "/v1/user-service/my/messages").await?;
+
+    // debug!("s = {:#?}", s);
+
+    // let printer = config::PrinterConfig {
+    //     name: "bambu".to_string(),
+    //     host: env::var("BAMBU_IP")?,
+    //     access_code: env::var("BAMBU_ACCESS_CODE")?,
+    //     serial: Arc::new(env::var("BAMBU_IDENT")?),
+    //     color: [0; 3],
+    // };
+
+    // crate::mqtt::debug_get_printer_report(printer).await?;
 
     // let s = serde_json::to_string_pretty(&s)?;
-
     // std::fs::write("project_data.json", s)?;
 
     // let mut file = std::fs::File::open("projects.json")?;
@@ -414,22 +450,19 @@ async fn main() -> Result<()> {
     // for project in projects.projects {
     //     debug!("project = {:#?}", project);
     // }
+    let s = std::fs::read_to_string("project_data.json")?;
 
-    // let s = std::fs::read_to_string("project_data.json")?;
+    let p: serde_json::Value = serde_json::from_str(&s)?;
+    let p: cloud::projects::ProjectDataJson = serde_json::from_str(&s)?;
+    let p = cloud::projects::ProjectData::from_json(p)?;
 
-    // let p: cloud::projects::ProjectDataJson = serde_json::from_str(&s)?;
-    // // let p: serde_json::Value = serde_json::from_str(&s)?;
-
-    // // let p = cloud::projects::ProjectData::from_json(p)?;
-
-    // // debug!("p = {:#?}", p);
+    // debug!("p = {:#?}", p);
 
     // let t = "2024-05-22 04:16:34";
 
     // let t = chrono::NaiveDateTime::parse_from_str(t, "%Y-%m-%d %H:%M:%S").unwrap();
 
     // debug!("t = {:#?}", t);
-
     Ok(())
 }
 
