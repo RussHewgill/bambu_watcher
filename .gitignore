@@ -6,6 +6,7 @@ certs*
 config*.yaml
 example.ron
 example*.json
+projects*.json
 *.log
 *.svg
 auth.db

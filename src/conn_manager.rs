@@ -82,7 +82,6 @@ pub enum PrinterConnCmd {
 }
 
 pub struct PrinterConnManager {
-    // config: Config,
     config: ConfigArc,
     printers: HashMap<PrinterId, BambuClient>,
     printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
@@ -91,10 +90,10 @@ pub struct PrinterConnManager {
     // msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
     msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
     ctx: egui::Context,
-    // win_handle: std::num::NonZeroIsize,
     // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     rx: tokio::sync::mpsc::UnboundedReceiver<(PrinterId, Message)>,
+    kill_chans: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
 }
 
 /// new, start listeners
@@ -125,6 +124,7 @@ impl PrinterConnManager {
             // alert_tx,
             tx,
             rx,
+            kill_chans: HashMap::new(),
         }
     }
 
@@ -167,9 +167,21 @@ impl PrinterConnManager {
             self.config.add_printer(printer.clone());
         }
 
-        let client =
-            Self::start_printer_listener(self.config.clone(), self.tx.clone(), printer.clone())
-                .await?;
+        let (kill_tx, kill_rx) = tokio::sync::oneshot::channel::<()>();
+
+        let id = printer.read().await.serial.clone();
+        if self.kill_chans.contains_key(&id) {
+            bail!("printer already exists: {:?}", id);
+        }
+        self.kill_chans.insert(id, kill_tx);
+
+        let client = Self::start_printer_listener(
+            self.config.clone(),
+            self.tx.clone(),
+            printer.clone(),
+            kill_rx,
+        )
+        .await?;
         self.printers
             .insert(printer.read().await.serial.clone(), client);
 
@@ -181,8 +193,10 @@ impl PrinterConnManager {
         msg_tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
         // printer: PrinterConfig,
         printer: Arc<RwLock<PrinterConfig>>,
+        kill_rx: tokio::sync::oneshot::Receiver<()>,
     ) -> Result<BambuClient> {
-        let mut client = crate::mqtt::BambuClient::new_and_init(config, printer, msg_tx).await?;
+        let mut client =
+            crate::mqtt::BambuClient::new_and_init(config, printer, msg_tx, kill_rx).await?;
         Ok(client)
     }
 }

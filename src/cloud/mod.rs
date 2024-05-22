@@ -1,10 +1,12 @@
 pub mod cloud_types;
 pub mod errors;
+pub mod projects;
 pub mod streaming;
 
 use std::collections::HashMap;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use serde::de::DeserializeOwned;
 use tracing::{debug, error, info, trace, warn};
 
 use crate::auth::Token;
@@ -34,6 +36,23 @@ const URL_TTCODE: &'static str = "/v1/iot-service/api/user/ttcode";
 /// POST /v1/iot-service/api/user/ttcode
 ///     Gets the TTCode for the printer. This is used for authentication to the webcam stream.
 
+pub async fn get_response<T: DeserializeOwned>(token: &Token, url: &str) -> Result<T> {
+    let client = reqwest::ClientBuilder::new().use_rustls_tls().build()?;
+    let res = client
+        .get(format!("{}{}", BASE, url))
+        .header("Authorization", &format!("Bearer {}", token.get_token()))
+        .send()
+        .await?;
+
+    if !res.status().is_success() {
+        debug!("res {:#?}", res);
+        bail!("Failed to get response, url = {}", url);
+    }
+
+    Ok(res.json().await?)
+}
+
+#[cfg(feature = "nope")]
 pub async fn get_response(token: &Token, url: &str) -> Result<serde_json::Value> {
     let client = reqwest::ClientBuilder::new().use_rustls_tls().build()?;
     let res = client
@@ -52,10 +71,10 @@ pub async fn get_response(token: &Token, url: &str) -> Result<serde_json::Value>
     Ok(json)
 }
 
-pub async fn get_project_list(token: &Token) -> Result<()> {
+pub async fn get_project_list(token: &Token) -> Result<Vec<projects::Project>> {
     let json = get_response(token, URL_PROJECTS).await?;
-    debug!("json {:#?}", json);
-    Ok(())
+    // debug!("json {:#?}", json);
+    Ok(json)
 }
 
 pub async fn get_printer_status(token: &Token) -> Result<()> {

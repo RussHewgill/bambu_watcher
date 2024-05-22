@@ -96,6 +96,7 @@ pub struct BambuClient {
     // rx: tokio::sync::broadcast::Receiver<Command>,
     topic_device_request: String,
     topic_device_report: String,
+    // kill_rx: tokio::sync::oneshot::Receiver<()>,
 }
 
 impl BambuClient {
@@ -104,11 +105,12 @@ impl BambuClient {
         // printer_cfg: PrinterConfig,
         printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
+        kill_rx: tokio::sync::oneshot::Receiver<()>,
     ) -> Result<Self> {
         if config.logged_in() {
-            Self::_new_and_init_cloud(config, printer_cfg, tx).await
+            Self::_new_and_init_cloud(config, printer_cfg, tx, kill_rx).await
         } else {
-            Self::_new_and_init_lan(printer_cfg, tx).await
+            Self::_new_and_init_lan(printer_cfg, tx, kill_rx).await
         }
     }
 
@@ -118,6 +120,7 @@ impl BambuClient {
         // printer_cfg: &PrinterConfig,
         printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
+        kill_rx: tokio::sync::oneshot::Receiver<()>,
     ) -> Result<Self> {
         debug!("init cloud mqtt listener");
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
@@ -162,9 +165,10 @@ impl BambuClient {
             // stream,
             tx,
             // rx,
+            // kill_rx,
         };
 
-        out.init(eventloop).await?;
+        out.init(eventloop, kill_rx).await?;
 
         Ok(out)
     }
@@ -174,6 +178,7 @@ impl BambuClient {
         // printer_cfg: &PrinterConfig,
         printer_cfg: Arc<RwLock<PrinterConfig>>,
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
+        kill_rx: tokio::sync::oneshot::Receiver<()>,
     ) -> Result<Self> {
         debug!("init lan mqtt listener");
         let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
@@ -212,15 +217,20 @@ impl BambuClient {
             // eventloop,
             // stream,
             tx,
+            // kill_rx,
             // rx,
         };
 
-        out.init(eventloop).await?;
+        out.init(eventloop, kill_rx).await?;
 
         Ok(out)
     }
 
-    pub async fn init(&mut self, eventloop: EventLoop) -> Result<()> {
+    pub async fn init(
+        &mut self,
+        eventloop: EventLoop,
+        mut kill_rx: tokio::sync::oneshot::Receiver<()>,
+    ) -> Result<()> {
         let config2 = self.config.clone();
         let client2 = self.client.clone();
         let tx2 = self.tx.clone();
@@ -234,20 +244,29 @@ impl BambuClient {
                 tx2,
                 topic_report,
                 topic_request,
+                // kill_rx,
             );
             loop {
-                if let Err(e) = listener.poll_eventloop().await {
-                    error!("Error in listener: {:?}", e);
-                    listener
-                        .tx
-                        .send((
-                            listener.printer_cfg.read().await.serial.clone(),
-                            Message::Disconnected,
-                        ))
-                        .unwrap();
+                tokio::select! {
+                    _ = &mut kill_rx => {
+                        debug!("Listener task got kill command");
+                        break;
+                    }
+                    event = listener.poll_eventloop() => {
+                        if let Err(e) = event {
+                            error!("Error in listener: {:?}", e);
+                            listener
+                                .tx
+                                .send((
+                                    listener.printer_cfg.read().await.serial.clone(),
+                                    Message::Disconnected,
+                                ))
+                                .unwrap();
+                        }
+                        listener.eventloop.clean();
+                        debug!("Reconnecting...");
+                    }
                 }
-                listener.eventloop.clean();
-                debug!("Reconnecting...");
             }
         });
 
@@ -278,6 +297,7 @@ struct ClientListener {
     tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     topic_device_report: String,
     topic_device_request: String,
+    // kill_rx: tokio::sync::oneshot::Receiver<()>,
 }
 
 impl ClientListener {
@@ -289,6 +309,7 @@ impl ClientListener {
         tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
         topic_device_report: String,
         topic_device_request: String,
+        // kill_rx: tokio::sync::oneshot::Receiver<()>,
     ) -> Self {
         Self {
             printer_cfg,
@@ -297,6 +318,7 @@ impl ClientListener {
             tx,
             topic_device_report,
             topic_device_request,
+            // kill_rx,
         }
     }
 

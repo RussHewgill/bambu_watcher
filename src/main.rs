@@ -139,8 +139,8 @@ fn main() {
 }
 
 /// cloud test
-#[cfg(feature = "nope")]
-// #[tokio::main]
+// #[cfg(feature = "nope")]
+#[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv()?;
     logging::init_logs();
@@ -386,6 +386,29 @@ async fn main() -> Result<()> {
         }
     }
 
+    // debug!("reading auth file");
+    // let mut db = auth::AuthDb::read_or_create()?;
+
+    // db.login_and_get_token(&username, &password).await?;
+
+    // let token = db.get_token()?.unwrap();
+    // let projects = cloud::get_project_list(&token).await?;
+
+    // // debug!("projects = {:#?}", projects);
+
+    // let s = serde_json::to_string_pretty(&projects)?;
+
+    // let mut file = std::fs::File::create("projects.json")?;
+    // std::fs::write("projects.json", s)?;
+
+    // let mut file = std::fs::File::open("projects.json")?;
+    let s = std::fs::read_to_string("projects.json")?;
+    let projects: cloud::projects::Root = serde_json::from_str(&s)?;
+
+    for project in projects.projects {
+        debug!("project = {:#?}", project);
+    }
+
     Ok(())
 }
 
@@ -548,7 +571,7 @@ async fn main() -> Result<()> {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-// #[cfg(feature = "nope")]
+#[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     let _ = dotenvy::dotenv();
     logging::init_logs();

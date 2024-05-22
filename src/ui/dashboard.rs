@@ -184,8 +184,26 @@ impl App {
         //
     }
 
-    // #[cfg(feature = "nope")]
-    /// MARK: show_printer
+    /// Wide layout
+    pub fn show_printer(
+        &mut self,
+        pos: (usize, usize),
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        printer: &PrinterConfig,
+    ) -> Response {
+        let Some(status) = self.printer_states.get(&printer.serial) else {
+            warn!("Printer not found: {}", printer.serial);
+            panic!();
+        };
+        /// checked at call site
+        let printer_state = self.printer_states.get(&printer.serial).unwrap();
+
+        unimplemented!()
+    }
+
+    #[cfg(feature = "nope")]
+    /// Tall layout
     pub fn show_printer(
         &mut self,
         pos: (usize, usize),
@@ -325,6 +343,7 @@ impl App {
             }
 
             /// temperatures
+            #[cfg(feature = "nope")]
             ui.vertical(|ui| {
                 // egui::Frame::none().fill(Color32::RED).show(ui, |ui| {
                 ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
@@ -359,7 +378,38 @@ impl App {
         });
         ui.separator();
 
+        #[cfg(feature = "nope")]
+        ui.columns(3, |uis| {
+            uis[0].add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
+            uis[0].label(format!(
+                "{:.1}°C / {}",
+                status.temp_nozzle.unwrap_or(0.),
+                status.temp_tgt_nozzle.unwrap_or(0.) as i64,
+            ));
+
+            uis[1].add(thumbnail_bed(status.temp_tgt_bed.is_some()));
+            uis[1].vertical(|ui| {
+                ui.add(egui::Label::new(RichText::new(format!(
+                    "{:.1}°C",
+                    status.temp_bed.unwrap_or(0.)
+                ))));
+                ui.add(egui::Label::new(RichText::new(format!(
+                    "{:.1}",
+                    status.temp_tgt_bed.unwrap_or(0.)
+                ))));
+            });
+            // uis[1].label(format!(
+            //     "{:.1}°C",
+            //     status.temp_bed.unwrap_or(0.),
+            //     status.temp_tgt_bed.unwrap_or(0.) as i64
+            // ));
+
+            uis[2].add(thumbnail_chamber());
+            uis[2].label(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64));
+        });
+
         /// fans
+        #[cfg(feature = "nope")]
         ui.columns(3, |uis| {
             uis[0].label(RichText::new("Part:").text_style(egui::TextStyle::Small));
             uis[0].label(&format!("{: >4}%", status.cooling_fan_speed.unwrap_or(0)));
