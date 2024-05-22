@@ -71,8 +71,18 @@ pub async fn get_response(token: &Token, url: &str) -> Result<serde_json::Value>
     Ok(json)
 }
 
-pub async fn get_project_list(token: &Token) -> Result<Vec<projects::Project>> {
+pub async fn get_project_list(token: &Token) -> Result<Vec<projects::ProjectInfo>> {
     let json = get_response(token, URL_PROJECTS).await?;
+    // debug!("json {:#?}", json);
+    Ok(json)
+}
+
+pub async fn get_project_info(
+    token: &Token,
+    project_id: &str,
+) -> Result<projects::ProjectDataJson> {
+    let url = format!("{}{}", URL_PROJECT, project_id);
+    let json = get_response(token, &url).await?;
     // debug!("json {:#?}", json);
     Ok(json)
 }
@@ -85,21 +95,8 @@ pub async fn get_printer_status(token: &Token) -> Result<()> {
 
 pub async fn get_subtask_info(token: &Token, project_id: &str) -> Result<cloud_types::SubtaskInfo> {
     let url = format!("{}{}", URL_TASK, project_id);
-    let client = reqwest::ClientBuilder::new().use_rustls_tls().build()?;
-    let res = client
-        .get(format!("{}{}", BASE, url))
-        .header("Authorization", &format!("Bearer {}", token.get_token()))
-        .send()
-        .await?;
 
-    if !res.status().is_success() {
-        debug!("res {:#?}", res);
-        bail!("Failed to get response, url = {}", url);
-    }
-    // let json = get_response(token, &url)?;
-    // debug!("json {:#?}", json);
-
-    let json: cloud_types::SubtaskInfo = res.json().await?;
+    let json: cloud_types::SubtaskInfo = get_response(token, &url).await?;
 
     Ok(json)
 }

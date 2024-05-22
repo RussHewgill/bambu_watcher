@@ -199,7 +199,72 @@ impl App {
         /// checked at call site
         let printer_state = self.printer_states.get(&printer.serial).unwrap();
 
-        unimplemented!()
+        /// Name, state, and controls button
+        let resp = ui
+            .horizontal(|ui| {
+                let selected = self
+                    .selected_printer_controls
+                    .as_ref()
+                    .map(|s| s == &printer.serial)
+                    .unwrap_or(false);
+
+                /// cloud button
+                #[cfg(feature = "nope")]
+                {
+                    let cloud = printer.cloud.load(std::sync::atomic::Ordering::Relaxed);
+                    let icon = if cloud {
+                        super::icons::icon_cloud()
+                    } else {
+                        super::icons::icon_lan()
+                    };
+
+                    if ui.add(egui::Button::image(icon)).clicked() {
+                        self.cmd_tx
+                            .as_ref()
+                            .unwrap()
+                            .send(PrinterConnCmd::SetPrinterCloud(
+                                printer.serial.clone(),
+                                !cloud,
+                            ))
+                            .unwrap();
+                    }
+                }
+
+                #[cfg(feature = "nope")]
+                if ui
+                    .add(egui::Button::image(super::icons::icon_controls()).selected(selected))
+                    .clicked()
+                {
+                    if selected {
+                        self.selected_printer_controls = None;
+                    } else {
+                        self.selected_printer_controls = Some(printer.serial.clone());
+                    }
+                }
+
+                ui.dnd_drag_source(
+                    egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
+                    GridLocation {
+                        col: pos.0,
+                        row: pos.1,
+                    },
+                    |ui| {
+                        paint_icon(ui, 40., &status.state);
+                        ui.add(
+                            egui::Label::new(&format!(
+                                "{} ({})",
+                                printer.name,
+                                status.state.to_text()
+                            ))
+                            .truncate(true),
+                        );
+                    },
+                )
+                .response
+            })
+            .response;
+
+        resp
     }
 
     #[cfg(feature = "nope")]

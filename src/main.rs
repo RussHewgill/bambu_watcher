@@ -139,8 +139,8 @@ fn main() {
 }
 
 /// cloud test
-// #[cfg(feature = "nope")]
-#[tokio::main]
+#[cfg(feature = "nope")]
+// #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv()?;
     logging::init_logs();
@@ -386,28 +386,49 @@ async fn main() -> Result<()> {
         }
     }
 
-    // debug!("reading auth file");
-    // let mut db = auth::AuthDb::read_or_create()?;
+    debug!("reading auth file");
+    let mut db = auth::AuthDb::read_or_create()?;
 
-    // db.login_and_get_token(&username, &password).await?;
+    // // db.login_and_get_token(&username, &password).await?;
 
-    // let token = db.get_token()?.unwrap();
+    let token = db.get_token()?.unwrap();
     // let projects = cloud::get_project_list(&token).await?;
 
-    // // debug!("projects = {:#?}", projects);
+    // // // debug!("projects = {:#?}", projects);
 
-    // let s = serde_json::to_string_pretty(&projects)?;
+    let project_id = "81753675";
 
-    // let mut file = std::fs::File::create("projects.json")?;
-    // std::fs::write("projects.json", s)?;
+    // let s = cloud::get_subtask_info(&token, project_id).await?;
+    let s = cloud::get_project_info(&token, project_id).await?;
+
+    debug!("s = {:#?}", s);
+
+    // let s = serde_json::to_string_pretty(&s)?;
+
+    // std::fs::write("project_data.json", s)?;
 
     // let mut file = std::fs::File::open("projects.json")?;
-    let s = std::fs::read_to_string("projects.json")?;
-    let projects: cloud::projects::Root = serde_json::from_str(&s)?;
+    // let s = std::fs::read_to_string("projects.json")?;
+    // let projects: cloud::projects::Root = serde_json::from_str(&s)?;
 
-    for project in projects.projects {
-        debug!("project = {:#?}", project);
-    }
+    // for project in projects.projects {
+    //     debug!("project = {:#?}", project);
+    // }
+
+    // let s = std::fs::read_to_string("project_data.json")?;
+
+    // let p: cloud::projects::ProjectDataJson = serde_json::from_str(&s)?;
+    // // let p: serde_json::Value = serde_json::from_str(&s)?;
+
+    // // let p = cloud::projects::ProjectData::from_json(p)?;
+
+    // // debug!("p = {:#?}", p);
+
+    // let t = "2024-05-22 04:16:34";
+
+    // let t = chrono::NaiveDateTime::parse_from_str(t, "%Y-%m-%d %H:%M:%S").unwrap();
+
+    // debug!("t = {:#?}", t);
 
     Ok(())
 }
@@ -571,13 +592,14 @@ async fn main() -> Result<()> {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-#[cfg(feature = "nope")]
+// #[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     let _ = dotenvy::dotenv();
     logging::init_logs();
 
     std::panic::set_hook(Box::new(|panic_info| {
         use std::io::Write;
+        eprintln!("{}", panic_info);
         let mut file = std::fs::File::create("crash_log.log").unwrap();
         write!(file, "{}", panic_info).unwrap();
     }));
@@ -711,22 +733,32 @@ fn main() -> eframe::Result<()> {
         rt.block_on(async move {
             let (ctx, handles) = ctx_rx.await.unwrap();
 
-            /// spawn image streamers
-            for printer in config2.printer_ids() {
-                let config3 = config2.clone();
+            let config3 = config2.clone();
+            tokio::task::spawn(async move {
+                let mut manager =
+                    crate::cloud::streaming::StreamManager::new(config3.clone(), handles);
 
-                let handle = handles.get(&printer).unwrap().clone();
-                tokio::task::spawn(async move {
-                    if let Ok(mut streamer) =
-                        crate::cloud::streaming::JpegStreamViewer::new(config3, printer, handle)
-                            .await
-                    {
-                        if let Err(e) = streamer.run().await {
-                            error!("streamer error: {:?}", e);
-                        }
-                    }
-                });
-            }
+                if let Err(e) = manager.run().await {
+                    error!("stream manager error: {:?}", e);
+                }
+            });
+
+            // /// spawn image streamers
+            // for printer in config2.printer_ids() {
+            //     let config3 = config2.clone();
+
+            //     let handle = handles.get(&printer).unwrap().clone();
+            //     tokio::task::spawn(async move {
+            //         if let Ok(mut streamer) =
+            //             crate::cloud::streaming::JpegStreamViewer::new(config3, printer, handle)
+            //                 .await
+            //         {
+            //             if let Err(e) = streamer.run().await {
+            //                 error!("streamer error: {:?}", e);
+            //             }
+            //         }
+            //     });
+            // }
 
             let mut manager =
                 PrinterConnManager::new(config2, printer_states2, cmd_tx2, cmd_rx, msg_tx, ctx);
@@ -848,6 +880,7 @@ fn main() -> eframe::Result<()> {
                 cc,
                 // alert_tx,
                 cmd_tx,
+                msg_rx,
                 handles,
             ))
         }),

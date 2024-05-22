@@ -3,6 +3,7 @@ pub mod icons;
 pub mod options;
 pub mod plotting;
 pub mod printers;
+pub mod project_view;
 pub mod ui_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
@@ -22,7 +23,7 @@ use std::{
 
 use crate::{
     config::{ConfigArc, PrinterConfig},
-    conn_manager::{PrinterConnCmd, PrinterId},
+    conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
     status::{PrinterState, PrinterStatus},
     ui::{
         icons::*,
@@ -41,6 +42,7 @@ impl App {
         config: ConfigArc,
         cc: &eframe::CreationContext<'_>,
         cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
+        msg_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnMsg>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
         printer_textures: HashMap<PrinterId, egui::TextureHandle>,
     ) -> Self {
@@ -63,6 +65,7 @@ impl App {
         // out.alert_tx = Some(alert_tx);
 
         out.cmd_tx = Some(cmd_tx);
+        out.msg_rx = Some(msg_rx);
 
         out.unplaced_printers = out.config.printer_ids();
         /// for each printer that isn't in printer_order, queue to add
@@ -108,6 +111,8 @@ impl eframe::App for App {
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        self.read_channels();
+
         // ctx.style_mut(|s| {
         //     s.visuals.dark_mode = true;
         // });
@@ -121,6 +126,7 @@ impl eframe::App for App {
                 ui.selectable_value(&mut self.current_tab, Tab::Main, "Dashboard");
                 // ui.selectable_value(&mut self.current_tab, Tab::Graphs, "Graphs");
                 ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
+                ui.selectable_value(&mut self.current_tab, Tab::Projects, "Projects");
                 ui.selectable_value(&mut self.current_tab, Tab::Options, "Options");
             });
         });
@@ -174,6 +180,9 @@ impl eframe::App for App {
                     self.show_graphs(ui);
                 });
             }
+            Tab::Projects => {
+                self.show_project_view(ctx);
+            }
             Tab::Printers => {
                 self.show_printers_config(ctx);
             }
@@ -187,6 +196,30 @@ impl eframe::App for App {
               // }
         }
         //
+    }
+}
+
+/// read channels
+impl App {
+    fn read_channels(&mut self) {
+        let rx = self.msg_rx.as_mut().unwrap();
+
+        let msg = match rx.try_recv() {
+            Err(tokio::sync::mpsc::error::TryRecvError::Empty) => return,
+            Err(tokio::sync::mpsc::error::TryRecvError::Disconnected) => {
+                error!("Disconnected from printer connection manager");
+                return;
+            }
+            Ok(msg) => msg,
+        };
+
+        match msg {
+            PrinterConnMsg::StatusReport(_, _) => {}
+            PrinterConnMsg::LoggedIn => {}
+            PrinterConnMsg::SyncedProjects(projects) => {
+                self.projects = projects;
+            }
+        }
     }
 }
 

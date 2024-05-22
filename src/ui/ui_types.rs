@@ -10,36 +10,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     config::{ConfigArc, PrinterConfig},
-    conn_manager::{PrinterConnCmd, PrinterId},
+    conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
     status::PrinterStatus,
 };
-
-#[derive(PartialEq, serde::Deserialize, serde::Serialize)]
-pub enum Tab {
-    Main,
-    Graphs,
-    Printers,
-    Options,
-    // Debugging,
-}
-
-impl Default for Tab {
-    fn default() -> Self {
-        Self::Main
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
-pub struct GridLocation {
-    pub col: usize,
-    pub row: usize,
-}
-
-impl GridLocation {
-    pub fn new(col: usize, row: usize) -> Self {
-        Self { col, row }
-    }
-}
 
 #[derive(Default, Deserialize, Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
@@ -51,6 +24,9 @@ pub struct App {
 
     #[serde(skip)]
     pub cmd_tx: Option<tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>>,
+
+    #[serde(skip)]
+    pub msg_rx: Option<tokio::sync::mpsc::UnboundedReceiver<PrinterConnMsg>>,
 
     #[serde(skip)]
     pub printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
@@ -86,8 +62,38 @@ pub struct App {
     pub printer_textures: HashMap<PrinterId, egui::TextureHandle>,
     // #[serde(skip)]
     // pub printer_texture_rxs: HashMap<PrinterId, tokio::sync::watch::Receiver<Vec<u8>>>,
+
+    // #[serde(skip)]
+    pub projects: ProjectsList,
 }
 
+#[derive(PartialEq, serde::Deserialize, serde::Serialize)]
+pub enum Tab {
+    Main,
+    Graphs,
+    Printers,
+    Projects,
+    Options,
+    // Debugging,
+}
+
+impl Default for Tab {
+    fn default() -> Self {
+        Self::Main
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
+pub struct GridLocation {
+    pub col: usize,
+    pub row: usize,
+}
+
+impl GridLocation {
+    pub fn new(col: usize, row: usize) -> Self {
+        Self { col, row }
+    }
+}
 // #[derive(Default)]
 pub struct AppLogin {
     pub username: String,
@@ -138,4 +144,9 @@ pub struct NewPrinterEntry {
     pub host: String,
     pub access_code: String,
     pub serial: String,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct ProjectsList {
+    pub projects: Vec<crate::cloud::projects::ProjectData>,
 }

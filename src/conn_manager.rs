@@ -13,6 +13,7 @@ use crate::{
         BambuClient,
     },
     status::PrinterType,
+    ui::ui_types::ProjectsList,
 };
 use dashmap::DashMap;
 // use tokio::sync::mpsc::{Receiver, Sender};
@@ -27,12 +28,13 @@ use crate::{
 pub type PrinterId = Arc<String>;
 
 /// messages from PrinterConnManager to UI
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum PrinterConnMsg {
-    Empty,
+    // Empty,
     /// The current status of a printer
     StatusReport(PrinterId, PrintData),
     LoggedIn,
+    SyncedProjects(crate::ui::ui_types::ProjectsList),
 }
 
 /// messages from UI to PrinterConnManager
@@ -43,6 +45,8 @@ pub enum PrinterConnCmd {
     SetPrinterCloud(PrinterId, bool),
 
     UpdatePrinterConfig(PrinterId, PrinterConfig),
+
+    SyncProjects,
 
     /// get the status of a printer
     ReportStatus(PrinterId),
@@ -435,6 +439,15 @@ impl PrinterConnManager {
 
                 //
             }
+            PrinterConnCmd::SyncProjects => {
+                let config2 = self.config.clone();
+                let msg_tx2 = self.msg_tx.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = sync_projects(config2, msg_tx2).await {
+                        error!("error syncing projects: {:?}", e);
+                    }
+                });
+            }
             PrinterConnCmd::ReportInfo(id) => {
                 let client = self
                     .printers
@@ -560,4 +573,34 @@ async fn fetch_printer_task_thumbnail(
     // if let Some(mut entry) = printer_states.get_mut(&id.serial) {
     //     entry.current_task_thumbnail_url = Some(std::env::var("TEST_IMG").unwrap());
     // }
+}
+
+async fn sync_projects(
+    config: ConfigArc,
+    msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
+) -> Result<()> {
+    let Some(token) = config.get_token_async().await? else {
+        bail!("no token found");
+    };
+
+    let projects = crate::cloud::get_project_list(&token).await?;
+
+    let mut project_list = vec![];
+
+    warn!("skipping all but first 3 projects");
+    for project in &projects[..3] {
+        let Ok(project) = crate::cloud::get_project_info(&token, &project.project_id).await else {
+            continue;
+        };
+
+        let project = crate::cloud::projects::ProjectData::from_json(project)?;
+
+        project_list.push(project);
+    }
+
+    let project_list = ProjectsList {
+        projects: project_list,
+    };
+    msg_tx.send(PrinterConnMsg::SyncedProjects(project_list))?;
+    Ok(())
 }

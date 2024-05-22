@@ -1,6 +1,7 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use egui::Vec2;
 use tracing::{debug, error, info, trace, warn};
+
+use egui::Vec2;
 
 use crate::{config::PrinterConfig, conn_manager::PrinterConnCmd, ui::ui_types::App};
 

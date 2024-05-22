@@ -2,7 +2,7 @@ use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
 use rumqttc::tokio_rustls::{self, rustls};
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use tokio::{io::AsyncReadExt, sync::RwLock};
 
 use crate::{
@@ -10,11 +10,61 @@ use crate::{
     conn_manager::PrinterId,
 };
 
-/// https://github.com/greghesp/ha-bambulab/blob/main/custom_components/bambu_lab/pybambu/bambu_client.py#L68
-pub fn get_jpeg() {
-    //
+pub struct StreamManager {
+    configs: ConfigArc,
+    streams: HashMap<PrinterId, JpegStreamViewer>,
+    handles: HashMap<PrinterId, egui::TextureHandle>,
+    kill_tx: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
 }
 
+impl StreamManager {
+    pub fn new(
+        configs: ConfigArc,
+        // configs: ConfigArc,
+        handles: HashMap<PrinterId, egui::TextureHandle>,
+    ) -> Self {
+        Self {
+            configs,
+            streams: HashMap::new(),
+            handles,
+            kill_tx: HashMap::new(),
+        }
+    }
+
+    pub async fn run(&mut self) -> Result<()> {
+        for id in self.configs.printer_ids() {
+            let handle = self.handles.get(&id).unwrap().clone();
+            let configs2 = self.configs.clone();
+
+            let (kill_tx, kill_rx) = tokio::sync::oneshot::channel();
+            self.kill_tx.insert(id.clone(), kill_tx);
+
+            tokio::task::spawn(async move {
+                if let Ok(mut streamer) = JpegStreamViewer::new(configs2, id, handle, kill_rx).await
+                {
+                    if let Err(e) = streamer.run().await {
+                        error!("streamer error: {:?}", e);
+                    }
+                }
+            });
+        }
+
+        unimplemented!()
+    }
+
+    // pub async fn add_stream(
+    //     &mut self,
+    //     id: PrinterId,
+    //     handle: egui::TextureHandle,
+    //     kill_rx: tokio::sync::oneshot::Receiver<()>,
+    // ) -> Result<()> {
+    //     // let stream = JpegStreamViewer::new(configs, id, handle, kill_rx).await?;
+    //     // self.streams.insert(id, stream);
+    //     unimplemented!()
+    // }
+}
+
+/// https://github.com/greghesp/ha-bambulab/blob/main/custom_components/bambu_lab/pybambu/bambu_client.py#L68
 pub struct JpegStreamViewer {
     config: Arc<RwLock<PrinterConfig>>,
     // addr: String,
@@ -24,9 +74,14 @@ pub struct JpegStreamViewer {
     // img_tx: tokio::sync::watch::Sender<Vec<u8>>,
     // ctx: egui::Context,
     handle: egui::TextureHandle,
+    kill_rx: tokio::sync::oneshot::Receiver<()>,
 }
 
 impl JpegStreamViewer {
+    const JPEG_START: [u8; 4] = [0xff, 0xd8, 0xff, 0xe0];
+    const JPEG_END: [u8; 2] = [0xff, 0xd9];
+    const READ_CHUNK_SIZE: usize = 4096;
+
     pub async fn new(
         configs: ConfigArc,
         // config: Arc<RwLock<PrinterConfig>>,
@@ -34,6 +89,7 @@ impl JpegStreamViewer {
         // img_tx: tokio::sync::watch::Sender<Vec<u8>>,
         // ctx: egui::Context,
         handle: egui::TextureHandle,
+        kill_rx: tokio::sync::oneshot::Receiver<()>,
     ) -> Result<Self> {
         let config = &configs.get_printer(&id).unwrap();
         let serial = config.read().await.serial.clone();
@@ -101,13 +157,9 @@ impl JpegStreamViewer {
             // img_tx,
             handle,
             // ctx,
+            kill_rx,
         })
     }
-
-    const JPEG_START: [u8; 4] = [0xff, 0xd8, 0xff, 0xe0];
-    const JPEG_END: [u8; 2] = [0xff, 0xd9];
-
-    const READ_CHUNK_SIZE: usize = 4096;
 
     pub async fn run(&mut self) -> Result<()> {
         tokio::io::AsyncWriteExt::write_all(&mut self.tls_stream, &self.auth_data).await?;
