@@ -19,6 +19,7 @@ macro_rules! generate_icon_function {
     };
 }
 
+generate_icon_function!(icon_empty, "../../assets/icons/empty.svg", 20.);
 generate_icon_function!(icon_resume, "../../assets/icons8-play-96.png", 20.);
 generate_icon_function!(icon_pause, "../../assets/icons8-pause-squared-100.png", 20.);
 generate_icon_function!(icon_stop, "../../assets/icons8-red-square-96.png", 20.);

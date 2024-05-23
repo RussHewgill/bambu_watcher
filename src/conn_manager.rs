@@ -583,22 +583,37 @@ async fn sync_projects(
         bail!("no token found");
     };
 
-    let projects = crate::cloud::get_project_list(&token).await?;
+    /// projects
+    #[cfg(feature = "nope")]
+    {
+        let projects = crate::cloud::get_project_list(&token).await?;
 
-    let mut project_list = vec![];
+        let mut project_list = vec![];
 
-    warn!("skipping all but first 3 projects");
-    for project in &projects[..3] {
-        let Ok(project) = crate::cloud::get_project_info(&token, &project.project_id).await else {
-            continue;
-        };
+        warn!("skipping all but first 3 projects");
+        let projects = &projects[..3];
 
-        let project = crate::cloud::projects::ProjectData::from_json(project)?;
+        for project in projects {
+            let Ok(project) = crate::cloud::get_project_info(&token, &project.project_id).await
+            else {
+                continue;
+            };
 
-        project_list.push(project);
+            let project = crate::cloud::projects::ProjectData::from_json(project)?;
+
+            project_list.push(project);
+        }
     }
 
-    let project_list = ProjectsList::new(project_list);
+    let task_list = crate::cloud::get_task_list(&token).await?;
+
+    let task_list = task_list
+        .hits
+        .into_iter()
+        .map(|t| crate::cloud::projects::TaskData::from_json(&t))
+        .collect();
+
+    let project_list = ProjectsList::new(task_list);
     msg_tx.send(PrinterConnMsg::SyncedProjects(project_list))?;
     Ok(())
 }

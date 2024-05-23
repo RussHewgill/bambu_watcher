@@ -80,7 +80,7 @@ pub async fn get_project_list(token: &Token) -> Result<Vec<projects::ProjectInfo
     Ok(json.projects)
 }
 
-pub async fn get_task_list(token: &Token) -> Result<serde_json::Value> {
+pub async fn get_task_list(token: &Token) -> Result<projects::TasksInfo> {
     let json = get_response(token, "/v1/user-service/my/tasks").await?;
     // debug!("json {:#?}", json);
     Ok(json)

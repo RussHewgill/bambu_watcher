@@ -152,6 +152,159 @@ pub mod projects_list {
     use egui_data_table::DataTable;
     use serde::{Deserialize, Serialize};
 
+    use crate::cloud::projects::TaskData;
+
+    #[derive(Debug, Default, Deserialize, Serialize)]
+    pub struct ProjectsList {
+        pub filter: Option<String>,
+        sort: Option<(SortType, SortDir)>,
+        // projects: Vec<ProjectData>,
+        projects: Vec<TaskData>,
+        index_map: Vec<usize>,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
+    pub enum SortType {
+        Name,
+        Status,
+        PrintTime,
+        Material,
+        PrintDate,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
+    pub enum SortDir {
+        Asc,
+        Desc,
+    }
+
+    impl ProjectsList {
+        pub fn new(projects: Vec<TaskData>) -> Self {
+            Self {
+                filter: None,
+                sort: None,
+                index_map: (0..projects.len()).collect(),
+                projects,
+            }
+        }
+
+        pub fn len(&self) -> usize {
+            self.projects.len()
+        }
+
+        pub fn get_project(&self, index: usize) -> Option<&TaskData> {
+            self.projects.get(self.index_map[index])
+        }
+
+        pub fn sorted(&self) -> Option<(SortType, SortDir)> {
+            self.sort
+        }
+
+        /// Unsorted -> Asc -> Desc
+        pub fn sort_by(&mut self, sort: SortType) {
+            match self.sort {
+                Some((cur_sort, rev)) if cur_sort == sort => match rev {
+                    SortDir::Asc => {
+                        self.sort = Some((sort, SortDir::Desc));
+                        self._sort_by(sort, SortDir::Desc, Self::_cmp(sort));
+                    }
+                    SortDir::Desc => {
+                        self.unsort();
+                    }
+                },
+                Some((cur_sort, rev)) => {
+                    self.sort = Some((sort, SortDir::Asc));
+                    self._sort_by(sort, SortDir::Asc, Self::_cmp(sort));
+                }
+                /// currently unsorted
+                None => {
+                    self.sort = Some((sort, SortDir::Asc));
+                    self._sort_by(sort, SortDir::Asc, Self::_cmp(sort));
+                }
+            }
+        }
+
+        fn _cmp(sort: SortType) -> impl Fn(&TaskData, &TaskData) -> std::cmp::Ordering {
+            match sort {
+                SortType::Name => |a: &TaskData, b: &TaskData| a.title.cmp(&b.title),
+                SortType::Status => |a: &TaskData, b: &TaskData| a.status.cmp(&b.status),
+                SortType::PrintTime => |a: &TaskData, b: &TaskData| a.cost_time.cmp(&b.cost_time),
+                SortType::Material => {
+                    |a: &TaskData, b: &TaskData| a.weight.partial_cmp(&b.weight).unwrap()
+                }
+                SortType::PrintDate => |a: &TaskData, b: &TaskData| a.start_time.cmp(&b.start_time), // _ => unimplemented!(),
+            }
+        }
+
+        fn unsort(&mut self) {
+            self.sort = None;
+            self.index_map = (0..self.projects.len()).collect();
+        }
+
+        fn _sort_by(
+            &mut self,
+            sort: SortType,
+            reversed: SortDir,
+            cmp: impl Fn(&TaskData, &TaskData) -> std::cmp::Ordering,
+        ) {
+            self.sort = Some((sort, reversed));
+
+            if reversed == SortDir::Desc {
+                // self.projects.sort_by(|a, b| cmp(a, b).reverse());
+                self.index_map
+                    .sort_by(|a, b| cmp(&self.projects[*a], &self.projects[*b]).reverse());
+            } else {
+                self.index_map
+                    .sort_by(|a, b| cmp(&self.projects[*a], &self.projects[*b]));
+            }
+        }
+
+        #[cfg(feature = "nope")]
+        pub fn sort_date(&mut self) {
+            match self.sort {
+                Some((SortType::Date, true)) => {
+                    self.projects
+                        .sort_by(|a, b| b.create_time.cmp(&a.create_time));
+                    self.sort = Some((SortType::Date, false));
+                }
+                Some((SortType::Date, false)) => {
+                    self.projects
+                        .sort_by(|a, b| a.create_time.cmp(&b.create_time));
+                    self.sort = Some((SortType::Date, true));
+                }
+                _ => {
+                    self.projects
+                        .sort_by(|a, b| a.create_time.cmp(&b.create_time));
+                    self.sort = Some((SortType::Date, true));
+                }
+            }
+        }
+
+        #[cfg(feature = "nope")]
+        pub fn sort_name(&mut self) {
+            // match self.sort {
+            //     Some((0, true)) => todo!(),
+            //     Some((0, false)) => todo!(),
+            //     _ => todo!(),
+            // }
+
+            // self.projects.sort_by(|a, b| {
+            //     if reverse {
+            //         b.name.cmp(&a.name)
+            //     } else {
+            //         a.name.cmp(&b.name)
+            //     }
+            // });
+            // self.sort = Some((0, reverse));
+        }
+    }
+}
+
+#[cfg(feature = "nope")]
+pub mod projects_list {
+    use egui_data_table::DataTable;
+    use serde::{Deserialize, Serialize};
+
     #[derive(Debug, Default, Deserialize, Serialize)]
     pub struct ProjectsList {
         pub filter: Option<String>,
