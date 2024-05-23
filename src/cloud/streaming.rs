@@ -190,7 +190,9 @@ impl JpegStreamViewer {
                         img_buf.len(),
                         payload_size,
                     );
-                    break;
+                    got_header = false;
+                    img_buf.clear();
+                    // break;
                 } else if img_buf.len() == payload_size {
                     if &img_buf[0..4] != &Self::JPEG_START {
                         warn!("missing jpeg start bytes");

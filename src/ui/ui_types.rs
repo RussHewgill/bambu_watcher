@@ -14,6 +14,8 @@ use crate::{
     status::PrinterStatus,
 };
 
+pub use self::projects_list::ProjectsList;
+
 #[derive(Default, Deserialize, Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct App {
@@ -146,66 +148,114 @@ pub struct NewPrinterEntry {
     pub serial: String,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct ProjectsList {
-    sort: Option<(SortType, bool)>,
-    pub projects: Vec<crate::cloud::projects::ProjectData>,
-}
+pub mod projects_list {
+    use egui_data_table::DataTable;
+    use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
-pub enum SortType {
-    Date,
-    Name,
-    PrintTime,
-    Material,
-}
+    #[derive(Debug, Default, Deserialize, Serialize)]
+    pub struct ProjectsList {
+        pub filter: Option<String>,
+        sort: Option<(SortType, bool)>,
+        #[serde(
+            serialize_with = "serialize_datatable",
+            deserialize_with = "deserialize_datatable"
+        )]
+        // pub projects: Vec<crate::cloud::projects::ProjectData>,
+        pub projects: DataTable<crate::cloud::projects::ProjectData>,
+    }
 
-impl ProjectsList {
-    pub fn new(projects: Vec<crate::cloud::projects::ProjectData>) -> Self {
-        Self {
-            sort: None,
-            projects,
+    #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+    enum SortType {
+        Date,
+        Name,
+        PrintTime,
+        Material,
+    }
+
+    fn serialize_datatable<S>(
+        data: &egui_data_table::DataTable<crate::cloud::projects::ProjectData>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        // let mut data = data.clone();
+        let vec: Vec<crate::cloud::projects::ProjectData> = data.iter().cloned().collect();
+        vec.serialize(serializer)
+    }
+
+    fn deserialize_datatable<'de, D>(
+        deserializer: D,
+    ) -> Result<egui_data_table::DataTable<crate::cloud::projects::ProjectData>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let vec: Vec<crate::cloud::projects::ProjectData> = Vec::deserialize(deserializer)?;
+        Ok(egui_data_table::DataTable::new())
+    }
+
+    impl ProjectsList {
+        pub fn new(projects: Vec<crate::cloud::projects::ProjectData>) -> Self {
+            let mut projects_data = egui_data_table::DataTable::new();
+            projects_data.replace(projects);
+            Self {
+                filter: None,
+                sort: None,
+                projects: projects_data,
+            }
         }
     }
 
-    pub fn sorted(&self) -> Option<(SortType, bool)> {
-        self.sort
-    }
-
-    pub fn sort_date(&mut self) {
-        match self.sort {
-            Some((SortType::Date, true)) => {
-                self.projects
-                    .sort_by(|a, b| b.create_time.cmp(&a.create_time));
-                self.sort = Some((SortType::Date, false));
-            }
-            Some((SortType::Date, false)) => {
-                self.projects
-                    .sort_by(|a, b| a.create_time.cmp(&b.create_time));
-                self.sort = Some((SortType::Date, true));
-            }
-            _ => {
-                self.projects
-                    .sort_by(|a, b| a.create_time.cmp(&b.create_time));
-                self.sort = Some((SortType::Date, true));
+    #[cfg(feature = "nope")]
+    impl ProjectsList {
+        pub fn new(projects: Vec<crate::cloud::projects::ProjectData>) -> Self {
+            let mut projects = egui_data_table::DataTable::new();
+            Self {
+                filter: None,
+                sort: None,
+                projects,
             }
         }
-    }
 
-    pub fn sort_name(&mut self) {
-        // match self.sort {
-        //     Some((0, true)) => todo!(),
-        //     Some((0, false)) => todo!(),
-        //     _ => todo!(),
-        // }
+        pub fn sorted(&self) -> Option<(SortType, bool)> {
+            self.sort
+        }
 
-        // self.projects.sort_by(|a, b| {
-        //     if reverse {
-        //         b.name.cmp(&a.name)
-        //     } else {
-        //         a.name.cmp(&b.name)
-        //     }
-        // });
-        // self.sort = Some((0, reverse));
+        pub fn sort_date(&mut self) {
+            match self.sort {
+                Some((SortType::Date, true)) => {
+                    self.projects
+                        .sort_by(|a, b| b.create_time.cmp(&a.create_time));
+                    self.sort = Some((SortType::Date, false));
+                }
+                Some((SortType::Date, false)) => {
+                    self.projects
+                        .sort_by(|a, b| a.create_time.cmp(&b.create_time));
+                    self.sort = Some((SortType::Date, true));
+                }
+                _ => {
+                    self.projects
+                        .sort_by(|a, b| a.create_time.cmp(&b.create_time));
+                    self.sort = Some((SortType::Date, true));
+                }
+            }
+        }
+
+        pub fn sort_name(&mut self) {
+            // match self.sort {
+            //     Some((0, true)) => todo!(),
+            //     Some((0, false)) => todo!(),
+            //     _ => todo!(),
+            // }
+
+            // self.projects.sort_by(|a, b| {
+            //     if reverse {
+            //         b.name.cmp(&a.name)
+            //     } else {
+            //         a.name.cmp(&b.name)
+            //     }
+            // });
+            // self.sort = Some((0, reverse));
+        }
     }
 }

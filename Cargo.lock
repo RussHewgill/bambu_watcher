@@ -650,6 +650,7 @@ dependencies = [
  "dotenvy",
  "eframe",
  "egui",
+ "egui-data-table",
  "egui-phosphor",
  "egui_extras",
  "egui_plot",
@@ -660,6 +661,7 @@ dependencies = [
  "notify-rust",
  "parking_lot",
  "rand",
+ "regex",
  "reqwest",
  "resvg",
  "rumqttc",
@@ -1570,6 +1572,19 @@ dependencies = [
  "nohash-hasher",
  "ron",
  "serde",
+]
+
+[[package]]
+name = "egui-data-table"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59a5557024a78ccbccdd77963f47f8c6bb843857038ef86b960f4ace02eed030"
+dependencies = [
+ "egui",
+ "egui_extras",
+ "itertools",
+ "serde",
+ "tap",
 ]
 
 [[package]]
@@ -4891,6 +4906,12 @@ dependencies = [
  "toml",
  "version-compare",
 ]
+
+[[package]]
+name = "tap"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "target-lexicon"

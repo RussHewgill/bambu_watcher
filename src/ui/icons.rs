@@ -67,7 +67,7 @@ pub fn thumbnail_printer(
 }
 
 pub fn thumbnail_chamber() -> egui::Image<'static> {
-    let size = 20.;
+    let size = 15.;
     let src = egui::include_image!("../../assets/param_chamber_temp.svg");
     egui::Image::new(src)
         .fit_to_exact_size(Vec2::new(size, size))
@@ -76,7 +76,7 @@ pub fn thumbnail_chamber() -> egui::Image<'static> {
 }
 
 pub fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
-    let size = 20.;
+    let size = 15.;
     let src = if active {
         egui::include_image!("../../assets/monitor_nozzle_temp_active.svg")
     } else {
@@ -89,7 +89,7 @@ pub fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
 }
 
 pub fn thumbnail_bed(active: bool) -> egui::Image<'static> {
-    let size = 20.;
+    let size = 15.;
     let src = if active {
         egui::include_image!("../../assets/monitor_bed_temp_active.svg")
     } else {

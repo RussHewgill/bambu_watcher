@@ -35,6 +35,30 @@ impl App {
         let row_height = 80.0;
         let thumbnail_size = 80.0;
 
+        /// filter
+        ui.horizontal(|ui| {
+            //
+        });
+
+        // egui_data_table::DataTable<MyRowData>
+        ui.add(
+            egui_data_table::Renderer::new(&mut self.projects.projects, &mut { ProjectRowViewer })
+                .with_table_row_height(row_height),
+        );
+
+        //
+    }
+
+    #[cfg(feature = "nope")]
+    fn project_list(&mut self, ui: &mut egui::Ui) {
+        let row_height = 80.0;
+        let thumbnail_size = 80.0;
+
+        /// filter
+        ui.horizontal(|ui| {
+            //
+        });
+
         let mut table = egui_extras::TableBuilder::new(ui)
             .striped(true)
             .resizable(false)
@@ -71,27 +95,10 @@ impl App {
                 // header.col(|ui| {
                 //     ui.strong("Printer");
                 // });
-                if header
-                    .col(|ui| {
-                        ui.strong("Name");
-                    })
-                    .1
-                    .clicked()
-                {
-                    debug!("sort by name");
-                    // match self.projects.sorted() {
-                    //     // Some((0, true)) => {
-                    //     //     self.projects.sort_name(false);
-                    //     // }
-                    //     // Some((0, false)) => {
-                    //     //     self.projects.sort_name();
-                    //     // }
-                    //     // _ => {
-                    //     //     self.projects.sort_name(false);
-                    //     // }
-                    // }
-                    // self.projects.sort_name(reverse)
-                };
+                header.col(|ui| {
+                    ui.strong("Name");
+                    //  debug!("sort by name");
+                });
 
                 header.col(|ui| {
                     let but = match self.projects.sorted() {
@@ -186,32 +193,78 @@ impl App {
     }
 }
 
-// struct ProjectRowViewer;
+struct ProjectRowViewer;
 
-#[cfg(feature = "nope")]
+impl ProjectRowViewer {
+    /// Title, sortable
+    const ROWS: [(&'static str, bool); 7] = [
+        ("Thumbnail", false),
+        ("Name", true),
+        ("Date", true),
+        ("Status", true),
+        ("Time", true),
+        ("Material", true),
+        ("Plate", true),
+    ];
+}
+
+// #[cfg(feature = "nope")]
 impl egui_data_table::RowViewer<ProjectData> for ProjectRowViewer {
     fn num_columns(&mut self) -> usize {
-        7
+        Self::ROWS.len()
     }
 
-    #[rustfmt::skip]
+        #[rustfmt::skip]
     fn column_name(&mut self, column: usize) -> std::borrow::Cow<'static, str> {
-        [
-            "Preview",
-            "Name",
-            "Status",
-            "Time",
-            "Material",
-        ][column]
-            .into()
-    }
+            // [
+            //     "Preview",
+            //     "Name",
+            //     "Status",
+            //     "Time",
+            //     "Material",
+            // ][column]
+            //     .into()
+            Self::ROWS[column].0.into()
+        }
 
     fn is_sortable_column(&mut self, column: usize) -> bool {
-        [false, true, true, true, true][column]
+        Self::ROWS[column].1
+    }
+
+    fn column_render_config(&mut self, column: usize) -> Column {
+        match column {
+            0 => Column::exact(80.),
+            1 => Column::auto(),
+            2 => Column::auto(),
+            3 => Column::auto(),
+            4 => Column::auto(),
+            5 => Column::auto(),
+            6 => Column::auto(),
+            _ => unreachable!(),
+        }
     }
 
     fn show_cell_view(&mut self, ui: &mut egui::Ui, row: &ProjectData, column: usize) {
-        unimplemented!()
+        let Some(plate) = row.plates.iter().find(|p| p.filaments.len() > 0) else {
+            return;
+        };
+
+        match column {
+            0 => {
+                ui.add(
+                    egui::Image::new(&plate.thumbnail.url)
+                        .bg_fill(ui.visuals().panel_fill)
+                        .rounding(5.),
+                );
+            }
+            1 => {}
+            2 => {}
+            3 => {}
+            4 => {}
+            5 => {}
+            6 => {}
+            _ => unreachable!(),
+        }
     }
 
     fn show_cell_editor(
@@ -228,6 +281,6 @@ impl egui_data_table::RowViewer<ProjectData> for ProjectRowViewer {
     }
 
     fn new_empty_row(&mut self) -> ProjectData {
-        unimplemented!()
+        ProjectData::default()
     }
 }
