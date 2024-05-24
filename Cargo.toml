@@ -89,6 +89,12 @@ base64 = "0.22.1"
 regex = "1.10.4"
 egui-data-table = "0.2.2"
 
+# relm4 = { version = "0.8.0", features = ["macros"] }
+# relm4-components = "0.8.0"
+# relm4-icons = "0.8.0"
+
+# iced = "0.12.1"
+# iced_winit = "0.12.2"
 
 # eframe = { version = "0.27.0", features = ["persistence"] }
 # egui = "0.27.0"

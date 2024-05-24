@@ -32,7 +32,7 @@ generate_icon_function!(icon_sort_down, "../../assets/icons/sort-down_poly.svg",
 pub fn thumbnail_printer(
     printer: &PrinterConfig,
     printer_type: &PrinterType,
-    size: f32,
+    // size: f32,
     ctx: &egui::Context,
 ) -> egui::Image<'static> {
     let src = if ctx.style().visuals.dark_mode {
@@ -62,13 +62,15 @@ pub fn thumbnail_printer(
     };
 
     egui::Image::new(src)
-        .fit_to_exact_size(Vec2::new(size, size))
-        .max_width(size)
-        .max_height(size)
+    // .fit_to_exact_size(Vec2::new(size, size))
+    // .max_width(size)
+    // .max_height(size)
 }
 
+const TEMP_ICON_SIZE: f32 = 20.;
+
 pub fn thumbnail_chamber() -> egui::Image<'static> {
-    let size = 15.;
+    let size = TEMP_ICON_SIZE;
     let src = egui::include_image!("../../assets/param_chamber_temp.svg");
     egui::Image::new(src)
         .fit_to_exact_size(Vec2::new(size, size))
@@ -77,7 +79,7 @@ pub fn thumbnail_chamber() -> egui::Image<'static> {
 }
 
 pub fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
-    let size = 15.;
+    let size = TEMP_ICON_SIZE;
     let src = if active {
         egui::include_image!("../../assets/monitor_nozzle_temp_active.svg")
     } else {
@@ -90,7 +92,7 @@ pub fn thumbnail_nozzle(active: bool) -> egui::Image<'static> {
 }
 
 pub fn thumbnail_bed(active: bool) -> egui::Image<'static> {
-    let size = 15.;
+    let size = TEMP_ICON_SIZE;
     let src = if active {
         egui::include_image!("../../assets/monitor_bed_temp_active.svg")
     } else {

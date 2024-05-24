@@ -2,6 +2,7 @@ pub mod dashboard;
 pub mod icons;
 pub mod options;
 pub mod plotting;
+pub mod printer_widget;
 pub mod printers;
 pub mod project_view;
 pub mod ui_types;

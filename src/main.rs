@@ -20,6 +20,8 @@ pub mod status;
 // pub mod tray;
 pub mod cloud;
 pub mod ui;
+// pub mod ui2;
+// pub mod ui3;
 pub mod utils;
 // pub mod mqtt_types;
 
@@ -41,253 +43,140 @@ use crate::{
     status::PrinterStatus,
 };
 
-/// config test
+/// iced test
 #[cfg(feature = "nope")]
-fn main() -> Result<()> {
-    dotenv::dotenv()?;
+fn main() -> iced::Result {
+    let _ = dotenvy::dotenv();
     logging::init_logs();
 
-    // let path = "config.yaml";
-    // let path = "config_test.yaml";
+    std::panic::set_hook(Box::new(|panic_info| {
+        use std::io::Write;
+        eprintln!("{}", panic_info);
+        let mut file = std::fs::File::create("crash_log.log").unwrap();
+        write!(file, "{}", panic_info).unwrap();
+    }));
 
-    // let printer0 = config::PrinterConfig {
-    //     name: "bambu".to_string(),
-    //     host: env::var("BAMBU_IP")?,
-    //     access_code: env::var("BAMBU_ACCESS_CODE")?,
-    //     serial: Arc::new(env::var("BAMBU_IDENT")?),
-    // };
-
-    // let config = config::ConfigFile {
-    //     printers: vec![printer0],
-    // };
-
-    // serde_yaml::to_writer(std::fs::File::create(path)?, &config)?;
-
-    // let config: config::ConfigFile = serde_yaml::from_reader(std::fs::File::open(path)?)?;
-
-    // let config = config::Config::read_from_file(path)?;
-
-    // debug!("config = {:#?}", config);
-
-    // let path = "example.json";
-    let path = "example2.json";
-    // let path = "example3.json";
-
-    // let msg: bambulab::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
-    let msg: mqtt::message::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
-
-    debug!("msg = {:#?}", msg);
-
-    Ok(())
-}
-
-/// FTP test
-#[cfg(feature = "nope")]
-fn main() {
-    dotenv::dotenv().unwrap();
-    logging::init_logs();
-
-    let printer_cfg = config::PrinterConfig {
-        name: "bambu".to_string(),
-        host: env::var("BAMBU_IP").unwrap(),
-        access_code: env::var("BAMBU_ACCESS_CODE").unwrap(),
-        serial: env::var("BAMBU_IDENT").unwrap(),
+    let (config, auth) = match config::Config::read_from_file("config.yaml") {
+        Ok((config, auth)) => (config, auth),
+        Err(e) => {
+            warn!("error reading config: {:?}", e);
+            panic!("error reading config: {:?}", e);
+        }
     };
+    let config = ConfigArc::new(config, auth);
+    let config2 = config.clone();
 
-    crate::ftp::get_gcode_thumbnail(
-        &printer_cfg,
-        "/cache/AMS Purging Strips 2 Colors Modified.3mf",
-    )
-    .unwrap();
+    let (msg_tx, mut msg_rx) = tokio::sync::mpsc::unbounded_channel::<PrinterConnMsg>();
+    let (cmd_tx, cmd_rx) = tokio::sync::mpsc::unbounded_channel::<PrinterConnCmd>();
 
-    #[cfg(feature = "nope")]
+    let (img_tx, img_rx) = tokio::sync::watch::channel::<Vec<u8>>(vec![]);
+
+    let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
+    let printer_states2 = printer_states.clone();
+
+    /// debug printer state
+    // #[cfg(feature = "nope")]
     {
-        use suppaftp::native_tls::{TlsConnector, TlsStream};
-        use suppaftp::{FtpStream, NativeTlsConnector, NativeTlsFtpStream};
+        warn!("adding debug printer state");
 
-        let port = 990;
+        {
+            let mut status = PrinterStatus::default();
+            status.temp_nozzle = Some(200.0);
+            status.temp_tgt_nozzle = Some(200.0);
+            status.temp_bed = Some(60.0);
+            status.temp_tgt_bed = Some(60.0);
 
-        let addr = format!("{}:{}", env::var("BAMBU_IP").unwrap(), port);
-        debug!("addr = {}", addr);
+            status.state = status::PrinterState::Printing;
+            status.eta = Some(chrono::Local::now() + chrono::Duration::minutes(10));
+            status.current_file = Some("test.gcode".to_string());
+            // status.gcode_state = Some(status::GcodeState::Running);
+            status.print_percent = Some(50);
+            status.layer_num = Some(50);
+            status.total_layer_num = Some(100);
 
-        /// explicit doesn't work for some reason
-        debug!("connecting");
-        let mut ftp_stream =
-            NativeTlsFtpStream::connect_secure_implicit(&addr, ctx, &env::var("BAMBU_IP").unwrap())
-                .unwrap();
+            status.cooling_fan_speed = Some(100);
+            status.aux_fan_speed = Some(70);
+            status.chamber_fan_speed = Some(80);
 
-        // let mut ftp_stream = FtpStream::connect(&addr).unwrap_or_else(|err| panic!("{}", err));
-        debug!("connected to server");
-        assert!(ftp_stream
-            .login("bblp", &env::var("BAMBU_ACCESS_CODE").unwrap())
-            .is_ok());
+            // status.ams = Some(status::AmsStatus {
+            //     units: vec![
+            //         status::AmsUnit {
+            //             id: 0,
+            //             humidity: 0,
+            //             temp: 0.,
+            //             slots: [
+            //                 Some(status::AmsSlot {
+            //                     material: "PLA".to_string(),
+            //                     k: 0.03,
+            //                     color: egui::Color32::RED,
+            //                 }),
+            //                 None,
+            //                 None,
+            //                 None,
+            //             ],
+            //         },
+            //         status::AmsUnit {
+            //             id: 1,
+            //             humidity: 0,
+            //             temp: 0.,
+            //             slots: [
+            //                 Some(status::AmsSlot {
+            //                     material: "PLA".to_string(),
+            //                     k: 0.03,
+            //                     color: egui::Color32::GREEN,
+            //                 }),
+            //                 None,
+            //                 None,
+            //                 None,
+            //             ],
+            //         },
+            //     ],
+            //     current_tray: Some(status::AmsCurrentSlot::Tray {
+            //         ams_id: 0,
+            //         tray_id: 0,
+            //     }),
+            // });
 
-        debug!("listing");
-        if let Ok(list) = ftp_stream.list(None) {
-            for item in list {
-                println!("{}", item);
-            }
+            let serial = config.printers()[0].blocking_read().serial.clone();
+            printer_states.insert(serial, status);
         }
 
-        debug!("done");
+        // #[cfg(feature = "nope")]
+        {
+            let mut status = PrinterStatus::default();
+            status.temp_nozzle = Some(200.0);
+            status.temp_tgt_nozzle = Some(200.0);
+            status.state = status::PrinterState::Idle;
+            // status.eta = Some(chrono::Local::now() + chrono::Duration::minutes(10));
 
-        // Disconnect from server
-        assert!(ftp_stream.quit().is_ok());
+            let serial = config.printers()[1].blocking_read().serial.clone();
+            printer_states.insert(serial, status);
+        }
     }
 
-    //
-}
-
-/// streaming test
-#[cfg(feature = "nope")]
-// #[tokio::main]
-async fn main() -> Result<()> {
-    dotenvy::dotenv()?;
-    logging::init_logs();
-
-    let host = env::var("BAMBU_IP")?;
-    let serial = env::var("BAMBU_IDENT")?;
-    let access_code = env::var("BAMBU_ACCESS_CODE")?;
-
-    let mut root_cert_store = rustls::RootCertStore::empty();
-    root_cert_store.add_parsable_certificates(
-        rustls_native_certs::load_native_certs().expect("could not load platform certs"),
-    );
-
-    let client_config = rustls::ClientConfig::builder()
-        // .with_root_certificates(root_cert_store)
-        .dangerous()
-        .with_custom_certificate_verifier(Arc::new(mqtt::NoCertificateVerification {
-            serial: serial.clone(),
-        }))
-        .with_no_client_auth();
-
-    let connector = rumqttc::tokio_rustls::TlsConnector::from(Arc::new(client_config));
-
-    let addr = format!("{}:6000", host);
-
-    debug!("Connecting to {}", addr);
-    let stream = tokio::net::TcpStream::connect(addr).await?;
-    debug!("Connected");
-
-    let domain = rustls::pki_types::ServerName::try_from(host).unwrap();
-    let mut tls_stream = connector.connect(domain, stream).await?;
-    debug!("TLS handshake completed");
-
-    let auth_data = {
-        use byteorder::{LittleEndian, WriteBytesExt};
-
-        let username = "bblp";
-
-        let mut auth_data = vec![];
-        auth_data.write_u32::<LittleEndian>(0x40).unwrap();
-        auth_data.write_u32::<LittleEndian>(0x3000).unwrap();
-        auth_data.write_u32::<LittleEndian>(0).unwrap();
-        auth_data.write_u32::<LittleEndian>(0).unwrap();
-
-        for &b in username.as_bytes() {
-            auth_data.push(b);
-        }
-        for _ in 0..(32 - username.len()) {
-            auth_data.push(0);
-        }
-
-        for &b in access_code.as_bytes() {
-            auth_data.push(b);
-        }
-        for _ in 0..(32 - access_code.len()) {
-            auth_data.push(0);
-        }
-        auth_data
+    let flags = ui3::ui_types::AppFlags {
+        printer_states,
+        config,
+        cmd_tx,
+        msg_rx,
     };
 
-    let jpeg_start = vec![0xff, 0xd8, 0xff, 0xe0];
-    let jpeg_end = vec![0xff, 0xd9];
+    // let settings = iced::Settings {
+    //     flags,
+    // };
 
-    /// 4096 is the max we'll get even if we increase this.
-    const READ_CHUNK_SIZE: usize = 4096;
+    let mut settings = iced::Settings::with_flags(flags);
+    settings.id = Some("Bambu Watcher".to_string());
+    settings.window = iced::window::Settings {
+        size: [850., 750.].into(),
+        min_size: Some([550., 400.].into()),
+        ..Default::default()
+    };
 
-    debug!("writing auth data");
-    /// Payload format for each image is:
-    /// 16 byte header:
-    ///   Bytes 0:3   = little endian payload size for the jpeg image (does not include this header).
-    ///   Bytes 4:7   = 0x00000000
-    ///   Bytes 8:11  = 0x00000001
-    ///   Bytes 12:15 = 0x00000000
-    /// These first 16 bytes are always delivered by themselves.
-    ///
-    /// Bytes 16:19                       = jpeg_start magic bytes
-    /// Bytes 20:payload_size-2           = jpeg image bytes
-    /// Bytes payload_size-2:payload_size = jpeg_end magic bytes
-    ///
-    /// Further attempts to receive data will get SSLWantReadError until a new image is ready (1-2 seconds later)
-    tokio::io::AsyncWriteExt::write_all(&mut tls_stream, &auth_data).await?;
+    use iced::Application;
+    crate::ui3::ui_types::App::run(settings)
 
-    debug!("getting socket status");
-    let status = tls_stream.get_ref().0.take_error()?;
-    debug!("status = {:?}", status);
-
-    let mut buf = [0u8; READ_CHUNK_SIZE];
-
-    let mut payload_size = 0;
-
-    let mut img: Vec<u8> = vec![];
-
-    let mut got_header = false;
-
-    use tokio::io::AsyncReadExt;
-    loop {
-        buf.fill(0);
-        tls_stream.get_ref().0.readable().await?;
-        let n = tls_stream.read(&mut buf).await?;
-
-        if got_header {
-            // debug!("extending image by {}", n);
-            img.extend_from_slice(&buf[..n]);
-
-            if img.len() > payload_size {
-                warn!(
-                    "unexpected image payload received: {} > {}",
-                    img.len(),
-                    payload_size,
-                );
-                break;
-            } else if img.len() == payload_size {
-                if &img[0..4] != &jpeg_start {
-                    warn!("missing jpeg start bytes");
-                    break;
-                } else if &img[payload_size - 2..payload_size - 0] != &jpeg_end {
-                    warn!("missing jpeg end bytes");
-                    break;
-                }
-
-                debug!("got image");
-                /// use image crate to write jpeg to file
-                let mut f = std::fs::File::create("test.jpg")?;
-                std::io::Write::write_all(&mut f, &img)?;
-
-                break;
-            }
-        } else if n == 16 {
-            debug!("got header");
-            // img.extend_from_slice(&buf);
-
-            // payload_size = int.from_bytes(dr[0:3], byteorder='little')
-            // payload_size = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]) as usize;
-            payload_size =
-                <byteorder::LittleEndian as byteorder::ByteOrder>::read_u32(&buf[0..4]) as usize;
-
-            debug!("payload_size = {}", payload_size);
-            got_header = true;
-        }
-
-        if n == 0 {
-            debug!("wrong access code");
-            break;
-        }
-    }
-
-    Ok(())
+    // ui3::ui3_main().unwrap();
 }
 
 /// cloud test
@@ -747,7 +636,7 @@ fn main() -> eframe::Result<()> {
             //     }),
             // });
 
-            let serial = config.printers()[0].serial.clone();
+            let serial = config.printers()[0].blocking_read().serial.clone();
             printer_states.insert(serial, status);
         }
 
@@ -759,14 +648,12 @@ fn main() -> eframe::Result<()> {
             status.state = status::PrinterState::Idle;
             // status.eta = Some(chrono::Local::now() + chrono::Duration::minutes(10));
 
-            let serial = config.printers()[1].serial.clone();
+            let serial = config.printers()[1].blocking_read().serial.clone();
             printer_states.insert(serial, status);
         }
     }
 
     let cmd_tx2 = cmd_tx.clone();
-
-    // let handles2 = handles.clone();
 
     // #[cfg(feature = "nope")]
     /// tokio thread
@@ -929,6 +816,255 @@ fn main() -> eframe::Result<()> {
     )
 
     //
+}
+
+/// config test
+#[cfg(feature = "nope")]
+fn main() -> Result<()> {
+    dotenv::dotenv()?;
+    logging::init_logs();
+
+    // let path = "config.yaml";
+    // let path = "config_test.yaml";
+
+    // let printer0 = config::PrinterConfig {
+    //     name: "bambu".to_string(),
+    //     host: env::var("BAMBU_IP")?,
+    //     access_code: env::var("BAMBU_ACCESS_CODE")?,
+    //     serial: Arc::new(env::var("BAMBU_IDENT")?),
+    // };
+
+    // let config = config::ConfigFile {
+    //     printers: vec![printer0],
+    // };
+
+    // serde_yaml::to_writer(std::fs::File::create(path)?, &config)?;
+
+    // let config: config::ConfigFile = serde_yaml::from_reader(std::fs::File::open(path)?)?;
+
+    // let config = config::Config::read_from_file(path)?;
+
+    // debug!("config = {:#?}", config);
+
+    // let path = "example.json";
+    let path = "example2.json";
+    // let path = "example3.json";
+
+    // let msg: bambulab::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
+    let msg: mqtt::message::Message = serde_json::from_reader(std::fs::File::open(path)?)?;
+
+    debug!("msg = {:#?}", msg);
+
+    Ok(())
+}
+
+/// FTP test
+#[cfg(feature = "nope")]
+fn main() {
+    dotenv::dotenv().unwrap();
+    logging::init_logs();
+
+    let printer_cfg = config::PrinterConfig {
+        name: "bambu".to_string(),
+        host: env::var("BAMBU_IP").unwrap(),
+        access_code: env::var("BAMBU_ACCESS_CODE").unwrap(),
+        serial: env::var("BAMBU_IDENT").unwrap(),
+    };
+
+    crate::ftp::get_gcode_thumbnail(
+        &printer_cfg,
+        "/cache/AMS Purging Strips 2 Colors Modified.3mf",
+    )
+    .unwrap();
+
+    #[cfg(feature = "nope")]
+    {
+        use suppaftp::native_tls::{TlsConnector, TlsStream};
+        use suppaftp::{FtpStream, NativeTlsConnector, NativeTlsFtpStream};
+
+        let port = 990;
+
+        let addr = format!("{}:{}", env::var("BAMBU_IP").unwrap(), port);
+        debug!("addr = {}", addr);
+
+        /// explicit doesn't work for some reason
+        debug!("connecting");
+        let mut ftp_stream =
+            NativeTlsFtpStream::connect_secure_implicit(&addr, ctx, &env::var("BAMBU_IP").unwrap())
+                .unwrap();
+
+        // let mut ftp_stream = FtpStream::connect(&addr).unwrap_or_else(|err| panic!("{}", err));
+        debug!("connected to server");
+        assert!(ftp_stream
+            .login("bblp", &env::var("BAMBU_ACCESS_CODE").unwrap())
+            .is_ok());
+
+        debug!("listing");
+        if let Ok(list) = ftp_stream.list(None) {
+            for item in list {
+                println!("{}", item);
+            }
+        }
+
+        debug!("done");
+
+        // Disconnect from server
+        assert!(ftp_stream.quit().is_ok());
+    }
+
+    //
+}
+
+/// streaming test
+#[cfg(feature = "nope")]
+// #[tokio::main]
+async fn main() -> Result<()> {
+    dotenvy::dotenv()?;
+    logging::init_logs();
+
+    let host = env::var("BAMBU_IP")?;
+    let serial = env::var("BAMBU_IDENT")?;
+    let access_code = env::var("BAMBU_ACCESS_CODE")?;
+
+    let mut root_cert_store = rustls::RootCertStore::empty();
+    root_cert_store.add_parsable_certificates(
+        rustls_native_certs::load_native_certs().expect("could not load platform certs"),
+    );
+
+    let client_config = rustls::ClientConfig::builder()
+        // .with_root_certificates(root_cert_store)
+        .dangerous()
+        .with_custom_certificate_verifier(Arc::new(mqtt::NoCertificateVerification {
+            serial: serial.clone(),
+        }))
+        .with_no_client_auth();
+
+    let connector = rumqttc::tokio_rustls::TlsConnector::from(Arc::new(client_config));
+
+    let addr = format!("{}:6000", host);
+
+    debug!("Connecting to {}", addr);
+    let stream = tokio::net::TcpStream::connect(addr).await?;
+    debug!("Connected");
+
+    let domain = rustls::pki_types::ServerName::try_from(host).unwrap();
+    let mut tls_stream = connector.connect(domain, stream).await?;
+    debug!("TLS handshake completed");
+
+    let auth_data = {
+        use byteorder::{LittleEndian, WriteBytesExt};
+
+        let username = "bblp";
+
+        let mut auth_data = vec![];
+        auth_data.write_u32::<LittleEndian>(0x40).unwrap();
+        auth_data.write_u32::<LittleEndian>(0x3000).unwrap();
+        auth_data.write_u32::<LittleEndian>(0).unwrap();
+        auth_data.write_u32::<LittleEndian>(0).unwrap();
+
+        for &b in username.as_bytes() {
+            auth_data.push(b);
+        }
+        for _ in 0..(32 - username.len()) {
+            auth_data.push(0);
+        }
+
+        for &b in access_code.as_bytes() {
+            auth_data.push(b);
+        }
+        for _ in 0..(32 - access_code.len()) {
+            auth_data.push(0);
+        }
+        auth_data
+    };
+
+    let jpeg_start = vec![0xff, 0xd8, 0xff, 0xe0];
+    let jpeg_end = vec![0xff, 0xd9];
+
+    /// 4096 is the max we'll get even if we increase this.
+    const READ_CHUNK_SIZE: usize = 4096;
+
+    debug!("writing auth data");
+    /// Payload format for each image is:
+    /// 16 byte header:
+    ///   Bytes 0:3   = little endian payload size for the jpeg image (does not include this header).
+    ///   Bytes 4:7   = 0x00000000
+    ///   Bytes 8:11  = 0x00000001
+    ///   Bytes 12:15 = 0x00000000
+    /// These first 16 bytes are always delivered by themselves.
+    ///
+    /// Bytes 16:19                       = jpeg_start magic bytes
+    /// Bytes 20:payload_size-2           = jpeg image bytes
+    /// Bytes payload_size-2:payload_size = jpeg_end magic bytes
+    ///
+    /// Further attempts to receive data will get SSLWantReadError until a new image is ready (1-2 seconds later)
+    tokio::io::AsyncWriteExt::write_all(&mut tls_stream, &auth_data).await?;
+
+    debug!("getting socket status");
+    let status = tls_stream.get_ref().0.take_error()?;
+    debug!("status = {:?}", status);
+
+    let mut buf = [0u8; READ_CHUNK_SIZE];
+
+    let mut payload_size = 0;
+
+    let mut img: Vec<u8> = vec![];
+
+    let mut got_header = false;
+
+    use tokio::io::AsyncReadExt;
+    loop {
+        buf.fill(0);
+        tls_stream.get_ref().0.readable().await?;
+        let n = tls_stream.read(&mut buf).await?;
+
+        if got_header {
+            // debug!("extending image by {}", n);
+            img.extend_from_slice(&buf[..n]);
+
+            if img.len() > payload_size {
+                warn!(
+                    "unexpected image payload received: {} > {}",
+                    img.len(),
+                    payload_size,
+                );
+                break;
+            } else if img.len() == payload_size {
+                if &img[0..4] != &jpeg_start {
+                    warn!("missing jpeg start bytes");
+                    break;
+                } else if &img[payload_size - 2..payload_size - 0] != &jpeg_end {
+                    warn!("missing jpeg end bytes");
+                    break;
+                }
+
+                debug!("got image");
+                /// use image crate to write jpeg to file
+                let mut f = std::fs::File::create("test.jpg")?;
+                std::io::Write::write_all(&mut f, &img)?;
+
+                break;
+            }
+        } else if n == 16 {
+            debug!("got header");
+            // img.extend_from_slice(&buf);
+
+            // payload_size = int.from_bytes(dr[0:3], byteorder='little')
+            // payload_size = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]) as usize;
+            payload_size =
+                <byteorder::LittleEndian as byteorder::ByteOrder>::read_u32(&buf[0..4]) as usize;
+
+            debug!("payload_size = {}", payload_size);
+            got_header = true;
+        }
+
+        if n == 0 {
+            debug!("wrong access code");
+            break;
+        }
+    }
+
+    Ok(())
 }
 
 /// rumqttc test
