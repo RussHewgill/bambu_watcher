@@ -535,8 +535,20 @@ fn main() -> eframe::Result<()> {
         write!(file, "{}", panic_info).unwrap();
     }));
 
+    let icon: egui::IconData = {
+        let icon = include_bytes!("../icon.png");
+        let icon = image::load_from_memory(icon).unwrap();
+        let icon = egui::IconData {
+            rgba: icon.to_rgba8().into_raw(),
+            width: icon.width(),
+            height: icon.height(),
+        };
+        icon
+    };
+
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
+            .with_icon(icon)
             .with_inner_size([850.0, 750.0])
             .with_min_inner_size([550.0, 400.0]),
         ..Default::default()

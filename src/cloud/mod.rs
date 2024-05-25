@@ -10,7 +10,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use tracing::{debug, error, info, trace, warn};
 
-use crate::auth::Token;
+use crate::{auth::Token, conn_manager::PrinterId};
 
 const BASE: &'static str = "https://api.bambulab.com";
 
@@ -18,6 +18,7 @@ const URL_LIST: &'static str = "/v1/iot-service/api/user/bind";
 const URL_PRINT: &'static str = "/v1/iot-service/api/user/print";
 const URL_PROJECTS: &'static str = "/v1/iot-service/api/user/project";
 const URL_TASK: &'static str = "/v1/iot-service/api/user/task/";
+const URL_TASKS_LIST: &'static str = "/v1/user-service/my/tasks";
 const URL_PROJECT: &'static str = "/v1/iot-service/api/user/project/";
 const URL_MESSAGES: &'static str = "/v1/user-service/my/messages";
 const URL_TTCODE: &'static str = "/v1/iot-service/api/user/ttcode";
@@ -80,10 +81,32 @@ pub async fn get_project_list(token: &Token) -> Result<Vec<projects::ProjectInfo
     Ok(json.projects)
 }
 
-pub async fn get_task_list(token: &Token) -> Result<projects::TasksInfo> {
-    let json = get_response(token, "/v1/user-service/my/tasks").await?;
+pub async fn get_task_list(
+    token: &Token,
+    device: Option<PrinterId>,
+    after: Option<String>,
+    limit: Option<i64>,
+) -> Result<projects::TasksInfo> {
+    // let json = get_response(token, "/v1/user-service/my/tasks").await?;
     // debug!("json {:#?}", json);
-    Ok(json)
+    let client = reqwest::ClientBuilder::new().use_rustls_tls().build()?;
+    let mut req = client
+        .get(format!("{}{}", BASE, URL_TASKS_LIST))
+        .header("Authorization", &format!("Bearer {}", token.get_token()));
+
+    if let Some(limit) = limit {
+        req = req.query(&[("limit", &format!("{}", limit))]);
+    }
+
+    let res = req.send().await?;
+
+    if !res.status().is_success() {
+        // debug!("res {:#?}", res);
+        debug!("status {:#?}", res.status());
+        bail!("Failed to get response, url = {}", URL_TASKS_LIST);
+    }
+
+    Ok(res.json().await?)
 }
 
 pub async fn get_project_info(

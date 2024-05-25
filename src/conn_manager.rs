@@ -605,7 +605,7 @@ async fn sync_projects(
         }
     }
 
-    let task_list = crate::cloud::get_task_list(&token).await?;
+    let task_list = crate::cloud::get_task_list(&token, None, None, Some(40)).await?;
 
     debug!(
         "got task list, total = {}: {:?}",

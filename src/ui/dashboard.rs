@@ -170,8 +170,8 @@ impl App {
                                                             PrinterState::Error(_) => {
                                                                 Color32::from_rgb(173, 125, 90)
                                                             }
-                                                            // _ => Color32::from_gray(127),
-                                                            _ => Color32::GREEN,
+                                                            _ => Color32::from_gray(127),
+                                                            // _ => Color32::GREEN,
                                                         }
                                                     } else {
                                                         debug!("no state");
