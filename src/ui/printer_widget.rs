@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
 
-use egui::{Color32, Label, Layout, Response, RichText, Rounding, Vec2};
+use egui::{Color32, Label, Layout, Response, RichText, Rounding, Sense, Vec2};
 
 use crate::{
     config::{ConfigArc, PrinterConfig},
@@ -17,7 +17,7 @@ impl App {
     /// Wide layout
     // #[cfg(feature = "nope")]
     pub fn show_printer(
-        &self,
+        &mut self,
         pos: (usize, usize),
         frame_size: Vec2,
         ui: &mut egui::Ui,
@@ -89,6 +89,10 @@ impl App {
                             ))
                             .truncate(true),
                         );
+                        // let stream_but = egui::Button::image(icon_expand());
+                        // if ui.add(stream_but).clicked() {
+                        //     self.selected_stream = Some(printer.serial.clone());
+                        // }
                     },
                 )
                 .response
@@ -105,6 +109,8 @@ impl App {
 
         let thumbnail_width = frame_size.x - 12.;
         let thumbnail_height = thumbnail_width * 0.5625;
+
+        drop(status);
 
         ui.spacing_mut().item_spacing.x = 1.;
         egui_extras::StripBuilder::new(ui)
@@ -124,6 +130,11 @@ impl App {
             .size(egui_extras::Size::exact(60. + 2.))
             // .size(egui_extras::Size::initial(10.))
             .vertical(|mut strip| {
+                let Some(status) = self.printer_states.get(&printer.serial) else {
+                    warn!("Printer not found: {}", printer.serial);
+                    panic!();
+                };
+
                 /// thumbnail/webcam
                 strip.cell(|ui| {
                     // ui.ctx()
@@ -143,8 +154,12 @@ impl App {
                             let img = egui::Image::from_texture((entry.id(), size))
                                 .fit_to_exact_size(size)
                                 .max_size(size)
-                                .rounding(Rounding::same(4.));
-                            ui.add(img);
+                                .rounding(Rounding::same(4.))
+                                .sense(Sense::click());
+                            if ui.add(img).clicked() {
+                                debug!("webcam clicked");
+                                self.selected_stream = Some(printer.serial.clone());
+                            }
                         } else if let Some(url) = status.current_task_thumbnail_url.as_ref() {
                             /// current print job thumbnail
                             let img = egui::Image::new(url)
@@ -331,6 +346,7 @@ impl App {
 
                 //
             });
+        ui.spacing_mut().item_spacing.x = 8.;
 
         resp
     }

@@ -43,12 +43,8 @@ impl App {
         }
 
         let width = 250.0;
-        let height = 320.0;
+        let height = 340.0;
 
-        // let width = 350.0;
-        // let height = 200.0;
-
-        /// actually ends up 200 x 330?
         // let frame_size = Vec2::new(width, width * (3. / 2.));
         let frame_size = Vec2::new(width, height);
         let item_spacing = 4.;
@@ -118,87 +114,83 @@ impl App {
                         for x in 0..self.options.dashboard_size.0 {
                             let i = x + y * self.options.dashboard_size.0;
 
+                            let pos = GridLocation { col: x, row: y };
+                            let (id, color) = self.get_printer_id_color(pos);
+
                             // #[cfg(feature = "nope")]
                             ui.allocate_ui_at_rect(max_rect_row, |ui| {
+                                if let Some(color) = color {
+                                    ui.visuals_mut().widgets.inactive.bg_stroke =
+                                        Stroke::new(4., color);
+                                    ui.visuals_mut().widgets.active.bg_stroke =
+                                        Stroke::new(4., color);
+                                }
                                 let frame = egui::Frame::group(ui.style())
-                                    .inner_margin(0.)
-                                    .outer_margin(0.)
+                                    .inner_margin(4.)
+                                    .outer_margin(4.)
+                                    // .stroke(Stroke::new(5., color))
+                                    // .stroke(Stroke::new(50., Color32::RED))
                                     // .fill(color)
                                     .rounding(6.);
 
                                 let (_, dropped_payload) =
                                     ui.dnd_drop_zone::<GridLocation, ()>(frame, |ui| {
-                                        let pos = GridLocation { col: x, row: y };
-                                        let id = if let Some(id) = self.printer_order.get(&pos) {
-                                            id
-                                        } else {
-                                            /// if no printer at this location, try to place one
-                                            let Some(id) = self.unplaced_printers.pop() else {
-                                                ui.label("Empty");
-                                                ui.allocate_space(ui.available_size());
-                                                return;
-                                            };
-
-                                            self.printer_order.insert(pos, id);
-                                            self.printer_order.get(&pos).unwrap()
+                                        let Some(id) = id else {
+                                            ui.label("Empty");
+                                            ui.allocate_space(ui.available_size());
+                                            return;
                                         };
+
+                                        // let id = if let Some(id) = self.printer_order.get(&pos) {
+                                        //     id.clone()
+                                        // } else {
+                                        //     /// if no printer at this location, try to place one
+                                        //     let Some(id) = self.unplaced_printers.pop() else {
+                                        //         ui.label("Empty");
+                                        //         ui.allocate_space(ui.available_size());
+                                        //         return;
+                                        //     };
+
+                                        //     self.printer_order.insert(pos, id.clone());
+                                        //     // self.printer_order.get(&pos).unwrap()
+                                        //     id
+                                        // };
 
                                         let Some(printer) = self.config.get_printer(&id) else {
                                             warn!("Printer not found: {}", id);
                                             return;
                                         };
-                                        if self.printer_states.contains_key(id) {
+
+                                        if self.printer_states.contains_key(&id) {
                                             let resp = if let Ok(printer) = printer.try_read() {
-                                                let Some(status) =
-                                                    self.printer_states.get(&printer.serial)
-                                                else {
-                                                    warn!("Printer not found");
-                                                    panic!();
-                                                };
+                                                // egui::Frame::none()
+                                                //     // .fill(color)
+                                                //     // .fill(color)
+                                                //     .inner_margin(Margin::same(6.))
+                                                //     // .inner_margin(0.)
+                                                //     .outer_margin(0.)
+                                                //     .rounding(6.)
+                                                //     .show(ui, |ui| {
+                                                //         let resp = self.show_printer(
+                                                //             (x, y),
+                                                //             frame_size,
+                                                //             ui,
+                                                //             // id,
+                                                //             &printer,
+                                                //             // &printer_state,
+                                                //         );
+                                                //         ui.allocate_space(ui.available_size());
+                                                //         resp
+                                                //     })
 
-                                                let color = {
-                                                    if let Some(status) =
-                                                        self.printer_states.get(id)
-                                                    {
-                                                        match status.state {
-                                                            PrinterState::Paused => {
-                                                                Color32::from_rgb(173, 125, 90)
-                                                            }
-                                                            PrinterState::Printing => {
-                                                                Color32::from_rgb(121, 173, 116)
-                                                            }
-                                                            PrinterState::Error(_) => {
-                                                                Color32::from_rgb(173, 125, 90)
-                                                            }
-                                                            _ => Color32::from_gray(127),
-                                                            // _ => Color32::GREEN,
-                                                        }
-                                                    } else {
-                                                        debug!("no state");
-                                                        // Color32::from_gray(127)
-                                                        Color32::RED
-                                                    }
-                                                };
-
-                                                egui::Frame::none()
-                                                    .fill(color)
-                                                    // .fill(color)
-                                                    .inner_margin(Margin::same(6.))
-                                                    // .inner_margin(0.)
-                                                    .outer_margin(0.)
-                                                    .rounding(6.)
-                                                    .show(ui, |ui| {
-                                                        let resp = self.show_printer(
-                                                            (x, y),
-                                                            frame_size,
-                                                            ui,
-                                                            // id,
-                                                            &printer,
-                                                            // &printer_state,
-                                                        );
-                                                        ui.allocate_space(ui.available_size());
-                                                        resp
-                                                    })
+                                                self.show_printer(
+                                                    (x, y),
+                                                    frame_size,
+                                                    ui,
+                                                    // id,
+                                                    &printer,
+                                                    // &printer_state,
+                                                )
                                             } else {
                                                 warn!("Printer not found");
                                                 panic!();
@@ -261,6 +253,99 @@ impl App {
         });
 
         //
+    }
+
+    fn get_printer_id_color(&mut self, pos: GridLocation) -> (Option<PrinterId>, Option<Color32>) {
+        let id = if let Some(id) = self.printer_order.get(&pos) {
+            id.clone()
+        } else {
+            /// if no printer at this location, try to place one
+            let Some(id) = self.unplaced_printers.pop() else {
+                return (None, None);
+            };
+
+            self.printer_order.insert(pos, id.clone());
+            id
+        };
+
+        let Some(printer) = self.config.get_printer(&id) else {
+            warn!("Printer not found: {}", id);
+            return (None, None);
+        };
+
+        let color = if let Some(status) = self.printer_states.get(&id) {
+            match status.state {
+                PrinterState::Paused => Color32::from_rgb(173, 125, 90),
+                PrinterState::Printing => Color32::from_rgb(121, 173, 116),
+                PrinterState::Error(_) => Color32::from_rgb(173, 125, 90),
+                _ => Color32::from_gray(127),
+                // _ => Color32::GREEN,
+            }
+        } else {
+            debug!("no state");
+            // Color32::from_gray(127)
+            Color32::RED
+        };
+
+        (Some(id), Some(color))
+    }
+
+    #[cfg(feature = "nope")]
+    fn get_printer_color(&self, pos: GridLocation) -> Option<Color32> {
+        let id = if let Some(id) = self.printer_order.get(&pos) {
+            id.clone()
+        } else {
+            /// if no printer at this location, try to place one
+            let Some(id) = self.unplaced_printers.pop() else {
+                // ui.label("Empty");
+                // ui.allocate_space(ui.available_size());
+                return None;
+            };
+
+            self.printer_order.insert(pos, id.clone());
+            // self.printer_order.get(&pos).unwrap()
+            id
+        };
+
+        let Some(printer) = self.config.get_printer(&id) else {
+            warn!("Printer not found: {}", id);
+            return;
+        };
+
+        if let Some(status) = self.printer_states.get(&id) {
+            match status.state {
+                PrinterState::Paused => Color32::from_rgb(173, 125, 90),
+                PrinterState::Printing => Color32::from_rgb(121, 173, 116),
+                PrinterState::Error(_) => Color32::from_rgb(173, 125, 90),
+                _ => Color32::from_gray(127),
+                // _ => Color32::GREEN,
+            }
+        } else {
+            debug!("no state");
+            // Color32::from_gray(127)
+            Color32::RED
+        };
+    }
+
+    pub fn show_stream(&mut self, ctx: &egui::Context, id: PrinterId) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let Some(entry) = self.printer_textures.get(&id) else {
+                return;
+            };
+
+            let size = ui.available_size();
+
+            // let size = Vec2::new(thumbnail_width, thumbnail_height);
+            let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
+                // .fit_to_exact_size(size)
+                .max_size(size)
+                .maintain_aspect_ratio(true)
+                .rounding(Rounding::same(4.))
+                .sense(Sense::click());
+            if ui.add(img).clicked() {
+                self.selected_stream = None;
+            }
+        });
     }
 
     /// MARK: show_control_panel

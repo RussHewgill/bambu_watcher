@@ -49,7 +49,10 @@ pub struct App {
 
     pub selected_ams: HashMap<PrinterId, usize>,
 
-    // #[serde(skip)]
+    #[serde(skip)]
+    pub selected_stream: Option<PrinterId>,
+
+    #[serde(skip)]
     pub new_printer: NewPrinterEntry,
 
     pub options: AppOptions,
@@ -72,7 +75,7 @@ pub struct App {
 
 #[derive(PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum Tab {
-    Main,
+    Dashboard,
     Graphs,
     Printers,
     Projects,
@@ -82,7 +85,7 @@ pub enum Tab {
 
 impl Default for Tab {
     fn default() -> Self {
-        Self::Main
+        Self::Dashboard
     }
 }
 

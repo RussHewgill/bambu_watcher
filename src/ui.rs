@@ -127,7 +127,7 @@ impl eframe::App for App {
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.selectable_value(&mut self.current_tab, Tab::Main, "Dashboard");
+                ui.selectable_value(&mut self.current_tab, Tab::Dashboard, "Dashboard");
                 // ui.selectable_value(&mut self.current_tab, Tab::Graphs, "Graphs");
                 ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
                 ui.selectable_value(&mut self.current_tab, Tab::Projects, "Projects");
@@ -176,8 +176,12 @@ impl eframe::App for App {
         });
 
         match self.current_tab {
-            Tab::Main => {
-                self.show_dashboard(ctx);
+            Tab::Dashboard => {
+                if let Some(id) = self.selected_stream.as_ref() {
+                    self.show_stream(ctx, id.clone());
+                } else {
+                    self.show_dashboard(ctx);
+                }
             }
             Tab::Graphs => {
                 egui::CentralPanel::default().show(ctx, |ui| {
