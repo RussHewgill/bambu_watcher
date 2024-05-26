@@ -9,6 +9,7 @@ use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    cloud::streaming::StreamCmd,
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
     status::PrinterStatus,
@@ -17,7 +18,7 @@ use crate::{
 pub use self::projects_list::ProjectsList;
 
 #[derive(Default, Deserialize, Serialize)]
-#[serde(default)] // if we add new fields, give them default values when deserializing old state
+#[serde(default)]
 pub struct App {
     pub current_tab: Tab,
 
@@ -26,6 +27,9 @@ pub struct App {
 
     #[serde(skip)]
     pub cmd_tx: Option<tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>>,
+
+    #[serde(skip)]
+    pub stream_cmd_tx: Option<tokio::sync::mpsc::UnboundedSender<StreamCmd>>,
 
     #[serde(skip)]
     pub msg_rx: Option<tokio::sync::mpsc::UnboundedReceiver<PrinterConnMsg>>,

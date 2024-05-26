@@ -26,6 +26,7 @@ pub mod utils;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use cloud::streaming::StreamCmd;
 use config::ConfigArc;
 use parking_lot::RwLock;
 use tracing::{debug, error, info, trace, warn};
@@ -535,20 +536,20 @@ fn main() -> eframe::Result<()> {
         write!(file, "{}", panic_info).unwrap();
     }));
 
-    let icon: egui::IconData = {
-        let icon = include_bytes!("../icon.png");
-        let icon = image::load_from_memory(icon).unwrap();
-        let icon = egui::IconData {
-            rgba: icon.to_rgba8().into_raw(),
-            width: icon.width(),
-            height: icon.height(),
-        };
-        icon
-    };
+    // let icon: egui::IconData = {
+    //     let icon = include_bytes!("../icon.png");
+    //     let icon = image::load_from_memory(icon).unwrap();
+    //     let icon = egui::IconData {
+    //         rgba: icon.to_rgba8().into_raw(),
+    //         width: icon.width(),
+    //         height: icon.height(),
+    //     };
+    //     icon
+    // };
 
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_icon(icon)
+            // .with_icon(icon)
             .with_inner_size([850.0, 750.0])
             .with_min_inner_size([550.0, 400.0]),
         ..Default::default()
@@ -577,6 +578,8 @@ fn main() -> eframe::Result<()> {
     let (cmd_tx, cmd_rx) = tokio::sync::mpsc::unbounded_channel::<PrinterConnCmd>();
 
     let (img_tx, img_rx) = tokio::sync::watch::channel::<Vec<u8>>(vec![]);
+
+    let (stream_cmd_tx, stream_cmd_rx) = tokio::sync::mpsc::unbounded_channel::<StreamCmd>();
 
     let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
     let printer_states2 = printer_states.clone();
@@ -676,8 +679,11 @@ fn main() -> eframe::Result<()> {
 
             let config3 = config2.clone();
             tokio::task::spawn(async move {
-                let mut manager =
-                    crate::cloud::streaming::StreamManager::new(config3.clone(), handles);
+                let mut manager = crate::cloud::streaming::StreamManager::new(
+                    config3.clone(),
+                    handles,
+                    stream_cmd_rx,
+                );
 
                 if let Err(e) = manager.run().await {
                     error!("stream manager error: {:?}", e);
@@ -822,6 +828,7 @@ fn main() -> eframe::Result<()> {
                 // alert_tx,
                 cmd_tx,
                 msg_rx,
+                stream_cmd_tx,
                 handles,
             ))
         }),

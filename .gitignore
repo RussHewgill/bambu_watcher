@@ -16,8 +16,11 @@ auth.key
 errors.json
 *.jpeg
 *.jpg
+*.webp
 src/ui2
 src/ui3
+*.xcf
+icon2.ico
 
 !icon.png
 !assets/icons8-disconnected-100.png

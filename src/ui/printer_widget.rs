@@ -138,32 +138,28 @@ impl App {
                         // debug!("width = {}, height = {}", thumbnail_width, thumbnail_height);
 
                         if let Some(entry) = self.printer_textures.get(&printer.serial) {
-                            // debug!("entry.size_vec2() = {:?}", entry.size_vec2());
-                            // let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
+                            /// webcam
                             let size = Vec2::new(thumbnail_width, thumbnail_height);
                             let img = egui::Image::from_texture((entry.id(), size))
                                 .fit_to_exact_size(size)
                                 .max_size(size)
                                 .rounding(Rounding::same(4.));
-                            // .max_width(width);
-                            // .max_height(size);
                             ui.add(img);
                         } else if let Some(url) = status.current_task_thumbnail_url.as_ref() {
+                            /// current print job thumbnail
                             let img = egui::Image::new(url)
                                 .bg_fill(if ui.visuals().dark_mode {
                                     Color32::from_gray(128)
                                 } else {
                                     Color32::from_gray(210)
                                 })
-                                // .fit_to_exact_size(Vec2::new(size, size))
                                 .max_width(thumbnail_width)
-                                // .max_height(size)
                                 .rounding(Rounding::same(4.));
                             ui.add(img);
                         } else if let Some(t) = status.printer_type {
+                            /// printer icon
                             ui.add(
                                 thumbnail_printer(&printer, &t, ui.ctx())
-                                    // .max_width(width)
                                     .fit_to_exact_size(Vec2::new(thumbnail_width, thumbnail_height))
                                     .rounding(Rounding::same(4.)),
                             );

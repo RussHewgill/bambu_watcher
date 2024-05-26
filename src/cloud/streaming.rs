@@ -10,11 +10,18 @@ use crate::{
     conn_manager::PrinterId,
 };
 
+#[derive(Debug, Clone)]
+pub enum StreamCmd {
+    StartStream(PrinterId),
+    StopStream(PrinterId),
+}
+
 pub struct StreamManager {
     configs: ConfigArc,
     streams: HashMap<PrinterId, JpegStreamViewer>,
     handles: HashMap<PrinterId, egui::TextureHandle>,
     kill_tx: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
+    cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
 }
 
 impl StreamManager {
@@ -22,16 +29,19 @@ impl StreamManager {
         configs: ConfigArc,
         // configs: ConfigArc,
         handles: HashMap<PrinterId, egui::TextureHandle>,
+        cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
     ) -> Self {
         Self {
             configs,
             streams: HashMap::new(),
             handles,
             kill_tx: HashMap::new(),
+            cmd_rx,
         }
     }
 
     pub async fn run(&mut self) -> Result<()> {
+        /// spawn worker tasks
         for id in self.configs.printer_ids() {
             let handle = self.handles.get(&id).unwrap().clone();
             let configs2 = self.configs.clone();
@@ -49,7 +59,25 @@ impl StreamManager {
             });
         }
 
-        unimplemented!()
+        loop {
+            // tokio::select! {
+            //     e = self.cmd_rx => {
+            //     }
+            // }
+
+            match self.cmd_rx.recv().await {
+                None => return Ok(()),
+                Some(StreamCmd::StartStream(id)) => {
+                    //
+                }
+                Some(StreamCmd::StopStream(id)) => {
+                    //
+                }
+            }
+        }
+
+        // unimplemented!()
+        // Ok(())
     }
 
     // pub async fn add_stream(

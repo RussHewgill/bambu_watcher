@@ -18,6 +18,8 @@ build = "build.rs"
 dotenvy = "0.15.0"
 vergen = { version = "8.3", features = ["git", "gitcl"] }
 anyhow = "1"
+# winres = "0.1.12"
+winresource = "0.1.17"
 
 [dependencies]
 anyhow = "1.0.83"
@@ -62,6 +64,7 @@ egui_plot = "0.27.2"
 zip = "1.2.3"
 nanoid = "0.4.0"
 byteorder = "1.5.0"
+paste = "1.0"
 
 # # openssl = { version = "0.10.64", features = ["vendored"] }
 # # paho-mqtt = { version = "0.12.3", features = ["vendored-ssl"] }

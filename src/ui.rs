@@ -23,6 +23,7 @@ use std::{
 };
 
 use crate::{
+    cloud::streaming::StreamCmd,
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
     status::{PrinterState, PrinterStatus},
@@ -44,6 +45,7 @@ impl App {
         cc: &eframe::CreationContext<'_>,
         cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
         msg_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnMsg>,
+        stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
         printer_textures: HashMap<PrinterId, egui::TextureHandle>,
     ) -> Self {
@@ -67,6 +69,7 @@ impl App {
 
         out.cmd_tx = Some(cmd_tx);
         out.msg_rx = Some(msg_rx);
+        out.stream_cmd_tx = Some(stream_cmd_tx);
 
         out.unplaced_printers = out.config.printer_ids();
         /// for each printer that isn't in printer_order, queue to add

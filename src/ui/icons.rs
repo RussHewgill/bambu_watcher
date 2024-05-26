@@ -16,6 +16,15 @@ macro_rules! generate_icon_function {
                 .max_width(size)
                 .max_height(size)
         }
+
+        paste::paste! {
+            pub fn [< $name _with_size >](size: f32) -> egui::Image<'static> {
+                egui::Image::new(egui::include_image!($path))
+                    .fit_to_exact_size(Vec2::new(size, size))
+                    .max_width(size)
+                    .max_height(size)
+            }
+        }
     };
 }
 
