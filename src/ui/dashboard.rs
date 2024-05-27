@@ -290,43 +290,6 @@ impl App {
         (Some(id), Some(color))
     }
 
-    #[cfg(feature = "nope")]
-    fn get_printer_color(&self, pos: GridLocation) -> Option<Color32> {
-        let id = if let Some(id) = self.printer_order.get(&pos) {
-            id.clone()
-        } else {
-            /// if no printer at this location, try to place one
-            let Some(id) = self.unplaced_printers.pop() else {
-                // ui.label("Empty");
-                // ui.allocate_space(ui.available_size());
-                return None;
-            };
-
-            self.printer_order.insert(pos, id.clone());
-            // self.printer_order.get(&pos).unwrap()
-            id
-        };
-
-        let Some(printer) = self.config.get_printer(&id) else {
-            warn!("Printer not found: {}", id);
-            return;
-        };
-
-        if let Some(status) = self.printer_states.get(&id) {
-            match status.state {
-                PrinterState::Paused => Color32::from_rgb(173, 125, 90),
-                PrinterState::Printing => Color32::from_rgb(121, 173, 116),
-                PrinterState::Error(_) => Color32::from_rgb(173, 125, 90),
-                _ => Color32::from_gray(127),
-                // _ => Color32::GREEN,
-            }
-        } else {
-            debug!("no state");
-            // Color32::from_gray(127)
-            Color32::RED
-        };
-    }
-
     pub fn show_stream(&mut self, ctx: &egui::Context, id: PrinterId) {
         egui::CentralPanel::default().show(ctx, |ui| {
             let Some(entry) = self.printer_textures.get(&id) else {

@@ -129,8 +129,8 @@ impl eframe::App for App {
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.current_tab, Tab::Dashboard, "Dashboard");
                 // ui.selectable_value(&mut self.current_tab, Tab::Graphs, "Graphs");
-                ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
-                ui.selectable_value(&mut self.current_tab, Tab::Projects, "Projects");
+                // ui.selectable_value(&mut self.current_tab, Tab::Printers, "Printers");
+                // ui.selectable_value(&mut self.current_tab, Tab::Projects, "Projects");
                 ui.selectable_value(&mut self.current_tab, Tab::Options, "Options");
             });
         });
