@@ -76,8 +76,6 @@ pub struct App {
 
     #[serde(skip)]
     pub graphs: Option<Graphs>,
-
-    pub error_map: ErrorMap,
 }
 
 #[derive(PartialEq, serde::Deserialize, serde::Serialize)]

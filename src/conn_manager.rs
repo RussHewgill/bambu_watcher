@@ -6,6 +6,7 @@ use tracing::{debug, error, info, trace, warn};
 
 // use bambulab::{Client as BambuClient, Message};
 use crate::{
+    cloud::errors::ErrorMap,
     config::ConfigArc,
     mqtt::{
         command::Command,
@@ -101,11 +102,12 @@ pub struct PrinterConnManager {
     rx: tokio::sync::mpsc::UnboundedReceiver<(PrinterId, Message)>,
     kill_chans: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
     graphs: crate::ui::plotting::Graphs,
+    error_map: ErrorMap,
 }
 
 /// new, start listeners
 impl PrinterConnManager {
-    pub fn new(
+    pub async fn new(
         config: ConfigArc,
         printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
         cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
@@ -120,6 +122,10 @@ impl PrinterConnManager {
         // let channel_size = if cfg!(debug_assertions) { 1 } else { 50 };
         // let (tx, mut rx) = tokio::sync::mpsc::channel::<(PrinterId, Message)>(channel_size);
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<(PrinterId, Message)>();
+
+        /// fetch error codes
+        let error_map = ErrorMap::read_or_fetch().await.unwrap_or_default();
+
         Self {
             config,
             printers: HashMap::new(),
@@ -134,6 +140,7 @@ impl PrinterConnManager {
             rx,
             kill_chans: HashMap::new(),
             graphs,
+            error_map,
         }
     }
 
@@ -248,19 +255,13 @@ impl PrinterConnManager {
                         && entry.state == PrinterState::Finished
                     {
                         warn!("sent finish notification");
-                        let _ = notify_rust::Notification::new()
-                            .summary(&format!("Print Complete on {}", printer.name))
-                            .body(&format!(
-                                "{}",
-                                entry
-                                    .current_file
-                                    .as_ref()
-                                    .unwrap_or(&"Unknown File".to_string())
-                            ))
-                            // .icon("thunderbird")
-                            .appname("Bambu Watcher")
-                            .timeout(0)
-                            .show();
+                        crate::alert::alert_print_complete(
+                            &printer.name,
+                            entry
+                                .current_file
+                                .as_ref()
+                                .unwrap_or(&"Unknown File".to_string()),
+                        )
                     }
 
                     /// either print just started, or app was just started
@@ -307,16 +308,12 @@ impl PrinterConnManager {
                         .name
                         .clone();
 
-                    let _ = notify_rust::Notification::new()
-                        .summary(&format!("Printer Error: {}", name))
-                        .body(&format!(
-                            "Printer error: {:?}\n\nError: {:?}",
-                            &printer.name, error
-                        ))
-                        // .icon("thunderbird")
-                        .appname("Bambu Watcher")
-                        .timeout(0)
-                        .show();
+                    let error = self
+                        .error_map
+                        .get_error(error as u64)
+                        .unwrap_or("Unknown Error");
+
+                    crate::alert::alert_printer_error(&printer.name, error);
                 }
 
                 self.ctx.request_repaint();

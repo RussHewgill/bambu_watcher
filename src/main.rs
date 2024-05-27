@@ -519,6 +519,19 @@ async fn main() -> Result<()> {
     // debug!("t = {:#?}", t);
 
     /// 117473284 - fail to retract
+    let e = 117473284;
+
+    // let errors = cloud::errors::fetch_error_codes().await?;
+
+    // let s = format!("{:x}", e);
+    // debug!("s = {}", s);
+
+    let errors = cloud::errors::ErrorMap::read_or_fetch().await?;
+
+    let e = errors.get_error(e).unwrap();
+
+    debug!("error = {}", e);
+
     Ok(())
 }
 
@@ -736,7 +749,8 @@ fn main() -> eframe::Result<()> {
                 msg_tx,
                 ctx,
                 graphs2,
-            );
+            )
+            .await;
             // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
 
             debug!("running PrinterConnManager");

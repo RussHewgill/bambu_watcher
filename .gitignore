@@ -21,6 +21,7 @@ src/ui2
 src/ui3
 *.xcf
 icon2.ico
+errors.json
 
 !icon.png
 !assets/icons8-disconnected-100.png

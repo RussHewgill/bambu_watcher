@@ -54,3 +54,21 @@ fn alert_message(window: std::num::NonZeroIsize, title: &str, message: &str, not
         }
     }
 }
+
+pub fn alert_print_complete(name: &str, file: &str) {
+    let _ = notify_rust::Notification::new()
+        .summary(&format!("Print Complete on {}", name))
+        .body(&format!("{}", file))
+        .appname("Bambu Watcher")
+        .timeout(0)
+        .show();
+}
+
+pub fn alert_printer_error(name: &str, error: &str) {
+    let _ = notify_rust::Notification::new()
+        .summary(&format!("Printer Error: {}", name))
+        .body(&format!("Printer error: {:?}\n\nError: {:?}", name, error))
+        .appname("Bambu Watcher")
+        .timeout(0)
+        .show();
+}
