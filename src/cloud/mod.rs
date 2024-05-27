@@ -12,6 +12,8 @@ use tracing::{debug, error, info, trace, warn};
 
 use crate::{auth::Token, conn_manager::PrinterId};
 
+use self::cloud_types::Device;
+
 const BASE: &'static str = "https://api.bambulab.com";
 
 const URL_LIST: &'static str = "/v1/iot-service/api/user/bind";
@@ -73,6 +75,12 @@ pub async fn get_response(token: &Token, url: &str) -> Result<serde_json::Value>
     let json: serde_json::Value = res.json().await?;
 
     Ok(json)
+}
+
+pub async fn get_printer_list(token: &Token) -> Result<Vec<Device>> {
+    let json: cloud_types::BindList = get_response(token, URL_LIST).await?;
+
+    Ok(json.devices)
 }
 
 pub async fn get_project_list(token: &Token) -> Result<Vec<projects::ProjectInfo>> {

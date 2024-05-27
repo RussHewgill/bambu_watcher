@@ -467,6 +467,10 @@ async fn main() -> Result<()> {
     let project_id = "81753675";
     // let project_id = "82195512";
 
+    // let s = cloud::get_printer_list(&token).await?;
+
+    // debug!("s = {:#?}", s);
+
     // // let s = cloud::get_subtask_info(&token, project_id).await?;
     // let s = cloud::get_project_info(&token, project_id).await?;
 
@@ -505,15 +509,16 @@ async fn main() -> Result<()> {
 
     // let t = chrono::NaiveDateTime::parse_from_str(t, "%Y-%m-%d %H:%M:%S").unwrap();
 
-    let s = std::fs::read_to_string("task_list.json")?;
-    let s: cloud::projects::TasksInfo = serde_json::from_str(&s)?;
+    // let s = std::fs::read_to_string("task_list.json")?;
+    // let s: cloud::projects::TasksInfo = serde_json::from_str(&s)?;
 
-    let t = &s.hits[0];
+    // let t = &s.hits[0];
 
-    let t = cloud::projects::TaskData::from_json(t);
+    // let t = cloud::projects::TaskData::from_json(t);
 
-    debug!("t = {:#?}", t);
+    // debug!("t = {:#?}", t);
 
+    /// 117473284 - fail to retract
     Ok(())
 }
 
@@ -555,9 +560,9 @@ fn main() -> eframe::Result<()> {
         ..Default::default()
     };
 
-    if true {
-        return crate::ui::error_message::run_error_app("Test Error".to_string());
-    }
+    // if true {
+    //     return crate::ui::error_message::run_error_app("Test Error".to_string());
+    // }
 
     let (config, auth) = match config::Config::read_from_file("config.yaml") {
         Ok((config, auth)) => (config, auth),

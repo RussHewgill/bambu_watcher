@@ -2,6 +2,26 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct BindList {
+    pub code: Value,
+    pub error: Value,
+    pub message: String,
+    pub devices: Vec<Device>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Device {
+    pub dev_access_code: String,
+    pub dev_id: String,
+    pub dev_model_name: String,
+    pub dev_product_name: String,
+    pub name: String,
+    pub nozzle_diameter: f64,
+    pub online: bool,
+    pub print_status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SubtaskInfo {
     pub code: Option<String>,
     pub content: String,

@@ -9,7 +9,7 @@ use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    cloud::streaming::StreamCmd,
+    cloud::{errors::ErrorMap, streaming::StreamCmd},
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
     status::PrinterStatus,
@@ -55,7 +55,7 @@ pub struct App {
     pub selected_stream: Option<PrinterId>,
 
     #[serde(skip)]
-    pub new_printer: NewPrinterEntry,
+    pub printer_config_page: PrinterConfigPage,
 
     pub options: AppOptions,
 
@@ -76,6 +76,8 @@ pub struct App {
 
     #[serde(skip)]
     pub graphs: Option<Graphs>,
+
+    pub error_map: ErrorMap,
 }
 
 #[derive(PartialEq, serde::Deserialize, serde::Serialize)]
@@ -155,6 +157,14 @@ pub struct NewPrinterEntry {
     pub host: String,
     pub access_code: String,
     pub serial: String,
+}
+
+#[derive(Default, Deserialize, Serialize)]
+pub struct PrinterConfigPage {
+    pub new_printer: NewPrinterEntry,
+    /// Some(false) -> in progress
+    /// Some(true) -> done
+    pub syncing_printers: Option<bool>,
 }
 
 pub mod projects_list {

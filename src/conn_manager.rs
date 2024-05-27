@@ -35,11 +35,13 @@ pub enum PrinterConnMsg {
     StatusReport(PrinterId, PrintData),
     LoggedIn,
     SyncedProjects(crate::ui::ui_types::ProjectsList),
+    SyncedPrinters,
 }
 
 /// messages from UI to PrinterConnManager
 #[derive(Debug)]
 pub enum PrinterConnCmd {
+    SyncPrinters,
     AddPrinter(PrinterConfig),
     RemovePrinter(PrinterId),
     SetPrinterCloud(PrinterId, bool),
@@ -431,6 +433,9 @@ impl PrinterConnManager {
                     .await?;
                 // unimplemented!()
             }
+            PrinterConnCmd::SyncPrinters => {
+                //
+            }
             PrinterConnCmd::SetPrinterCloud(id, cloud) => {
                 debug!("set printer cloud: {:?}", cloud);
 
@@ -515,9 +520,26 @@ impl PrinterConnManager {
                     error!("error clearing token: {:?}", e);
                 }
             }
-            _ => {
-                error!("unhandled command: {:?}", cmd);
-            }
+
+            PrinterConnCmd::RemovePrinter(_) => todo!(),
+            PrinterConnCmd::UpdatePrinterConfig(_, _) => todo!(),
+            PrinterConnCmd::Pause => todo!(),
+            PrinterConnCmd::Stop => todo!(),
+            PrinterConnCmd::Resume => todo!(),
+            PrinterConnCmd::SetChamberLight(_) => todo!(),
+            PrinterConnCmd::ChangeSpeed(_) => todo!(),
+            PrinterConnCmd::GCodeLine(_) => todo!(),
+            PrinterConnCmd::Calibration => todo!(),
+            PrinterConnCmd::UnloadFilament => todo!(),
+            PrinterConnCmd::ChangeFilament(_) => todo!(),
+            PrinterConnCmd::ChangeAMSFilamentSetting {
+                ams_id,
+                tray_id,
+                tray_color,
+                nozzle_temp_min,
+                nozzle_temp_max,
+                tray_type,
+            } => todo!(),
         }
         Ok(())
     }
@@ -627,4 +649,17 @@ async fn sync_projects(
     let project_list = ProjectsList::new(task_list);
     msg_tx.send(PrinterConnMsg::SyncedProjects(project_list))?;
     Ok(())
+}
+
+async fn sync_printers(
+    config: ConfigArc,
+    msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
+) -> Result<()> {
+    let Some(token) = config.get_token_async().await? else {
+        bail!("no token found");
+    };
+
+    let devices = crate::cloud::get_printer_list(&token).await?;
+
+    unimplemented!()
 }

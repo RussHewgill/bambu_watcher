@@ -270,6 +270,9 @@ impl App {
             PrinterConnMsg::SyncedProjects(projects) => {
                 self.projects = projects;
             }
+            _ => {
+                warn!("unhandled message: {:?}", msg);
+            }
         }
     }
 }

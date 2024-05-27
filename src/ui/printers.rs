@@ -47,6 +47,27 @@ impl App {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            if ui.add(egui::Button::new("Sync Printers")).clicked() {
+                self.cmd_tx
+                    .as_ref()
+                    .unwrap()
+                    .send(PrinterConnCmd::SyncPrinters)
+                    .unwrap();
+                //
+                self.printer_config_page.syncing_printers = Some(false);
+            }
+
+            match self.printer_config_page.syncing_printers {
+                Some(true) => {
+                    ui.label("Syncing printers...");
+                }
+                Some(false) => {
+                    ui.label("Syncing printers... Done");
+                    // self.printer_config_page.syncing_printers = None;
+                }
+                _ => {}
+            }
+
             self.show_printer_config(ui);
         });
     }
