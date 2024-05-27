@@ -180,7 +180,7 @@ impl PrinterConnManager {
     ) -> Result<()> {
         if !from_cfg {
             // self.config.add_printer(printer.unwrap_or_clone()));
-            self.config.add_printer(printer.clone());
+            self.config.add_printer(printer.clone()).await;
         }
 
         let (kill_tx, kill_rx) = tokio::sync::oneshot::channel::<()>();
@@ -191,30 +191,39 @@ impl PrinterConnManager {
         }
         self.kill_chans.insert(id, kill_tx);
 
-        let client = Self::start_printer_listener(
+        // let client = Self::start_printer_listener(
+        //     self.config.clone(),
+        //     self.tx.clone(),
+        //     printer.clone(),
+        //     kill_rx,
+        // )
+        // .await?;
+
+        let mut client = crate::mqtt::BambuClient::new_and_init(
             self.config.clone(),
-            self.tx.clone(),
             printer.clone(),
+            self.tx.clone(),
             kill_rx,
         )
         .await?;
+
         self.printers
             .insert(printer.read().await.serial.clone(), client);
 
         Ok(())
     }
 
-    async fn start_printer_listener(
-        config: ConfigArc,
-        msg_tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
-        // printer: PrinterConfig,
-        printer: Arc<RwLock<PrinterConfig>>,
-        kill_rx: tokio::sync::oneshot::Receiver<()>,
-    ) -> Result<BambuClient> {
-        let mut client =
-            crate::mqtt::BambuClient::new_and_init(config, printer, msg_tx, kill_rx).await?;
-        Ok(client)
-    }
+    // async fn start_printer_listener(
+    //     config: ConfigArc,
+    //     msg_tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
+    //     // printer: PrinterConfig,
+    //     printer: Arc<RwLock<PrinterConfig>>,
+    //     kill_rx: tokio::sync::oneshot::Receiver<()>,
+    // ) -> Result<BambuClient> {
+    //     let mut client =
+    //         crate::mqtt::BambuClient::new_and_init(config, printer, msg_tx, kill_rx).await?;
+    //     Ok(client)
+    // }
 }
 
 /// handle messages, commands
@@ -431,7 +440,14 @@ impl PrinterConnManager {
                 // unimplemented!()
             }
             PrinterConnCmd::SyncPrinters => {
-                //
+                let ctx2 = self.ctx.clone();
+                let config2 = self.config.clone();
+                let msg_tx2 = self.msg_tx.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = sync_printers(ctx2, config2, msg_tx2).await {
+                        error!("error syncing printers: {:?}", e);
+                    }
+                });
             }
             PrinterConnCmd::SetPrinterCloud(id, cloud) => {
                 debug!("set printer cloud: {:?}", cloud);
@@ -649,6 +665,7 @@ async fn sync_projects(
 }
 
 async fn sync_printers(
+    ctx: egui::Context,
     config: ConfigArc,
     msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
 ) -> Result<()> {
@@ -656,7 +673,26 @@ async fn sync_printers(
         bail!("no token found");
     };
 
+    debug!("syncing printers");
     let devices = crate::cloud::get_printer_list(&token).await?;
+    debug!("got printer list");
 
-    unimplemented!()
+    for device in devices {
+        let id = Arc::new(device.dev_id.clone());
+        debug!("adding id");
+        if config.get_printer(&id).is_some() {
+            debug!("skipping");
+            continue;
+        }
+
+        let printer = PrinterConfig::from_device(id.clone(), &device);
+
+        let printer = Arc::new(RwLock::new(printer));
+
+        config.add_printer(printer).await;
+        debug!("added");
+    }
+
+    ctx.request_repaint();
+    Ok(())
 }

@@ -526,11 +526,11 @@ async fn main() -> Result<()> {
     // let s = format!("{:x}", e);
     // debug!("s = {}", s);
 
-    let errors = cloud::errors::ErrorMap::read_or_fetch().await?;
+    // let errors = cloud::errors::ErrorMap::read_or_fetch().await?;
 
-    let e = errors.get_error(e).unwrap();
+    // let e = errors.get_error(e).unwrap();
 
-    debug!("error = {}", e);
+    // debug!("error = {}", e);
 
     Ok(())
 }
@@ -695,13 +695,13 @@ fn main() -> eframe::Result<()> {
 
     let cmd_tx2 = cmd_tx.clone();
 
-    // let graphs = ui::plotting::Graphs::new();
-    let graphs = {
-        warn!("using debug graph data");
-        let id0 = config.printer_ids()[0].clone();
-        let id1 = config.printer_ids()[1].clone();
-        ui::plotting::Graphs::debug_new(id0, id1)
-    };
+    let graphs = ui::plotting::Graphs::new();
+    // let graphs = {
+    //     warn!("using debug graph data");
+    //     let id0 = config.printer_ids()[0].clone();
+    //     let id1 = config.printer_ids()[1].clone();
+    //     ui::plotting::Graphs::debug_new(id0, id1)
+    // };
     let graphs2 = graphs.clone();
 
     // #[cfg(feature = "nope")]

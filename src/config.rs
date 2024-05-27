@@ -3,7 +3,7 @@ use dashmap::DashMap;
 use tracing::{debug, error, info, trace, warn};
 
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     sync::{atomic::AtomicBool, Arc},
 };
 
@@ -36,7 +36,8 @@ impl Default for ConfigArc {
             //     printers: HashMap::new(),
             // })),
             config: Config {
-                printers: Arc::new(HashMap::new()),
+                ids: Arc::new(RwLock::new(HashSet::new())),
+                printers: Arc::new(DashMap::new()),
             },
             auth: Arc::new(RwLock::new(crate::auth::AuthDb::empty())),
             logged_in: Arc::new(AtomicBool::new(false)),
@@ -46,12 +47,13 @@ impl Default for ConfigArc {
 
 /// new, auth
 impl ConfigArc {
-    pub fn new(config: Config, auth: crate::auth::AuthDb) -> Self {
+    pub fn new(config: Config, mut auth: crate::auth::AuthDb) -> Self {
+        let logged_in = auth.get_token().ok().flatten().is_some();
         Self {
             // config: Arc::new(RwLock::new(config)),
             config,
             auth: Arc::new(RwLock::new(auth)),
-            logged_in: Arc::new(AtomicBool::new(false)),
+            logged_in: Arc::new(AtomicBool::new(logged_in)),
         }
     }
 
@@ -89,8 +91,11 @@ impl ConfigArc {
 }
 
 impl ConfigArc {
-    pub fn add_printer(&mut self, printer: Arc<RwLock<PrinterConfig>>) {
-        unimplemented!()
+    pub async fn add_printer(&self, printer: Arc<RwLock<PrinterConfig>>) {
+        let id = printer.read().await.serial.clone();
+        // self.config.printers.insert(id, printer);
+        self.config.ids.write().await.insert(id.clone());
+        self.config.printers.insert(id, printer);
     }
 
     #[cfg(feature = "nope")]
@@ -103,17 +108,20 @@ impl ConfigArc {
     }
 
     pub fn printer_ids(&self) -> Vec<PrinterId> {
-        self.config.printers.keys().cloned().collect()
+        // self.config.printers.keys().cloned().collect()
+        self.config.ids.blocking_read().iter().cloned().collect()
+    }
+
+    pub async fn printer_ids_async(&self) -> Vec<PrinterId> {
+        self.config.ids.read().await.iter().cloned().collect()
     }
 
     pub fn printers(&self) -> Vec<Arc<RwLock<PrinterConfig>>> {
         self.config
             .printers
-            .values()
-            // .map(|v| v.value().clone())
-            .cloned()
+            .iter()
+            .map(|v| v.value().clone())
             .collect()
-        // unimplemented!()
     }
 
     #[cfg(feature = "nope")]
@@ -127,8 +135,7 @@ impl ConfigArc {
     }
 
     pub fn get_printer(&self, serial: &PrinterId) -> Option<Arc<RwLock<PrinterConfig>>> {
-        // unimplemented!()
-        self.config.printers.get(serial).cloned()
+        self.config.printers.get(serial).map(|v| v.clone())
     }
 }
 
@@ -138,18 +145,20 @@ pub struct Config {
     // printers: DashMap<PrinterId, PrinterConfig>,
     // printers: Arc<DashMap<PrinterId, RwLock<PrinterConfig>>>,
     // printers: Arc<DashMap<PrinterId, Arc<RwLock<PrinterConfig>>>>,
-    printers: Arc<HashMap<PrinterId, Arc<RwLock<PrinterConfig>>>>,
+    ids: Arc<RwLock<HashSet<PrinterId>>>,
+    printers: Arc<DashMap<PrinterId, Arc<RwLock<PrinterConfig>>>>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ConfigFile {
-    pub printers: Vec<PrinterConfig>,
+    printers: Vec<PrinterConfig>,
 }
 
 impl Config {
     pub fn empty() -> Self {
         Self {
-            printers: Arc::new(HashMap::new()),
+            ids: Arc::new(RwLock::new(HashSet::new())),
+            printers: Arc::new(DashMap::new()),
         }
     }
 
@@ -162,13 +171,16 @@ impl Config {
 
         let logged_in = matches!(auth.get_token(), Ok(Some(_)));
 
-        let mut printers = HashMap::new();
+        let mut ids = HashSet::new();
+        let mut printers = DashMap::new();
 
         for mut printer in config.printers.into_iter() {
+            ids.insert(printer.serial.clone());
             printers.insert(printer.serial.clone(), Arc::new(RwLock::new(printer)));
         }
 
         let mut out = Self {
+            ids: Arc::new(RwLock::new(ids)),
             // logged_in,
             // auth,
             printers: Arc::new(printers),
@@ -181,6 +193,8 @@ impl Config {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PrinterConfig {
     pub name: String,
+    #[serde(default)]
+    // pub host: Option<String>,
     pub host: String,
     pub access_code: String,
     // #[serde(skip)]
@@ -190,6 +204,20 @@ pub struct PrinterConfig {
     // pub cloud: std::sync::atomic::AtomicBool,
     #[serde(default)]
     pub color: [u8; 3],
+}
+
+impl PrinterConfig {
+    pub fn from_device(id: PrinterId, device: &crate::cloud::cloud_types::Device) -> Self {
+        Self {
+            name: device.name.clone(),
+            // host: device.host,
+            host: "".to_string(),
+            // host: None,
+            access_code: device.dev_access_code.clone(),
+            serial: id,
+            color: [0, 0, 0],
+        }
+    }
 }
 
 #[cfg(feature = "nope")]

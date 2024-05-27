@@ -185,6 +185,11 @@ impl BambuClient {
 
         let printer = printer_cfg.read().await;
 
+        // let host = printer.host.as_ref().context("missing host")?;
+        if printer.host.is_empty() {
+            bail!("missing host");
+        }
+
         let mut mqttoptions = MqttOptions::new(client_id, &printer.host, 8883);
         mqttoptions.set_keep_alive(Duration::from_secs(5));
         mqttoptions.set_credentials("bblp", &printer.access_code);
@@ -412,6 +417,7 @@ impl ClientListener {
 pub async fn debug_get_printer_report(printer: PrinterConfig) -> Result<()> {
     let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
 
+    // let mut mqttoptions = MqttOptions::new(client_id, &printer.host.context("missing_host")?, 8883);
     let mut mqttoptions = MqttOptions::new(client_id, &printer.host, 8883);
     mqttoptions.set_keep_alive(Duration::from_secs(5));
     mqttoptions.set_credentials("bblp", &printer.access_code);

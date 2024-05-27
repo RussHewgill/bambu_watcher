@@ -57,6 +57,13 @@ impl App {
                 self.printer_config_page.syncing_printers = Some(false);
             }
 
+            if ui.button("DEBUG: list printers").clicked() {
+                for printer in self.config.printers() {
+                    let printer = printer.blocking_read();
+                    debug!("printer: {:?}", printer);
+                }
+            }
+
             match self.printer_config_page.syncing_printers {
                 Some(true) => {
                     ui.label("Syncing printers...");
@@ -109,7 +116,7 @@ impl App {
                     ui.end_row();
 
                     ui.label("Host");
-                    ui.text_edit_singleline(&mut cfg.host);
+                    // ui.text_edit_singleline(&mut cfg.host);
                     ui.end_row();
 
                     ui.label("Access Code");

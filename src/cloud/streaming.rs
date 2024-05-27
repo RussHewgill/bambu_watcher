@@ -42,7 +42,7 @@ impl StreamManager {
 
     pub async fn run(&mut self) -> Result<()> {
         /// spawn worker tasks
-        for id in self.configs.printer_ids() {
+        for id in self.configs.printer_ids_async().await {
             let handle = self.handles.get(&id).unwrap().clone();
             let configs2 = self.configs.clone();
 
@@ -121,7 +121,13 @@ impl JpegStreamViewer {
     ) -> Result<Self> {
         let config = &configs.get_printer(&id).unwrap();
         let serial = config.read().await.serial.clone();
-        let host = config.read().await.host.clone();
+        let host = config
+            .read()
+            .await
+            .host
+            .clone()
+            // .context("stream: missing host")?;
+            ;
         let addr = format!("{}:6000", host);
         let access_code = config.read().await.access_code.clone();
 

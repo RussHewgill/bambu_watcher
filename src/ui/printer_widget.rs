@@ -157,7 +157,7 @@ impl App {
                                 .rounding(Rounding::same(4.))
                                 .sense(Sense::click());
                             if ui.add(img).clicked() {
-                                debug!("webcam clicked");
+                                // debug!("webcam clicked");
                                 self.selected_stream = Some(printer.serial.clone());
                             }
                         } else if let Some(url) = status.current_task_thumbnail_url.as_ref() {
