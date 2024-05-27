@@ -98,6 +98,7 @@ pub struct PrinterConnManager {
     tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     rx: tokio::sync::mpsc::UnboundedReceiver<(PrinterId, Message)>,
     kill_chans: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
+    graphs: crate::ui::plotting::Graphs,
 }
 
 /// new, start listeners
@@ -110,6 +111,7 @@ impl PrinterConnManager {
         // msg_tx: tokio::sync::watch::Sender<PrinterConnMsg>,
         msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
         ctx: egui::Context,
+        graphs: crate::ui::plotting::Graphs,
         // win_handle: std::num::NonZeroIsize,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
@@ -129,6 +131,7 @@ impl PrinterConnManager {
             tx,
             rx,
             kill_chans: HashMap::new(),
+            graphs,
         }
     }
 
@@ -222,6 +225,8 @@ impl PrinterConnManager {
                 // debug!("got print report");
 
                 let printer = printer.read().await;
+
+                self.graphs.update_printer(&printer.serial, &report.print);
 
                 let mut entry = self
                     .printer_states

@@ -47,28 +47,33 @@ impl App {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            let Some(id) = self.options.selected_printer.as_ref().cloned() else {
-                ui.label("No printer selected");
-                return;
-            };
+            self.show_printer_config(ui);
+        });
+    }
 
-            if self.options.selected_printer_cfg.is_none() {
-                if let Some(cfg) = self.config.get_printer(&id) {
-                    // self.options.selected_printer_cfg = Some((*cfg).clone());
-                    let cfg = cfg.blocking_read();
-                    self.options.selected_printer_cfg = Some(cfg.clone());
-                } else {
-                    ui.label("Printer not found");
-                    return;
-                }
+    fn show_printer_config(&mut self, ui: &mut egui::Ui) {
+        let Some(id) = self.options.selected_printer.as_ref().cloned() else {
+            ui.label("No printer selected");
+            return;
+        };
+
+        if self.options.selected_printer_cfg.is_none() {
+            if let Some(cfg) = self.config.get_printer(&id) {
+                // self.options.selected_printer_cfg = Some((*cfg).clone());
+                let cfg = cfg.blocking_read();
+                self.options.selected_printer_cfg = Some(cfg.clone());
+            } else {
+                ui.label("Printer not found");
+                return;
             }
+        }
 
-            let Some(cfg) = self.options.selected_printer_cfg.as_mut() else {
-                ui.label("No printer selected");
-                return;
-            };
+        let Some(cfg) = self.options.selected_printer_cfg.as_mut() else {
+            ui.label("No printer selected");
+            return;
+        };
 
-            // egui::Frame::none().show(ui, |ui| {
+        egui::Frame::group(ui.style()).show(ui, |ui| {
             egui::Grid::new("printer_setting_grid")
                 // .spacing(spacing)
                 // .striped(true)
@@ -90,53 +95,18 @@ impl App {
                     ui.text_edit_singleline(&mut cfg.access_code);
                     ui.end_row();
                 });
-            // ui.allocate_space(Vec2::new(ui.available_size_before_wrap().x, 0.));
-            // });
 
             if ui.button("Save").clicked() {
                 //
             }
+            // ui.allocate_space(Vec2::new(ui.available_size_before_wrap().x, 0.));
+        });
 
-            // let mut printer = self.config
-
+        egui::Frame::group(ui.style()).show(ui, |ui| {
+            ui.strong("Graph Values");
             //
         });
-    }
 
-    #[cfg(feature = "nope")]
-    pub fn show_printers_config(&mut self, ui: &mut egui::Ui) {
-        ui.label("TODO: Printer Config");
-
-        egui::Grid::new("printer_config_grid").show(ui, |ui| {
-            ui.label("Name");
-            ui.text_edit_singleline(&mut self.new_printer.name);
-            ui.end_row();
-
-            ui.label("Host");
-            ui.text_edit_singleline(&mut self.new_printer.host);
-            ui.end_row();
-
-            ui.label("Access Code");
-            ui.text_edit_singleline(&mut self.new_printer.access_code);
-            ui.end_row();
-
-            ui.label("Serial");
-            ui.text_edit_singleline(&mut self.new_printer.serial);
-            ui.end_row();
-        });
-
-        if ui.button("Add").clicked() {
-            self.cmd_tx
-                .as_ref()
-                .expect("cmd_tx not set")
-                .try_send(PrinterConnCmd::AddPrinter(PrinterConfig {
-                    name: self.new_printer.name.clone(),
-                    host: self.new_printer.host.clone(),
-                    access_code: self.new_printer.access_code.clone(),
-                    serial: self.new_printer.serial.clone(),
-                }))
-                .unwrap();
-            self.unplaced_printers.push(self.new_printer.serial.clone());
-        }
+        // let mut printer = self.config
     }
 }

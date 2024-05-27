@@ -555,11 +555,18 @@ fn main() -> eframe::Result<()> {
         ..Default::default()
     };
 
+    if true {
+        return crate::ui::error_message::run_error_app("Test Error".to_string());
+    }
+
     let (config, auth) = match config::Config::read_from_file("config.yaml") {
         Ok((config, auth)) => (config, auth),
         Err(e) => {
             warn!("error reading config: {:?}", e);
-            panic!("error reading config: {:?}", e);
+            // panic!("error reading config: {:?}", e);
+            // (config::Config::empty(), auth::AuthDb::empty())
+            // return crate::ui::error_message::run_error_app(e.to_string());
+            return crate::ui::error_message::run_error_app(e.to_string());
         }
     };
 
@@ -670,6 +677,15 @@ fn main() -> eframe::Result<()> {
 
     let cmd_tx2 = cmd_tx.clone();
 
+    // let graphs = ui::plotting::Graphs::new();
+    let graphs = {
+        warn!("using debug graph data");
+        let id0 = config.printer_ids()[0].clone();
+        let id1 = config.printer_ids()[1].clone();
+        ui::plotting::Graphs::debug_new(id0, id1)
+    };
+    let graphs2 = graphs.clone();
+
     // #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
@@ -707,8 +723,15 @@ fn main() -> eframe::Result<()> {
             //     });
             // }
 
-            let mut manager =
-                PrinterConnManager::new(config2, printer_states2, cmd_tx2, cmd_rx, msg_tx, ctx);
+            let mut manager = PrinterConnManager::new(
+                config2,
+                printer_states2,
+                cmd_tx2,
+                cmd_rx,
+                msg_tx,
+                ctx,
+                graphs2,
+            );
             // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
 
             debug!("running PrinterConnManager");
@@ -830,6 +853,7 @@ fn main() -> eframe::Result<()> {
                 msg_rx,
                 stream_cmd_tx,
                 handles,
+                graphs,
             ))
         }),
     )

@@ -17,6 +17,8 @@ use crate::{
 
 pub use self::projects_list::ProjectsList;
 
+use super::plotting::Graphs;
+
 #[derive(Default, Deserialize, Serialize)]
 #[serde(default)]
 pub struct App {
@@ -71,6 +73,9 @@ pub struct App {
 
     // #[serde(skip)]
     pub projects: ProjectsList,
+
+    #[serde(skip)]
+    pub graphs: Option<Graphs>,
 }
 
 #[derive(PartialEq, serde::Deserialize, serde::Serialize)]

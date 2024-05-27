@@ -35,6 +35,46 @@ use crate::{
 
 // pub use self::ui_types::;
 
+pub mod error_message {
+    use anyhow::{anyhow, bail, ensure, Context, Result};
+    use egui::{Label, RichText, TextStyle};
+    use tracing::{debug, error, info, trace, warn};
+
+    pub fn run_error_app(error: String) -> eframe::Result<()> {
+        let native_options = eframe::NativeOptions {
+            viewport: egui::ViewportBuilder::default()
+                // .with_icon(icon)
+                .with_resizable(false)
+                .with_max_inner_size([300., 200.])
+                .with_inner_size([300.0, 200.0]),
+            ..Default::default()
+        };
+
+        eframe::run_native(
+            "Bambu Watcher Error",
+            native_options,
+            Box::new(move |cc| Box::new(ErrorApp { error })),
+        )
+    }
+
+    pub struct ErrorApp {
+        pub error: String,
+    }
+
+    impl eframe::App for ErrorApp {
+        fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.add(Label::new(
+                        RichText::new("Error:").text_style(TextStyle::Heading),
+                    ));
+                    ui.label(&self.error);
+                });
+            });
+        }
+    }
+}
+
 /// new
 impl App {
     pub fn new(
@@ -48,6 +88,7 @@ impl App {
         stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
         printer_textures: HashMap<PrinterId, egui::TextureHandle>,
+        graphs: plotting::Graphs,
     ) -> Self {
         let mut out = if let Some(storage) = cc.storage {
             eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
@@ -70,6 +111,8 @@ impl App {
         out.cmd_tx = Some(cmd_tx);
         out.msg_rx = Some(msg_rx);
         out.stream_cmd_tx = Some(stream_cmd_tx);
+
+        out.graphs = Some(graphs);
 
         out.unplaced_printers = out.config.printer_ids();
         /// for each printer that isn't in printer_order, queue to add

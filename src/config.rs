@@ -147,6 +147,12 @@ pub struct ConfigFile {
 }
 
 impl Config {
+    pub fn empty() -> Self {
+        Self {
+            printers: Arc::new(HashMap::new()),
+        }
+    }
+
     pub fn read_from_file(path: &str) -> Result<(Self, crate::auth::AuthDb)> {
         let file = std::fs::File::open(path)?;
         let reader = std::io::BufReader::new(file);

@@ -282,7 +282,7 @@ impl App {
                 // _ => Color32::GREEN,
             }
         } else {
-            debug!("no state");
+            // debug!("no state");
             // Color32::from_gray(127)
             Color32::RED
         };
