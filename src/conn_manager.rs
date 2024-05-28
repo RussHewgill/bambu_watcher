@@ -6,7 +6,7 @@ use tracing::{debug, error, info, trace, warn};
 
 // use bambulab::{Client as BambuClient, Message};
 use crate::{
-    cloud::errors::ErrorMap,
+    cloud::{errors::ErrorMap, streaming::StreamCmd},
     config::ConfigArc,
     mqtt::{
         command::Command,
@@ -100,6 +100,7 @@ pub struct PrinterConnManager {
     tx: tokio::sync::mpsc::UnboundedSender<(PrinterId, Message)>,
     rx: tokio::sync::mpsc::UnboundedReceiver<(PrinterId, Message)>,
     kill_chans: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
+    stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
     graphs: crate::ui::plotting::Graphs,
     error_map: ErrorMap,
 }
@@ -115,6 +116,7 @@ impl PrinterConnManager {
         msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
         ctx: egui::Context,
         graphs: crate::ui::plotting::Graphs,
+        stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
         // win_handle: std::num::NonZeroIsize,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
     ) -> Self {
@@ -138,6 +140,7 @@ impl PrinterConnManager {
             tx,
             rx,
             kill_chans: HashMap::new(),
+            stream_cmd_tx,
             graphs,
             error_map,
         }
@@ -536,6 +539,11 @@ impl PrinterConnManager {
             PrinterConnCmd::RemovePrinter(_) => todo!(),
             PrinterConnCmd::UpdatePrinterConfig(id, cfg) => {
                 self.config.update_printer(&id, &cfg).await;
+                if !cfg.host.is_empty() {
+                    self.stream_cmd_tx.send(StreamCmd::RestartStream(id))?;
+                } else {
+                    self.stream_cmd_tx.send(StreamCmd::StopStream(id))?;
+                }
             }
             PrinterConnCmd::Pause => todo!(),
             PrinterConnCmd::Stop => todo!(),
@@ -595,9 +603,9 @@ async fn fetch_printer_task_thumbnail(
 ) {
     debug!("fetch_printer_task_thumbnail: {:?}", task_id);
     if let Ok(Some(token)) = config.get_token_async().await {
-        debug!("got token");
+        // debug!("got token");
         if let Ok(info) = crate::cloud::get_subtask_info(&token, &task_id).await {
-            debug!("got subtask info");
+            // debug!("got subtask info");
             let url = info.context.plates[0].thumbnail.url.clone();
             if let Some(mut entry) = printer_states.get_mut(&id) {
                 entry.current_task_thumbnail_url = Some(url);

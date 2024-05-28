@@ -676,6 +676,7 @@ dependencies = [
  "tracing-appender",
  "tracing-log",
  "tracing-subscriber",
+ "url",
  "vergen",
  "winit 0.30.0",
  "winresource",

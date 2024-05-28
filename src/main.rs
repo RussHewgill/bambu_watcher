@@ -26,7 +26,7 @@ pub mod utils;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use cloud::streaming::StreamCmd;
+use cloud::streaming::{StreamCmd, WebcamTexture};
 use config::ConfigArc;
 use parking_lot::RwLock;
 use tracing::{debug, error, info, trace, warn};
@@ -605,15 +605,14 @@ fn main() -> eframe::Result<()> {
     let (img_tx, img_rx) = tokio::sync::watch::channel::<Vec<u8>>(vec![]);
 
     let (stream_cmd_tx, stream_cmd_rx) = tokio::sync::mpsc::unbounded_channel::<StreamCmd>();
+    let stream_cmd_tx2 = stream_cmd_tx.clone();
 
     let printer_states: Arc<DashMap<PrinterId, PrinterStatus>> = Arc::new(DashMap::new());
     let printer_states2 = printer_states.clone();
 
     // let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
-    let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<(
-        egui::Context,
-        HashMap<PrinterId, (bool, egui::TextureHandle)>,
-    )>();
+    let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
+    // let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<(egui::Context, DashMap<PrinterId, WebcamTexture>)>();
 
     /// debug printer state
     #[cfg(feature = "nope")]
@@ -706,19 +705,24 @@ fn main() -> eframe::Result<()> {
     // };
     let graphs2 = graphs.clone();
 
+    let handles: Arc<DashMap<PrinterId, WebcamTexture>> = Arc::new(DashMap::new());
+    let handles2 = handles.clone();
+
     // #[cfg(feature = "nope")]
     /// tokio thread
     std::thread::spawn(|| {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async move {
-            let (ctx, handles) = ctx_rx.await.unwrap();
+            let ctx = ctx_rx.await.unwrap();
+            let ctx2 = ctx.clone();
 
             let config3 = config2.clone();
             tokio::task::spawn(async move {
                 let mut manager = crate::cloud::streaming::StreamManager::new(
                     config3.clone(),
-                    handles,
+                    handles2,
                     stream_cmd_rx,
+                    ctx2,
                 );
 
                 if let Err(e) = manager.run().await {
@@ -751,6 +755,7 @@ fn main() -> eframe::Result<()> {
                 msg_tx,
                 ctx,
                 graphs2,
+                stream_cmd_tx2,
             )
             .await;
             // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
@@ -780,20 +785,21 @@ fn main() -> eframe::Result<()> {
 
             let context = cc.egui_ctx.clone();
 
-            let mut handles: HashMap<PrinterId, (bool, egui::TextureHandle)> = HashMap::new();
-            for printer in config.printer_ids() {
-                let image = egui::ColorImage::new([80, 80], egui::Color32::from_gray(220));
-                let handle = cc.egui_ctx.load_texture(
-                    format!("{}_texture", &printer),
-                    image,
-                    Default::default(),
-                );
-                // handles.insert(printer.clone(), (false, handle.clone()));
-                handles.insert(printer.clone(), (true, handle.clone()));
-            }
+            // let mut handles: DashMap<PrinterId, WebcamTexture> = DashMap::new();
+            // for printer in config.printer_ids() {
+            //     let image = egui::ColorImage::new([80, 80], egui::Color32::from_gray(220));
+            //     let handle = cc.egui_ctx.load_texture(
+            //         format!("{}_texture", &printer),
+            //         image,
+            //         Default::default(),
+            //     );
+            //     handles.insert(printer.clone(), WebcamTexture::new(false, handle.clone()));
+            //     // handles.insert(printer.clone(), (true, handle.clone()));
+            // }
 
             ctx_tx
-                .send((context.clone(), handles.clone()))
+                // .send((context.clone(), handles.clone()))
+                .send(context.clone())
                 .ok()
                 .context("sending context")
                 .unwrap();

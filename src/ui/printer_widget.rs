@@ -73,29 +73,40 @@ impl App {
                     }
                 }
 
-                ui.dnd_drag_source(
-                    egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
-                    GridLocation {
-                        col: pos.0,
-                        row: pos.1,
-                    },
-                    |ui| {
-                        paint_icon(ui, 40., &status.state);
-                        ui.add(
-                            egui::Label::new(&format!(
-                                "{} ({})",
-                                printer.name,
-                                status.state.to_text()
-                            ))
-                            .truncate(true),
-                        );
-                        // let stream_but = egui::Button::image(icon_expand());
-                        // if ui.add(stream_but).clicked() {
-                        //     self.selected_stream = Some(printer.serial.clone());
-                        // }
-                    },
-                )
-                .response
+                let resp = ui
+                    .dnd_drag_source(
+                        egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
+                        GridLocation {
+                            col: pos.0,
+                            row: pos.1,
+                        },
+                        |ui| {
+                            paint_icon(ui, 40., &status.state);
+                            ui.add(
+                                egui::Label::new(&format!(
+                                    "{} ({})",
+                                    printer.name,
+                                    status.state.to_text()
+                                ))
+                                .truncate(true),
+                            );
+                        },
+                    )
+                    .response;
+
+                let stream_but = egui::Button::image(icon_expand());
+                if ui.add(stream_but).clicked() {
+                    // self.selected_stream = Some(printer.serial.clone());
+                    self.stream_cmd_tx
+                        .as_ref()
+                        .unwrap()
+                        .send(crate::cloud::streaming::StreamCmd::ToggleStream(
+                            printer.serial.clone(),
+                        ))
+                        .unwrap();
+                }
+
+                resp
             })
             .response;
 
@@ -148,40 +159,50 @@ impl App {
                     ui.with_layout(layout, |ui| {
                         // debug!("width = {}, height = {}", thumbnail_width, thumbnail_height);
 
-                        // let mut use_webcam = false;
-                        if let Some((enabled, entry)) = self.printer_textures.get(&printer.serial) {
-                            // if *enabled {
-                            // use_webcam = true;
-                            /// webcam
-                            let size = Vec2::new(thumbnail_width, thumbnail_height);
-                            let img = egui::Image::from_texture((entry.id(), size))
-                                .fit_to_exact_size(size)
-                                .max_size(size)
-                                .rounding(Rounding::same(4.))
-                                .sense(Sense::click());
-                            if ui.add(img).clicked() {
-                                // debug!("webcam clicked");
-                                self.selected_stream = Some(printer.serial.clone());
+                        let mut use_webcam = false;
+                        if let Some(entry) = self.printer_textures.get(&printer.serial) {
+                            // debug!("got printer texture");
+                            if entry.enabled {
+                                // debug!("webcam image enabled");
+                                let handle = entry.handle.clone();
+                                use_webcam = true;
+                                /// webcam
+                                let size = Vec2::new(thumbnail_width, thumbnail_height);
+                                let img = egui::Image::from_texture((handle.id(), size))
+                                    .fit_to_exact_size(size)
+                                    .max_size(size)
+                                    .rounding(Rounding::same(4.))
+                                    .sense(Sense::click());
+                                if ui.add(img).clicked() {
+                                    // debug!("webcam clicked");
+                                    self.selected_stream = Some(printer.serial.clone());
+                                }
                             }
-                            // }
-                        } else if let Some(url) = status.current_task_thumbnail_url.as_ref() {
-                            /// current print job thumbnail
-                            let img = egui::Image::new(url)
-                                .bg_fill(if ui.visuals().dark_mode {
-                                    Color32::from_gray(128)
-                                } else {
-                                    Color32::from_gray(210)
-                                })
-                                .max_width(thumbnail_width)
-                                .rounding(Rounding::same(4.));
-                            ui.add(img);
-                        } else if let Some(t) = status.printer_type {
-                            /// printer icon
-                            ui.add(
-                                thumbnail_printer(&printer, &t, ui.ctx())
-                                    .fit_to_exact_size(Vec2::new(thumbnail_width, thumbnail_height))
-                                    .rounding(Rounding::same(4.)),
-                            );
+                        }
+
+                        if !use_webcam {
+                            if let Some(url) = status.current_task_thumbnail_url.as_ref() {
+                                /// current print job thumbnail
+                                let img = egui::Image::new(url)
+                                    .bg_fill(if ui.visuals().dark_mode {
+                                        Color32::from_gray(128)
+                                    } else {
+                                        Color32::from_gray(210)
+                                    })
+                                    .max_width(thumbnail_width)
+                                    .rounding(Rounding::same(4.));
+                                ui.add(img);
+                            } else if let Some(t) = status.printer_type {
+                                /// printer icon
+                                ui.add(
+                                    thumbnail_printer(&printer, &t, ui.ctx())
+                                        .fit_to_exact_size(Vec2::new(
+                                            thumbnail_width,
+                                            thumbnail_height,
+                                        ))
+                                        .rounding(Rounding::same(4.)),
+                                );
+                            }
                         }
                     });
                 });

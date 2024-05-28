@@ -1,4 +1,5 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use dashmap::DashMap;
 use tracing::{debug, error, info, trace, warn};
 
 use rumqttc::tokio_rustls::{self, rustls};
@@ -12,55 +13,127 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub enum StreamCmd {
+    ToggleStream(PrinterId),
     StartStream(PrinterId),
     StopStream(PrinterId),
+    RestartStream(PrinterId),
+}
+
+#[derive(Clone)]
+pub struct WebcamTexture {
+    pub enabled: bool,
+    pub handle: egui::TextureHandle,
+}
+
+impl WebcamTexture {
+    pub fn new(enabled: bool, handle: egui::TextureHandle) -> Self {
+        Self { enabled, handle }
+    }
 }
 
 pub struct StreamManager {
     configs: ConfigArc,
-    streams: HashMap<PrinterId, JpegStreamViewer>,
-    handles: HashMap<PrinterId, (bool, egui::TextureHandle)>,
+    // streams: HashMap<PrinterId, JpegStreamViewer>,
+    handles: Arc<DashMap<PrinterId, WebcamTexture>>,
     kill_tx: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
     cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
+    ctx: egui::Context,
 }
 
 impl StreamManager {
     pub fn new(
         configs: ConfigArc,
         // configs: ConfigArc,
-        handles: HashMap<PrinterId, (bool, egui::TextureHandle)>,
+        handles: Arc<DashMap<PrinterId, WebcamTexture>>,
         cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
+        ctx: egui::Context,
     ) -> Self {
         Self {
             configs,
-            streams: HashMap::new(),
+            // streams: HashMap::new(),
             handles,
             kill_tx: HashMap::new(),
             cmd_rx,
+            ctx,
         }
     }
 
+    async fn spawn_worker(&mut self, id: PrinterId) -> Result<()> {
+        let config = self
+            .configs
+            .get_printer(&id)
+            .context("missing printer config")?;
+
+        let host = config.read().await.host.clone();
+        let enabled = !host.is_empty() && url::Url::parse(&format!("http://{}", &host)).is_ok();
+
+        if !enabled {
+            debug!("streaming disabled for printer: {:?}", id);
+        } else {
+            debug!("streaming enabled for printer: {:?}", id);
+        }
+
+        if !self.handles.contains_key(&id) {
+            let image = egui::ColorImage::new([80, 80], egui::Color32::from_gray(220));
+            let handle =
+                self.ctx
+                    .load_texture(format!("{}_texture", &id), image, Default::default());
+
+            self.handles
+                .insert(id.clone(), WebcamTexture::new(enabled, handle));
+        }
+
+        if !enabled {
+            return Ok(());
+        }
+
+        let handle = self.handles.get(&id).unwrap().handle.clone();
+
+        let (kill_tx, kill_rx) = tokio::sync::oneshot::channel();
+        self.kill_tx.insert(id.clone(), kill_tx);
+
+        tokio::task::spawn(async move {
+            if let Ok(mut streamer) = JpegStreamViewer::new(config, id, handle, kill_rx).await {
+                if let Err(e) = streamer.run().await {
+                    error!("streamer error: {:?}", e);
+                }
+            }
+        });
+
+        Ok(())
+    }
+
     pub async fn run(&mut self) -> Result<()> {
+        for id in self.configs.printer_ids_async().await {
+            if let Err(e) = self.spawn_worker(id).await {
+                error!("failed to spawn worker: {:?}", e);
+            }
+        }
+
+        #[cfg(feature = "nope")]
         /// spawn worker tasks
         for id in self.configs.printer_ids_async().await {
             // debug!("streaming printer: {:?}", id);
-            let (enabled, handle) = self.handles.get_mut(&id).unwrap();
-            // if !enabled {
+            // let (enabled, handle) = self.handles.get_mut(&id).unwrap();
+
+            // if !x.enabled {
             //     continue;
             // }
             // let configs2 = self.configs.clone();
 
+            // let mut x = self.handles.get_mut(&id).unwrap();
+
+            // let handle = x.handle.clone();
+
             let config = self.configs.get_printer(&id).unwrap();
             if config.read().await.host.is_empty() {
-                // debug!("streaming disabled for printer: {:?}", id);
-                // *enabled = false;
+                debug!("streaming disabled for printer: {:?}", id);
+                x.enabled = false;
                 continue;
             } else {
-                // debug!("streaming enabled for printer: {:?}", id);
-                // *enabled = true;
+                debug!("streaming enabled for printer: {:?}", id);
+                x.enabled = true;
             }
-
-            let handle = handle.clone();
 
             let (kill_tx, kill_rx) = tokio::sync::oneshot::channel();
             self.kill_tx.insert(id.clone(), kill_tx);
@@ -75,24 +148,40 @@ impl StreamManager {
         }
 
         loop {
-            // tokio::select! {
-            //     e = self.cmd_rx => {
-            //     }
-            // }
-
             match self.cmd_rx.recv().await {
                 None => return Ok(()),
-                Some(StreamCmd::StartStream(id)) => {
-                    //
+                Some(StreamCmd::StartStream(id)) => self.start_stream(id).await,
+                Some(StreamCmd::StopStream(id)) => self.stop_stream(id).await,
+                Some(StreamCmd::RestartStream(id)) => {
+                    self.stop_stream(id.clone()).await;
+                    self.start_stream(id).await;
                 }
-                Some(StreamCmd::StopStream(id)) => {
-                    //
+                Some(StreamCmd::ToggleStream(id)) => {
+                    if self.kill_tx.contains_key(&id) {
+                        self.stop_stream(id).await
+                    } else {
+                        self.start_stream(id).await
+                    }
                 }
             }
         }
 
         // unimplemented!()
         // Ok(())
+    }
+
+    async fn start_stream(&mut self, id: PrinterId) {
+        debug!("starting stream: {:?}", id);
+        if let Err(e) = self.spawn_worker(id).await {
+            error!("failed to spawn worker: {:?}", e);
+        }
+    }
+
+    async fn stop_stream(&mut self, id: PrinterId) {
+        debug!("stopping stream: {:?}", id);
+        if let Some(kill_tx) = self.kill_tx.remove(&id) {
+            kill_tx.send(()).unwrap();
+        }
     }
 
     // pub async fn add_stream(

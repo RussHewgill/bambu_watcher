@@ -9,7 +9,10 @@ use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    cloud::{errors::ErrorMap, streaming::StreamCmd},
+    cloud::{
+        errors::ErrorMap,
+        streaming::{StreamCmd, WebcamTexture},
+    },
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
     status::PrinterStatus,
@@ -67,7 +70,7 @@ pub struct App {
     // #[serde(skip)]
     // pub printer_skip: Option<PrinterSkipping>,
     #[serde(skip)]
-    pub printer_textures: HashMap<PrinterId, (bool, egui::TextureHandle)>,
+    pub printer_textures: Arc<DashMap<PrinterId, WebcamTexture>>,
     // #[serde(skip)]
     // pub printer_texture_rxs: HashMap<PrinterId, tokio::sync::watch::Receiver<Vec<u8>>>,
 

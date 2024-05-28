@@ -23,7 +23,7 @@ use std::{
 };
 
 use crate::{
-    cloud::streaming::StreamCmd,
+    cloud::streaming::{StreamCmd, WebcamTexture},
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
     status::{PrinterState, PrinterStatus},
@@ -87,7 +87,7 @@ impl App {
         msg_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnMsg>,
         stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
-        printer_textures: HashMap<PrinterId, (bool, egui::TextureHandle)>,
+        printer_textures: Arc<DashMap<PrinterId, WebcamTexture>>,
         graphs: plotting::Graphs,
     ) -> Self {
         let mut out = if let Some(storage) = cc.storage {
