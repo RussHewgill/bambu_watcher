@@ -19,9 +19,11 @@ errors.json
 *.webp
 src/ui2
 src/ui3
+src/ui4
 *.xcf
 icon2.ico
 errors.json
+assets/gui/*
 
 !icon.png
 !assets/icons8-disconnected-100.png

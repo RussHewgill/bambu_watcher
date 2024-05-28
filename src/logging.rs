@@ -35,7 +35,7 @@ pub fn init_logs() {
         .with_level(true)
         .compact()
         .with_filter(tracing_subscriber::filter::EnvFilter::new(
-            "info,bambu_watcher=trace,eframe=warn",
+            "info,bambu_watcher=trace,eframe=warn,wgpu=warn",
         ));
 
     let stderr_layer = tracing_subscriber::fmt::layer()
@@ -46,7 +46,8 @@ pub fn init_logs() {
         .with_target(false)
         .compact()
         .with_filter(tracing_subscriber::filter::EnvFilter::new(
-            "info,bambu_watcher=debug,eframe=warn",
+            // "info,bambu_watcher=debug,eframe=warn,wgpu=warn",
+            "warn,bambu_watcher=debug,eframe=warn,wgpu=warn",
         ));
 
     let subscriber = tracing_subscriber::registry()

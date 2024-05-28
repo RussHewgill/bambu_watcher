@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use dashmap::DashMap;
 use tracing::{debug, error, info, trace, warn};
 
+use dashmap::DashMap;
 use rumqttc::tokio_rustls::{self, rustls};
 use std::{collections::HashMap, sync::Arc};
 use tokio::{io::AsyncReadExt, sync::RwLock};
@@ -150,17 +150,17 @@ impl StreamManager {
         loop {
             match self.cmd_rx.recv().await {
                 None => return Ok(()),
-                Some(StreamCmd::StartStream(id)) => self.start_stream(id).await,
-                Some(StreamCmd::StopStream(id)) => self.stop_stream(id).await,
+                Some(StreamCmd::StartStream(id)) => self.start_stream(id, true).await,
+                Some(StreamCmd::StopStream(id)) => self.stop_stream(id, true).await,
                 Some(StreamCmd::RestartStream(id)) => {
-                    self.stop_stream(id.clone()).await;
-                    self.start_stream(id).await;
+                    self.stop_stream(id.clone(), false).await;
+                    self.start_stream(id, false).await;
                 }
                 Some(StreamCmd::ToggleStream(id)) => {
                     if self.kill_tx.contains_key(&id) {
-                        self.stop_stream(id).await
+                        self.stop_stream(id, true).await
                     } else {
-                        self.start_stream(id).await
+                        self.start_stream(id, true).await
                     }
                 }
             }
@@ -170,17 +170,25 @@ impl StreamManager {
         // Ok(())
     }
 
-    async fn start_stream(&mut self, id: PrinterId) {
-        debug!("starting stream: {:?}", id);
-        if let Err(e) = self.spawn_worker(id).await {
+    async fn start_stream(&mut self, id: PrinterId, set_enabled: bool) {
+        // debug!("starting stream: {:?}", id);
+        if let Err(e) = self.spawn_worker(id.clone()).await {
             error!("failed to spawn worker: {:?}", e);
+        }
+        if set_enabled {
+            let mut entry = self.handles.get_mut(&id).unwrap();
+            entry.enabled = true;
         }
     }
 
-    async fn stop_stream(&mut self, id: PrinterId) {
-        debug!("stopping stream: {:?}", id);
+    async fn stop_stream(&mut self, id: PrinterId, set_enabled: bool) {
+        // debug!("stopping stream: {:?}", id);
         if let Some(kill_tx) = self.kill_tx.remove(&id) {
             kill_tx.send(()).unwrap();
+        }
+        if set_enabled {
+            let mut entry = self.handles.get_mut(&id).unwrap();
+            entry.enabled = false;
         }
     }
 

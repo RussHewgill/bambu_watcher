@@ -94,18 +94,6 @@ impl App {
                     )
                     .response;
 
-                let stream_but = egui::Button::image(icon_expand());
-                if ui.add(stream_but).clicked() {
-                    // self.selected_stream = Some(printer.serial.clone());
-                    self.stream_cmd_tx
-                        .as_ref()
-                        .unwrap()
-                        .send(crate::cloud::streaming::StreamCmd::ToggleStream(
-                            printer.serial.clone(),
-                        ))
-                        .unwrap();
-                }
-
                 resp
             })
             .response;
@@ -173,9 +161,18 @@ impl App {
                                     .max_size(size)
                                     .rounding(Rounding::same(4.))
                                     .sense(Sense::click());
-                                if ui.add(img).clicked() {
+                                let resp = ui.add(img);
+                                if resp.clicked_by(egui::PointerButton::Primary) {
                                     // debug!("webcam clicked");
                                     self.selected_stream = Some(printer.serial.clone());
+                                } else if resp.clicked_by(egui::PointerButton::Secondary) {
+                                    self.stream_cmd_tx
+                                        .as_ref()
+                                        .unwrap()
+                                        .send(crate::cloud::streaming::StreamCmd::ToggleStream(
+                                            printer.serial.clone(),
+                                        ))
+                                        .unwrap();
                                 }
                             }
                         }
@@ -191,10 +188,19 @@ impl App {
                                     })
                                     .max_width(thumbnail_width)
                                     .rounding(Rounding::same(4.));
-                                ui.add(img);
+
+                                if ui.add(img).clicked_by(egui::PointerButton::Secondary) {
+                                    self.stream_cmd_tx
+                                        .as_ref()
+                                        .unwrap()
+                                        .send(crate::cloud::streaming::StreamCmd::ToggleStream(
+                                            printer.serial.clone(),
+                                        ))
+                                        .unwrap();
+                                }
                             } else if let Some(t) = status.printer_type {
                                 /// printer icon
-                                ui.add(
+                                let resp = ui.add(
                                     thumbnail_printer(&printer, &t, ui.ctx())
                                         .fit_to_exact_size(Vec2::new(
                                             thumbnail_width,
@@ -202,6 +208,15 @@ impl App {
                                         ))
                                         .rounding(Rounding::same(4.)),
                                 );
+                                if resp.clicked_by(egui::PointerButton::Secondary) {
+                                    self.stream_cmd_tx
+                                        .as_ref()
+                                        .unwrap()
+                                        .send(crate::cloud::streaming::StreamCmd::ToggleStream(
+                                            printer.serial.clone(),
+                                        ))
+                                        .unwrap();
+                                }
                             }
                         }
                     });

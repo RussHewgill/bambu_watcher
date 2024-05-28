@@ -22,6 +22,7 @@ pub mod cloud;
 pub mod ui;
 // pub mod ui2;
 // pub mod ui3;
+// pub mod ui4;
 pub mod utils;
 // pub mod mqtt_types;
 
@@ -43,6 +44,16 @@ use crate::{
     conn_manager::{PrinterConnCmd, PrinterConnManager, PrinterConnMsg, PrinterId},
     status::PrinterStatus,
 };
+
+/// relm4/fltk test
+#[cfg(feature = "nope")]
+fn main() {
+    let _ = dotenvy::dotenv();
+    logging::init_logs();
+
+    // crate::ui4::ui4_main();
+    crate::ui2::ui2_main();
+}
 
 /// iced test
 #[cfg(feature = "nope")]
