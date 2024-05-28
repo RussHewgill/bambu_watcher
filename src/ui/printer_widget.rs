@@ -148,7 +148,10 @@ impl App {
                     ui.with_layout(layout, |ui| {
                         // debug!("width = {}, height = {}", thumbnail_width, thumbnail_height);
 
-                        if let Some(entry) = self.printer_textures.get(&printer.serial) {
+                        // let mut use_webcam = false;
+                        if let Some((enabled, entry)) = self.printer_textures.get(&printer.serial) {
+                            // if *enabled {
+                            // use_webcam = true;
                             /// webcam
                             let size = Vec2::new(thumbnail_width, thumbnail_height);
                             let img = egui::Image::from_texture((entry.id(), size))
@@ -160,6 +163,7 @@ impl App {
                                 // debug!("webcam clicked");
                                 self.selected_stream = Some(printer.serial.clone());
                             }
+                            // }
                         } else if let Some(url) = status.current_task_thumbnail_url.as_ref() {
                             /// current print job thumbnail
                             let img = egui::Image::new(url)

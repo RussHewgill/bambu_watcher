@@ -610,8 +610,10 @@ fn main() -> eframe::Result<()> {
     let printer_states2 = printer_states.clone();
 
     // let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<egui::Context>();
-    let (ctx_tx, ctx_rx) =
-        tokio::sync::oneshot::channel::<(egui::Context, HashMap<PrinterId, egui::TextureHandle>)>();
+    let (ctx_tx, ctx_rx) = tokio::sync::oneshot::channel::<(
+        egui::Context,
+        HashMap<PrinterId, (bool, egui::TextureHandle)>,
+    )>();
 
     /// debug printer state
     #[cfg(feature = "nope")]
@@ -778,7 +780,7 @@ fn main() -> eframe::Result<()> {
 
             let context = cc.egui_ctx.clone();
 
-            let mut handles: HashMap<PrinterId, egui::TextureHandle> = HashMap::new();
+            let mut handles: HashMap<PrinterId, (bool, egui::TextureHandle)> = HashMap::new();
             for printer in config.printer_ids() {
                 let image = egui::ColorImage::new([80, 80], egui::Color32::from_gray(220));
                 let handle = cc.egui_ctx.load_texture(
@@ -786,7 +788,8 @@ fn main() -> eframe::Result<()> {
                     image,
                     Default::default(),
                 );
-                handles.insert(printer.clone(), handle.clone());
+                // handles.insert(printer.clone(), (false, handle.clone()));
+                handles.insert(printer.clone(), (true, handle.clone()));
             }
 
             ctx_tx

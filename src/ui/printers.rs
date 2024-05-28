@@ -5,6 +5,8 @@ use egui::Vec2;
 
 use crate::{config::PrinterConfig, conn_manager::PrinterConnCmd, ui::ui_types::App};
 
+use super::ui_types::NewPrinterEntry;
+
 impl App {
     // #[cfg(feature = "nope")]
     pub fn show_printers_config(&mut self, ctx: &egui::Context) {
@@ -87,9 +89,8 @@ impl App {
 
         if self.options.selected_printer_cfg.is_none() {
             if let Some(cfg) = self.config.get_printer(&id) {
-                // self.options.selected_printer_cfg = Some((*cfg).clone());
                 let cfg = cfg.blocking_read();
-                self.options.selected_printer_cfg = Some(cfg.clone());
+                self.options.selected_printer_cfg = Some(NewPrinterEntry::from_cfg(&cfg));
             } else {
                 ui.label("Printer not found");
                 return;
@@ -116,7 +117,7 @@ impl App {
                     ui.end_row();
 
                     ui.label("Host");
-                    // ui.text_edit_singleline(&mut cfg.host);
+                    ui.text_edit_singleline(&mut cfg.host);
                     ui.end_row();
 
                     ui.label("Access Code");
@@ -125,7 +126,17 @@ impl App {
                 });
 
             if ui.button("Save").clicked() {
-                //
+                // self.apply_printer_config();
+                self.cmd_tx
+                    .as_ref()
+                    .unwrap()
+                    .send(PrinterConnCmd::UpdatePrinterConfig(
+                        self.options.selected_printer.as_ref().unwrap().clone(),
+                        // self.printer_config_page.new_printer.clone(),
+                        // self.options.selected_printer_cfg.as_ref().unwrap().clone(),
+                        cfg.clone(),
+                    ))
+                    .unwrap();
             }
             // ui.allocate_space(Vec2::new(ui.available_size_before_wrap().x, 0.));
         });

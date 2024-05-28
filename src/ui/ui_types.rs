@@ -67,7 +67,7 @@ pub struct App {
     // #[serde(skip)]
     // pub printer_skip: Option<PrinterSkipping>,
     #[serde(skip)]
-    pub printer_textures: HashMap<PrinterId, egui::TextureHandle>,
+    pub printer_textures: HashMap<PrinterId, (bool, egui::TextureHandle)>,
     // #[serde(skip)]
     // pub printer_texture_rxs: HashMap<PrinterId, tokio::sync::watch::Receiver<Vec<u8>>>,
 
@@ -135,7 +135,7 @@ pub struct AppOptions {
     // pub dark_mode: bool,
     pub dashboard_size: (usize, usize),
     pub selected_printer: Option<PrinterId>,
-    pub selected_printer_cfg: Option<PrinterConfig>,
+    pub selected_printer_cfg: Option<NewPrinterEntry>,
 }
 
 impl Default for AppOptions {
@@ -149,12 +149,23 @@ impl Default for AppOptions {
     }
 }
 
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct NewPrinterEntry {
     pub name: String,
     pub host: String,
     pub access_code: String,
     pub serial: String,
+}
+
+impl NewPrinterEntry {
+    pub fn from_cfg(cfg: &PrinterConfig) -> Self {
+        Self {
+            name: cfg.name.clone(),
+            host: cfg.host.clone(),
+            access_code: cfg.access_code.clone(),
+            serial: (*cfg.serial).clone(),
+        }
+    }
 }
 
 #[derive(Default, Deserialize, Serialize)]

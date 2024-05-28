@@ -19,7 +19,7 @@ pub enum StreamCmd {
 pub struct StreamManager {
     configs: ConfigArc,
     streams: HashMap<PrinterId, JpegStreamViewer>,
-    handles: HashMap<PrinterId, egui::TextureHandle>,
+    handles: HashMap<PrinterId, (bool, egui::TextureHandle)>,
     kill_tx: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
     cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
 }
@@ -28,7 +28,7 @@ impl StreamManager {
     pub fn new(
         configs: ConfigArc,
         // configs: ConfigArc,
-        handles: HashMap<PrinterId, egui::TextureHandle>,
+        handles: HashMap<PrinterId, (bool, egui::TextureHandle)>,
         cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
     ) -> Self {
         Self {
@@ -43,15 +43,30 @@ impl StreamManager {
     pub async fn run(&mut self) -> Result<()> {
         /// spawn worker tasks
         for id in self.configs.printer_ids_async().await {
-            let handle = self.handles.get(&id).unwrap().clone();
-            let configs2 = self.configs.clone();
+            // debug!("streaming printer: {:?}", id);
+            let (enabled, handle) = self.handles.get_mut(&id).unwrap();
+            // if !enabled {
+            //     continue;
+            // }
+            // let configs2 = self.configs.clone();
+
+            let config = self.configs.get_printer(&id).unwrap();
+            if config.read().await.host.is_empty() {
+                // debug!("streaming disabled for printer: {:?}", id);
+                // *enabled = false;
+                continue;
+            } else {
+                // debug!("streaming enabled for printer: {:?}", id);
+                // *enabled = true;
+            }
+
+            let handle = handle.clone();
 
             let (kill_tx, kill_rx) = tokio::sync::oneshot::channel();
             self.kill_tx.insert(id.clone(), kill_tx);
 
             tokio::task::spawn(async move {
-                if let Ok(mut streamer) = JpegStreamViewer::new(configs2, id, handle, kill_rx).await
-                {
+                if let Ok(mut streamer) = JpegStreamViewer::new(config, id, handle, kill_rx).await {
                     if let Err(e) = streamer.run().await {
                         error!("streamer error: {:?}", e);
                     }
@@ -111,15 +126,15 @@ impl JpegStreamViewer {
     const READ_CHUNK_SIZE: usize = 4096;
 
     pub async fn new(
-        configs: ConfigArc,
-        // config: Arc<RwLock<PrinterConfig>>,
+        // configs: ConfigArc,
+        config: Arc<RwLock<PrinterConfig>>,
         id: PrinterId,
         // img_tx: tokio::sync::watch::Sender<Vec<u8>>,
         // ctx: egui::Context,
         handle: egui::TextureHandle,
         kill_rx: tokio::sync::oneshot::Receiver<()>,
     ) -> Result<Self> {
-        let config = &configs.get_printer(&id).unwrap();
+        // let config = &configs.get_printer(&id).unwrap();
         let serial = config.read().await.serial.clone();
         let host = config
             .read()

@@ -292,9 +292,12 @@ impl App {
 
     pub fn show_stream(&mut self, ctx: &egui::Context, id: PrinterId) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            let Some(entry) = self.printer_textures.get(&id) else {
+            let Some((enabled, entry)) = self.printer_textures.get(&id) else {
                 return;
             };
+            if !enabled {
+                self.selected_stream = None;
+            }
 
             let size = ui.available_size();
 

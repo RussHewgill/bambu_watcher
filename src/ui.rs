@@ -87,7 +87,7 @@ impl App {
         msg_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnMsg>,
         stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
         // alert_tx: tokio::sync::mpsc::Sender<(String, String)>,
-        printer_textures: HashMap<PrinterId, egui::TextureHandle>,
+        printer_textures: HashMap<PrinterId, (bool, egui::TextureHandle)>,
         graphs: plotting::Graphs,
     ) -> Self {
         let mut out = if let Some(storage) = cc.storage {

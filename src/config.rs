@@ -11,7 +11,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 
-use crate::conn_manager::PrinterId;
+use crate::{conn_manager::PrinterId, ui::ui_types::NewPrinterEntry};
 
 #[derive(Clone)]
 // pub struct ConfigArc(Arc<RwLock<Config>>);
@@ -96,6 +96,15 @@ impl ConfigArc {
         // self.config.printers.insert(id, printer);
         self.config.ids.write().await.insert(id.clone());
         self.config.printers.insert(id, printer);
+    }
+
+    pub async fn update_printer(&self, id: &PrinterId, cfg: &NewPrinterEntry) {
+        let mut config = self.config.printers.get(id).unwrap().clone();
+        let mut config = config.write().await;
+        config.name = cfg.name.clone();
+        config.host = cfg.host.clone();
+        config.access_code = cfg.access_code.clone();
+        // config.color = cfg.color;
     }
 
     #[cfg(feature = "nope")]

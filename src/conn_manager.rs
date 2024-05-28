@@ -14,7 +14,7 @@ use crate::{
         BambuClient,
     },
     status::PrinterType,
-    ui::ui_types::ProjectsList,
+    ui::ui_types::{NewPrinterEntry, ProjectsList},
 };
 use dashmap::DashMap;
 // use tokio::sync::mpsc::{Receiver, Sender};
@@ -45,9 +45,8 @@ pub enum PrinterConnCmd {
     SyncPrinters,
     AddPrinter(PrinterConfig),
     RemovePrinter(PrinterId),
+    UpdatePrinterConfig(PrinterId, NewPrinterEntry),
     SetPrinterCloud(PrinterId, bool),
-
-    UpdatePrinterConfig(PrinterId, PrinterConfig),
 
     SyncProjects,
 
@@ -535,7 +534,9 @@ impl PrinterConnManager {
             }
 
             PrinterConnCmd::RemovePrinter(_) => todo!(),
-            PrinterConnCmd::UpdatePrinterConfig(_, _) => todo!(),
+            PrinterConnCmd::UpdatePrinterConfig(id, cfg) => {
+                self.config.update_printer(&id, &cfg).await;
+            }
             PrinterConnCmd::Pause => todo!(),
             PrinterConnCmd::Stop => todo!(),
             PrinterConnCmd::Resume => todo!(),
