@@ -19,6 +19,11 @@ pub enum StreamCmd {
     RestartStream(PrinterId),
 }
 
+#[derive(Debug, Clone)]
+enum StreamMsg {
+    Panic(PrinterId),
+}
+
 #[derive(Clone)]
 pub struct WebcamTexture {
     pub enabled: bool,
@@ -37,6 +42,8 @@ pub struct StreamManager {
     handles: Arc<DashMap<PrinterId, WebcamTexture>>,
     kill_tx: HashMap<PrinterId, tokio::sync::oneshot::Sender<()>>,
     cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
+    stream_tx: tokio::sync::mpsc::UnboundedSender<StreamMsg>,
+    stream_rx: tokio::sync::mpsc::UnboundedReceiver<StreamMsg>,
     ctx: egui::Context,
 }
 
@@ -48,12 +55,15 @@ impl StreamManager {
         cmd_rx: tokio::sync::mpsc::UnboundedReceiver<StreamCmd>,
         ctx: egui::Context,
     ) -> Self {
+        let (stream_tx, stream_rx) = tokio::sync::mpsc::unbounded_channel();
         Self {
             configs,
             // streams: HashMap::new(),
             handles,
             kill_tx: HashMap::new(),
             cmd_rx,
+            stream_rx,
+            stream_tx,
             ctx,
         }
     }
@@ -92,10 +102,15 @@ impl StreamManager {
         let (kill_tx, kill_rx) = tokio::sync::oneshot::channel();
         self.kill_tx.insert(id.clone(), kill_tx);
 
+        let msg_tx = self.stream_tx.clone();
+
         tokio::task::spawn(async move {
-            if let Ok(mut streamer) = JpegStreamViewer::new(config, id, handle, kill_rx).await {
+            if let Ok(mut streamer) =
+                JpegStreamViewer::new(id.clone(), config, handle, kill_rx, msg_tx.clone()).await
+            {
                 if let Err(e) = streamer.run().await {
                     error!("streamer error: {:?}", e);
+                    msg_tx.send(StreamMsg::Panic(id)).unwrap();
                 }
             }
         });
@@ -148,19 +163,34 @@ impl StreamManager {
         }
 
         loop {
-            match self.cmd_rx.recv().await {
-                None => return Ok(()),
-                Some(StreamCmd::StartStream(id)) => self.start_stream(id, true).await,
-                Some(StreamCmd::StopStream(id)) => self.stop_stream(id, true).await,
-                Some(StreamCmd::RestartStream(id)) => {
-                    self.stop_stream(id.clone(), false).await;
-                    self.start_stream(id, false).await;
+            tokio::select! {
+                msg = self.stream_rx.recv() => {
+                    match msg {
+                        None => return Ok(()),
+                        Some(StreamMsg::Panic(id)) => {
+                            error!("streaming panic");
+                            self.stop_stream(id.clone(), false).await;
+                            self.start_stream(id, false).await;
+                        }
+                    }
                 }
-                Some(StreamCmd::ToggleStream(id)) => {
-                    if self.kill_tx.contains_key(&id) {
-                        self.stop_stream(id, true).await
-                    } else {
-                        self.start_stream(id, true).await
+
+                cmd = self.cmd_rx.recv() => {
+                    match cmd {
+                        None => return Ok(()),
+                        Some(StreamCmd::StartStream(id)) => self.start_stream(id, true).await,
+                        Some(StreamCmd::StopStream(id)) => self.stop_stream(id, true).await,
+                        Some(StreamCmd::RestartStream(id)) => {
+                            self.stop_stream(id.clone(), false).await;
+                            self.start_stream(id, false).await;
+                        }
+                        Some(StreamCmd::ToggleStream(id)) => {
+                            if self.kill_tx.contains_key(&id) {
+                                self.stop_stream(id, true).await
+                            } else {
+                                self.start_stream(id, true).await
+                            }
+                        }
                     }
                 }
             }
@@ -184,7 +214,7 @@ impl StreamManager {
     async fn stop_stream(&mut self, id: PrinterId, set_enabled: bool) {
         // debug!("stopping stream: {:?}", id);
         if let Some(kill_tx) = self.kill_tx.remove(&id) {
-            kill_tx.send(()).unwrap();
+            let _ = kill_tx.send(());
         }
         if set_enabled {
             let mut entry = self.handles.get_mut(&id).unwrap();
@@ -206,6 +236,7 @@ impl StreamManager {
 
 /// https://github.com/greghesp/ha-bambulab/blob/main/custom_components/bambu_lab/pybambu/bambu_client.py#L68
 pub struct JpegStreamViewer {
+    id: PrinterId,
     config: Arc<RwLock<PrinterConfig>>,
     // addr: String,
     auth_data: Vec<u8>,
@@ -215,6 +246,7 @@ pub struct JpegStreamViewer {
     // ctx: egui::Context,
     handle: egui::TextureHandle,
     kill_rx: tokio::sync::oneshot::Receiver<()>,
+    msg_tx: tokio::sync::mpsc::UnboundedSender<StreamMsg>,
 }
 
 impl JpegStreamViewer {
@@ -222,14 +254,29 @@ impl JpegStreamViewer {
     const JPEG_END: [u8; 2] = [0xff, 0xd9];
     const READ_CHUNK_SIZE: usize = 4096;
 
-    pub async fn new(
+    const STREAM_TIMEOUT: u64 = 10;
+    // const STREAM_TIMEOUT: u64 = 3;
+
+    // async fn reset(mut self) -> Result<Self> {
+    //     let Self {
+    //         id,
+    //         config,
+    //         handle,
+    //         kill_rx,
+    //         ..
+    //     } = self;
+    //     Self::new(id, config, handle, kill_rx).await
+    // }
+
+    async fn new(
         // configs: ConfigArc,
-        config: Arc<RwLock<PrinterConfig>>,
         id: PrinterId,
+        config: Arc<RwLock<PrinterConfig>>,
         // img_tx: tokio::sync::watch::Sender<Vec<u8>>,
         // ctx: egui::Context,
         handle: egui::TextureHandle,
         kill_rx: tokio::sync::oneshot::Receiver<()>,
+        msg_tx: tokio::sync::mpsc::UnboundedSender<StreamMsg>,
     ) -> Result<Self> {
         // let config = &configs.get_printer(&id).unwrap();
         let serial = config.read().await.serial.clone();
@@ -294,6 +341,7 @@ impl JpegStreamViewer {
         };
 
         Ok(Self {
+            id,
             config: config.clone(),
             // config,
             // addr,
@@ -304,10 +352,11 @@ impl JpegStreamViewer {
             handle,
             // ctx,
             kill_rx,
+            msg_tx,
         })
     }
 
-    pub async fn run(&mut self) -> Result<()> {
+    async fn run(&mut self) -> Result<()> {
         tokio::io::AsyncWriteExt::write_all(&mut self.tls_stream, &self.auth_data).await?;
 
         debug!("getting socket status");
@@ -324,7 +373,21 @@ impl JpegStreamViewer {
 
         loop {
             self.buf.fill(0);
-            let n = self.tls_stream.read(&mut self.buf).await?;
+
+            let n = match tokio::time::timeout(
+                tokio::time::Duration::from_secs(Self::STREAM_TIMEOUT),
+                self.tls_stream.read(&mut self.buf),
+            )
+            .await
+            {
+                Ok(n) => n?,
+                Err(_) => {
+                    warn!("timeout reading from stream");
+                    self.msg_tx.send(StreamMsg::Panic(self.id.clone())).unwrap();
+                    bail!("timeout reading from stream");
+                }
+            };
+            // let n = self.tls_stream.read(&mut self.buf).await?;
 
             if got_header {
                 // debug!("extending image by {}", n);

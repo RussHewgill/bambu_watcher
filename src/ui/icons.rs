@@ -4,7 +4,7 @@ use egui::{Color32, Sense, Vec2};
 
 use crate::{
     config::PrinterConfig,
-    status::{AmsUnit, PrinterState, PrinterType},
+    status::{AmsCurrentSlot, AmsUnit, PrinterState, PrinterType},
 };
 
 macro_rules! generate_icon_function {
@@ -174,28 +174,46 @@ pub fn paint_icon(ui: &mut egui::Ui, size: f32, state: &PrinterState) {
     ui.add(thumbnail);
 }
 
-pub fn ams_icons_single(ui: &mut egui::Ui, size: f32, wide: bool, ams: &AmsUnit) {
+pub fn ams_icons_single(
+    ui: &mut egui::Ui,
+    size: f32,
+    wide: bool,
+    ams: &AmsUnit,
+    current: Option<AmsCurrentSlot>,
+) {
     let n = if wide { 4 } else { 8 };
     let size = if wide { size } else { size / 2. };
     ui.columns(n, |uis| {
         for i in 0..4 {
-            paint_ams_icons(&mut uis[i], i, size, ams);
+            paint_ams_icons(&mut uis[i], i, size, ams, current);
         }
     });
 }
 
-pub fn ams_icons_double(ui: &mut egui::Ui, size: f32, ams0: &AmsUnit, ams1: &AmsUnit) {
+pub fn ams_icons_double(
+    ui: &mut egui::Ui,
+    size: f32,
+    ams0: &AmsUnit,
+    ams1: &AmsUnit,
+    current: Option<AmsCurrentSlot>,
+) {
     ui.columns(8, |uis| {
         for i in 0..4 {
-            paint_ams_icons(&mut uis[i], i, size / 2., ams0);
+            paint_ams_icons(&mut uis[i], i, size / 2., ams0, current);
         }
         for i in 4..8 {
-            paint_ams_icons(&mut uis[i], i - 4, size / 2., ams1);
+            paint_ams_icons(&mut uis[i], i - 4, size / 2., ams1, current);
         }
     });
 }
 
-fn paint_ams_icons(ui: &mut egui::Ui, i: usize, size: f32, ams: &AmsUnit) {
+fn paint_ams_icons(
+    ui: &mut egui::Ui,
+    i: usize,
+    size: f32,
+    ams: &AmsUnit,
+    current: Option<AmsCurrentSlot>,
+) {
     let size = Vec2::splat(size);
     let (response, painter) = ui.allocate_painter(size, Sense::hover());
     let rect = response.rect;
@@ -204,8 +222,19 @@ fn paint_ams_icons(ui: &mut egui::Ui, i: usize, size: f32, ams: &AmsUnit) {
     let r = size.x / 2.0 - 1.0;
 
     if let Some(slot) = ams.slots[i].as_ref() {
-        painter.circle_filled(c, r, slot.color);
+        if let Some(current) = current {
+            if current.is_slot(ams.id as u64, i as u64) {
+                painter.circle_filled(c, r - 3., slot.color);
+                let mut rect2 = rect;
+                rect2.set_width(rect.width() - 20.);
+                rect2.set_height(rect.height() - 1.5);
+                rect2.set_center(c);
+                painter.rect_stroke(rect2, 3., egui::Stroke::new(3.0, slot.color));
+                return;
+            }
+        }
+        painter.circle_filled(c, r - 3., slot.color);
     } else {
-        painter.circle_stroke(c, r, egui::Stroke::new(1.0, Color32::from_gray(120)));
+        painter.circle_stroke(c, r - 3., egui::Stroke::new(3.0, Color32::from_gray(120)));
     }
 }

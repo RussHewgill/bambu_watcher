@@ -9,6 +9,7 @@ use tracing_subscriber::field::debug;
 use crate::{
     config::PrinterConfig,
     mqtt::message::{PrintAms, PrintData},
+    ui::ui_types::PrintStage,
 };
 use std::{
     collections::HashMap,
@@ -23,10 +24,15 @@ pub struct PrinterStatus {
     pub printer_type: Option<PrinterType>,
 
     pub state: PrinterState,
+    // pub stage: Option<PrintStage>,
+    pub stage: Option<String>,
+    pub sub_stage: Option<i64>,
+
     // pub last_report: Option<PrinterStatusReport>,
     pub last_report: Option<Instant>,
 
     pub ams: Option<AmsStatus>,
+    pub ams_status: Option<i64>,
 
     pub current_file: Option<String>,
     pub subtask_id: Option<String>,
@@ -42,6 +48,7 @@ pub struct PrinterStatus {
     // pub print_line_number: Option<String>,
     pub layer_num: Option<i64>,
     pub total_layer_num: Option<i64>,
+    pub line_number: Option<i64>,
 
     pub temp_nozzle: Option<f64>,
     pub temp_tgt_nozzle: Option<f64>,
@@ -115,6 +122,14 @@ impl PrinterStatus {
             self.state = s;
         }
 
+        if let Some(s) = report.mc_print_stage.as_ref() {
+            self.stage = Some(s.clone());
+        }
+
+        if let Some(s) = report.mc_print_sub_stage {
+            self.sub_stage = Some(s);
+        }
+
         // if let Some(s) = report.gcode_state.as_ref() {
         //     self.gcode_state = Some(GcodeState::from_str(s));
         // }
@@ -154,6 +169,12 @@ impl PrinterStatus {
 
         if let Some(t) = report.total_layer_num {
             self.total_layer_num = Some(t);
+        }
+
+        if let Some(l) = report.mc_print_line_number.as_ref() {
+            if let Some(l) = l.parse::<i64>().ok() {
+                self.line_number = Some(l);
+            }
         }
 
         if let Some(t) = report.nozzle_temper {
@@ -208,14 +229,18 @@ impl PrinterStatus {
             }
         }
 
+        if let Some(s) = report.ams_status {
+            self.ams_status = Some(s);
+        }
+
         if let Some(ams) = report.ams.as_ref() {
-            self.ams = Some(self.update_ams(ams)?);
+            self.ams = Some(self.update_ams(ams, self.ams_status)?);
         }
 
         Ok(())
     }
 
-    fn update_ams(&mut self, ams: &PrintAms) -> Result<AmsStatus> {
+    fn update_ams(&mut self, ams: &PrintAms, status_code: Option<i64>) -> Result<AmsStatus> {
         let mut out = self.ams.take().unwrap_or_default();
 
         // debug!("ams = {:#?}", ams);
@@ -233,7 +258,7 @@ impl PrinterStatus {
                 })
             };
         } else {
-            out.current_tray = None;
+            // out.current_tray = None;
         }
 
         if let Some(units) = ams.ams.as_ref() {
@@ -274,6 +299,45 @@ impl PrinterStatus {
                         slots,
                     },
                 );
+            }
+        }
+
+        if let Some(bits) = ams.ams_exist_bits.as_ref() {
+            out.ams_exist_bits = Some(bits.clone());
+        }
+
+        if let Some(bits) = ams.tray_exist_bits.as_ref() {
+            out.tray_exist_bits = Some(bits.clone());
+        }
+
+        if let Some(now) = ams.tray_now.as_ref() {
+            out.tray_now = Some(now.clone());
+        }
+        if let Some(pre) = ams.tray_pre.as_ref() {
+            out.tray_pre = Some(pre.clone());
+        }
+        if let Some(tar) = ams.tray_tar.as_ref() {
+            out.tray_tar = Some(tar.clone());
+        }
+
+        if let Some(v) = ams.version {
+            out.version = Some(v);
+        }
+
+        if let Some(status_code) = status_code {
+            if status_code == 768 {
+                out.state = None;
+            } else {
+                let state = crate::utils::parse_ams_status(&out, status_code);
+
+                // match state {
+                //     crate::ui::ui_types::AmsState::FilamentChange(_) => {
+                //         // out.current_tray
+                //     },
+                //     _ => {}
+                // }
+
+                out.state = Some(state);
             }
         }
 
@@ -377,12 +441,37 @@ pub struct AmsStatus {
     // pub temp: Option<i64>,
     // pub slots: [Option<AmsSlot>; 4],
     // pub current_slot: Option<u64>,
+    pub ams_exist_bits: Option<String>,
+    pub tray_exist_bits: Option<String>,
+    pub tray_now: Option<String>,
+    pub tray_pre: Option<String>,
+    pub tray_tar: Option<String>,
+    pub version: Option<i64>,
+    pub state: Option<crate::ui::ui_types::AmsState>,
+}
+
+impl AmsStatus {
+    pub fn is_ams_unload(&self) -> bool {
+        self.tray_tar.as_ref().map(|s| s.as_str()) == Some("255")
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum AmsCurrentSlot {
     ExternalSpool,
     Tray { ams_id: u64, tray_id: u64 },
+}
+
+impl AmsCurrentSlot {
+    pub fn is_slot(&self, ams_id: u64, tray_id: u64) -> bool {
+        match self {
+            AmsCurrentSlot::Tray {
+                ams_id: a,
+                tray_id: t,
+            } => *a == ams_id && *t == tray_id,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Default, Clone)]

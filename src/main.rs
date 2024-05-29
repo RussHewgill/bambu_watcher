@@ -492,14 +492,32 @@ async fn main() -> Result<()> {
 
     // let s: serde_json::Value = cloud::get_response(&token, "/v1/user-service/my/messages").await?;
 
-    // let printer = config::PrinterConfig {
-    //     name: "bambu".to_string(),
-    //     host: env::var("BAMBU_IP")?,
-    //     access_code: env::var("BAMBU_ACCESS_CODE")?,
-    //     serial: Arc::new(env::var("BAMBU_IDENT")?),
-    //     color: [0; 3],
-    // };
-    // crate::mqtt::debug_get_printer_report(printer).await?;
+    let printer = config::PrinterConfig {
+        name: "bambu".to_string(),
+        host: env::var("BAMBU_IP")?,
+        access_code: env::var("BAMBU_ACCESS_CODE")?,
+        serial: Arc::new(env::var("BAMBU_IDENT")?),
+        color: [0; 3],
+    };
+    crate::mqtt::debug_get_printer_report(printer.clone()).await?;
+
+    let s = std::fs::read_to_string("printer_report.json")?;
+    let report: mqtt::message::Print = serde_json::from_str(&s)?;
+
+    let mut status = PrinterStatus::default();
+    status.update(&printer, &report.print)?;
+
+    // debug!("status = {:#?}", status);
+
+    // let ams_status = 768;
+    // let ams_status = 263;
+    let s =
+        crate::utils::parse_ams_status(&status.ams.as_ref().unwrap(), status.ams_status.unwrap());
+    debug!("s = {:#?}", s);
+
+    // let ams_status = 263;
+    // let s = crate::utils::_parse_ams_status(ams_status);
+    // debug!("s = {:#?}", s);
 
     // let mut file = std::fs::File::open("projects.json")?;
     // let s = std::fs::read_to_string("projects.json")?;
@@ -542,6 +560,8 @@ async fn main() -> Result<()> {
     // let e = errors.get_error(e).unwrap();
 
     // debug!("error = {}", e);
+
+    // let s = std::fs::read_to_string()
 
     Ok(())
 }

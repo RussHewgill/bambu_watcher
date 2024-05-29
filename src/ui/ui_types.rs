@@ -331,6 +331,79 @@ pub mod projects_list {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
+pub enum PrintStage {
+    Printing = 0,
+    AutoBedLeveling = 1,
+    HeatbedPreheating = 2,
+    SweepingXyMechMode = 3,
+    ChangingFilament = 4,
+    M400Pause = 5,
+    PausedDueToFilamentRunout = 6,
+    HeatingHotend = 7,
+    CalibratingExtrusion = 8,
+    ScanningBedSurface = 9,
+    InspectingFirstLayer = 10,
+    IdentifyingBuildPlateType = 11,
+    CalibratingMicroLidar = 12,
+    HomingToolhead = 13,
+    CleaningNozzleTip = 14,
+    CheckingExtruderTemperature = 15,
+    PrintingWasPausedByTheUser = 16,
+    PauseOfFrontCoverFalling = 17,
+    CalibratingTheMicroLida = 18,
+    CalibratingExtrusionFlow = 19,
+    PausedDueToNozzleTemperatureMalfunction = 20,
+    PausedDueToHeatBedTemperatureMalfunction = 21,
+    FilamentUnloading = 22,
+    SkipStepPause = 23,
+    FilamentLoading = 24,
+    MotorNoiseCalibration = 25,
+    PausedDueToAmsLost = 26,
+    PausedDueToLowSpeedOfTheHeatBreakFan = 27,
+    PausedDueToChamberTemperatureControlError = 28,
+    CoolingChamber = 29,
+    PausedByTheGcodeInsertedByUser = 30,
+    MotorNoiseShowoff = 31,
+    NozzleFilamentCoveredDetectedPause = 32,
+    CutterErrorPause = 33,
+    FirstLayerErrorPause = 34,
+    NozzleClogPause = 35,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
+pub enum FilamentSwapStep {
+    Idling,
+    HeatNozzle,
+    CutFilament,
+    PullBackCurrentFilament,
+    PushNewFilament,
+    PurgeOldFilament,
+    FeedFilament,
+    ConfirmExtruded,
+    CheckFilamentPosition,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
+pub enum AmsState {
+    /// 0
+    Idle,
+    /// 1
+    FilamentChange(FilamentSwapStep),
+    /// 2
+    RfidIdentifying,
+    /// 3
+    Assist,
+    /// 4
+    Calibration,
+    /// 0x10
+    SelfCheck,
+    /// 0x20
+    Debug,
+    /// 0xFF
+    Unknown,
+}
+
 #[cfg(feature = "nope")]
 pub mod projects_list {
     use egui_data_table::DataTable;

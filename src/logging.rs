@@ -20,6 +20,7 @@ pub fn init_logs() {
 
 pub fn init_logs() {
     let _ = std::fs::rename("output.log", "output_prev.log");
+    let _ = std::fs::remove_file("output.log");
 
     let trace_file =
         tracing_appender::rolling::never(".", "output.log").with_max_level(tracing::Level::TRACE);

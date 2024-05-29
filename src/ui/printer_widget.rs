@@ -187,7 +187,8 @@ impl App {
                                         Color32::from_gray(210)
                                     })
                                     .max_width(thumbnail_width)
-                                    .rounding(Rounding::same(4.));
+                                    .rounding(Rounding::same(4.))
+                                    .sense(Sense::click());
 
                                 if ui.add(img).clicked_by(egui::PointerButton::Secondary) {
                                     self.stream_cmd_tx
@@ -206,7 +207,8 @@ impl App {
                                             thumbnail_width,
                                             thumbnail_height,
                                         ))
-                                        .rounding(Rounding::same(4.)),
+                                        .rounding(Rounding::same(4.))
+                                        .sense(Sense::click()),
                                 );
                                 if resp.clicked_by(egui::PointerButton::Secondary) {
                                     self.stream_cmd_tx
@@ -362,7 +364,16 @@ impl App {
                                         .size(text_size_eta),
                                 ));
                             });
-                            strip.cell(|ui| {});
+                            strip.cell(|ui| {
+                                if let (Some(layer), Some(max)) =
+                                    (status.layer_num, status.total_layer_num)
+                                {
+                                    ui.add(Label::new(
+                                        RichText::new(&format!("{}/{}", layer, max))
+                                            .size(text_size_eta),
+                                    ));
+                                }
+                            });
                             strip.cell(|ui| {
                                 ui.add(Label::new(
                                     RichText::new(&format!(
@@ -388,641 +399,20 @@ impl App {
             });
         ui.spacing_mut().item_spacing.x = 8.;
 
-        resp
-    }
-
-    /// Wide layout
-    #[cfg(feature = "nope")]
-    pub fn show_printer(
-        &mut self,
-        pos: (usize, usize),
-        frame_size: Vec2,
-        ui: &mut egui::Ui,
-        printer: &PrinterConfig,
-    ) -> Response {
         let Some(status) = self.printer_states.get(&printer.serial) else {
             warn!("Printer not found: {}", printer.serial);
             panic!();
         };
-        /// checked at call site
-        let printer_state = self.printer_states.get(&printer.serial).unwrap();
 
-        /// Name, state, and controls button
-        let resp = ui
-            .horizontal(|ui| {
-                let selected = self
-                    .selected_printer_controls
-                    .as_ref()
-                    .map(|s| s == &printer.serial)
-                    .unwrap_or(false);
+        // // if cfg!(debug_assertions) {
+        // ui.label(&format!("stage: {:?}", status.stage));
+        // ui.label(&format!("sub_stage: {:?}", status.sub_stage));
+        // ui.label(&format!("ams_status: {:?}", status.ams_status));
+        // if let Some(ams) = &status.ams {
+        //     ui.label(&format!("ams_state: {:?}", ams.state));
+        // }
+        // // }
 
-                /// cloud button
-                #[cfg(feature = "nope")]
-                {
-                    let cloud = printer.cloud.load(std::sync::atomic::Ordering::Relaxed);
-                    let icon = if cloud {
-                        super::icons::icon_cloud()
-                    } else {
-                        super::icons::icon_lan()
-                    };
-
-                    if ui.add(egui::Button::image(icon)).clicked() {
-                        self.cmd_tx
-                            .as_ref()
-                            .unwrap()
-                            .send(PrinterConnCmd::SetPrinterCloud(
-                                printer.serial.clone(),
-                                !cloud,
-                            ))
-                            .unwrap();
-                    }
-                }
-
-                #[cfg(feature = "nope")]
-                if ui
-                    .add(egui::Button::image(super::icons::icon_controls()).selected(selected))
-                    .clicked()
-                {
-                    if selected {
-                        self.selected_printer_controls = None;
-                    } else {
-                        self.selected_printer_controls = Some(printer.serial.clone());
-                    }
-                }
-
-                ui.dnd_drag_source(
-                    egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
-                    GridLocation {
-                        col: pos.0,
-                        row: pos.1,
-                    },
-                    |ui| {
-                        paint_icon(ui, 40., &status.state);
-                        ui.add(
-                            egui::Label::new(&format!(
-                                "{} ({})",
-                                printer.name,
-                                status.state.to_text()
-                            ))
-                            .truncate(true),
-                        );
-                    },
-                )
-                .response
-            })
-            .response;
-
-        /// TODO: center the thumbnail
-        // #[cfg(feature = "nope")]
-        ui.horizontal(|ui| {
-            let size = frame_size.x - 4.;
-            if let Some(entry) = self.printer_textures.get(&printer.serial) {
-                let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
-                    .rounding(Rounding::same(4.))
-                    .fit_to_exact_size(Vec2::new(size, size))
-                    .max_width(size)
-                    .max_height(size);
-                ui.add(img);
-            } else if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
-                let img = egui::Image::new(url)
-                    .bg_fill(if ui.visuals().dark_mode {
-                        Color32::from_gray(128)
-                    } else {
-                        Color32::from_gray(210)
-                    })
-                    .rounding(Rounding::same(4.))
-                    .fit_to_exact_size(Vec2::new(size, size))
-                    .max_width(size)
-                    .max_height(size);
-                ui.add(img);
-            } else if let Some(t) = printer_state.printer_type {
-                ui.add(
-                    thumbnail_printer(&printer, &t, size, ui.ctx()).rounding(Rounding::same(4.)),
-                );
-            }
-        });
-
-        // let mut rect = ui.cursor();
-        // /// 16:9 aspect ratio
-        // rect.set_height(frame_size.x * 0.5625);
-
-        /// thumbnail / webcam
-        #[cfg(feature = "nope")]
-        ui.allocate_ui_at_rect(rect, |ui| {
-            egui::Frame::none().show(ui, |ui| {
-                let size = frame_size.x - 12.;
-                if let Some(entry) = self.printer_textures.get(&printer.serial) {
-                    let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
-                    // .bg_fill(if ui.visuals().dark_mode {
-                    //     Color32::from_gray(128)
-                    // } else {
-                    //     Color32::from_gray(210)
-                    // })
-                    .rounding(Rounding::same(4.))
-                    // .shrink_to_fit()
-                    // .fit_to_exact_size(Vec2::new(size, size))
-                    .max_width(size)
-                    .maintain_aspect_ratio(true)
-                    // .max_height(size);
-                    ;
-                    ui.add(img);
-                } else if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
-                    // debug!("url = {}", url);
-                    let img = egui::Image::new(url)
-                        .bg_fill(if ui.visuals().dark_mode {
-                            Color32::from_gray(128)
-                        } else {
-                            Color32::from_gray(210)
-                        })
-                        .rounding(Rounding::same(4.))
-                        // .shrink_to_fit()
-                        .fit_to_exact_size(Vec2::new(size, size))
-                        .max_width(size)
-                        .max_height(size);
-                    ui.add(img);
-                } else if let Some(t) = printer_state.printer_type {
-                    ui.add(
-                        thumbnail_printer(&printer, &t, size, ui.ctx())
-                            .rounding(Rounding::same(4.)),
-                    );
-                }
-
-                ui.allocate_space(ui.available_size());
-            });
-        });
-
-        /// Temperatures
-        #[cfg(feature = "nope")]
-        {
-            ui.separator();
-
-            let mut rect = ui.cursor();
-            rect.set_height(40.);
-            rect.set_width(frame_size.x - 12.);
-
-            ui.allocate_ui_at_rect(rect, |ui| {
-                ui.columns(3, |uis| {
-                    let font_size = 12.;
-                    uis[0].horizontal(|ui| {
-                        ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                        ui.add(
-                            Label::new(
-                                // RichText::new(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)))
-                                RichText::new(format!(
-                                    "{:.1}°C / {}",
-                                    status.temp_nozzle.unwrap_or(0.),
-                                    status.temp_tgt_nozzle.unwrap_or(0.0) as i64
-                                ))
-                                .size(font_size),
-                            )
-                            .truncate(true),
-                        );
-                    });
-                    uis[1].horizontal(|ui| {
-                        ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                        ui.add(
-                            Label::new(
-                                RichText::new(format!(
-                                    "{:.1}°C / {}",
-                                    status.temp_bed.unwrap_or(0.),
-                                    status.temp_tgt_bed.unwrap_or(0.0) as i64
-                                ))
-                                .size(font_size),
-                            )
-                            .truncate(true),
-                        );
-                    });
-                    uis[2].horizontal(|ui| {
-                        ui.add(thumbnail_chamber());
-                        ui.label(
-                            RichText::new(format!(
-                                "{}°C",
-                                status.temp_chamber.unwrap_or(0.) as i64
-                            ))
-                            .size(font_size),
-                        );
-                    });
-                });
-            });
-        }
-
-        resp
-    }
-
-    #[cfg(feature = "nope")]
-    /// Tall layout
-    pub fn show_printer(
-        &mut self,
-        pos: (usize, usize),
-        frame_size: Vec2,
-        ui: &mut egui::Ui,
-        printer: &PrinterConfig,
-    ) -> Response {
-        let Some(status) = self.printer_states.get(&printer.serial) else {
-            warn!("Printer not found: {}", printer.serial);
-            panic!();
-        };
-        /// checked at call site
-        let printer_state = self.printer_states.get(&printer.serial).unwrap();
-
-        /// Name, state, and controls button
-        let resp = ui
-            .horizontal(|ui| {
-                let selected = self
-                    .selected_printer_controls
-                    .as_ref()
-                    .map(|s| s == &printer.serial)
-                    .unwrap_or(false);
-
-                /// cloud button
-                #[cfg(feature = "nope")]
-                {
-                    let cloud = printer.cloud.load(std::sync::atomic::Ordering::Relaxed);
-                    let icon = if cloud {
-                        super::icons::icon_cloud()
-                    } else {
-                        super::icons::icon_lan()
-                    };
-
-                    if ui.add(egui::Button::image(icon)).clicked() {
-                        self.cmd_tx
-                            .as_ref()
-                            .unwrap()
-                            .send(PrinterConnCmd::SetPrinterCloud(
-                                printer.serial.clone(),
-                                !cloud,
-                            ))
-                            .unwrap();
-                    }
-                }
-
-                #[cfg(feature = "nope")]
-                if ui
-                    .add(egui::Button::image(super::icons::icon_controls()).selected(selected))
-                    .clicked()
-                {
-                    if selected {
-                        self.selected_printer_controls = None;
-                    } else {
-                        self.selected_printer_controls = Some(printer.serial.clone());
-                    }
-                }
-
-                ui.dnd_drag_source(
-                    egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
-                    GridLocation {
-                        col: pos.0,
-                        row: pos.1,
-                    },
-                    |ui| {
-                        paint_icon(ui, 40., &status.state);
-                        ui.add(
-                            egui::Label::new(&format!(
-                                "{} ({})",
-                                printer.name,
-                                status.state.to_text()
-                            ))
-                            .truncate(true),
-                        );
-                    },
-                )
-                .response
-            })
-            .response;
-
-        let mut rect = ui.cursor();
-        /// 16:9 aspect ratio
-        rect.set_height(frame_size.x * 0.5625);
-
-        /// thumbnail / webcam
-        ui.allocate_ui_at_rect(rect, |ui| {
-            egui::Frame::none().show(ui, |ui| {
-                let size = frame_size.x - 12.;
-                if let Some(entry) = self.printer_textures.get(&printer.serial) {
-                    let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
-                    // .bg_fill(if ui.visuals().dark_mode {
-                    //     Color32::from_gray(128)
-                    // } else {
-                    //     Color32::from_gray(210)
-                    // })
-                    .rounding(Rounding::same(4.))
-                    // .shrink_to_fit()
-                    // .fit_to_exact_size(Vec2::new(size, size))
-                    .max_width(size)
-                    .maintain_aspect_ratio(true)
-                    // .max_height(size);
-                    ;
-                    ui.add(img);
-                } else if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
-                    // debug!("url = {}", url);
-                    let img = egui::Image::new(url)
-                        .bg_fill(if ui.visuals().dark_mode {
-                            Color32::from_gray(128)
-                        } else {
-                            Color32::from_gray(210)
-                        })
-                        .rounding(Rounding::same(4.))
-                        // .shrink_to_fit()
-                        .fit_to_exact_size(Vec2::new(size, size))
-                        .max_width(size)
-                        .max_height(size);
-                    ui.add(img);
-                } else if let Some(t) = printer_state.printer_type {
-                    ui.add(
-                        thumbnail_printer(&printer, &t, size, ui.ctx())
-                            .rounding(Rounding::same(4.)),
-                    );
-                }
-
-                ui.allocate_space(ui.available_size());
-            });
-        });
-
-        #[cfg(feature = "nope")]
-        ui.horizontal(|ui| {
-            let size = 80. - 4.;
-
-            // let d = include_bytes!("../../test.jpg");
-            // let data = std::fs::read("test.jpg").unwrap();
-
-            // let image = image::load_from_memory(&data).unwrap();
-            // let img_size = [image.width() as _, image.height() as _];
-            // let image_buffer = image.to_rgba8();
-            // let pixels = image_buffer.as_flat_samples();
-            // let img = egui::ColorImage::from_rgba_unmultiplied(img_size, pixels.as_slice());
-
-            // let entry = self
-            //     .printer_textures
-            //     .entry(printer.serial.clone())
-            //     .or_insert_with(|| {
-            //         let handle = ui.ctx().load_texture(
-            //             format!("{}_tex", printer.serial.clone()),
-            //             img,
-            //             Default::default(),
-            //         );
-            //         handle
-            //     });
-
-            if let Some(entry) = self.printer_textures.get(&printer.serial) {
-                let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
-                    // .bg_fill(if ui.visuals().dark_mode {
-                    //     Color32::from_gray(128)
-                    // } else {
-                    //     Color32::from_gray(210)
-                    // })
-                    .rounding(Rounding::same(4.))
-                    // .shrink_to_fit()
-                    // .fit_to_exact_size(Vec2::new(size, size))
-                    // .max_width(size)
-                    .maintain_aspect_ratio(true)
-                    .max_height(size);
-                ui.add(img);
-            } else if let Some(url) = printer_state.current_task_thumbnail_url.as_ref() {
-                // debug!("url = {}", url);
-                let img = egui::Image::new(url)
-                    .bg_fill(if ui.visuals().dark_mode {
-                        Color32::from_gray(128)
-                    } else {
-                        Color32::from_gray(210)
-                    })
-                    .rounding(Rounding::same(4.))
-                    // .shrink_to_fit()
-                    .fit_to_exact_size(Vec2::new(size, size))
-                    .max_width(size)
-                    .max_height(size);
-                ui.add(img);
-            } else if let Some(t) = printer_state.printer_type {
-                ui.add(
-                    thumbnail_printer(&printer, &t, size, ui.ctx()).rounding(Rounding::same(4.)),
-                );
-            }
-
-            /// temperatures
-            #[cfg(feature = "nope")]
-            ui.vertical(|ui| {
-                // egui::Frame::none().fill(Color32::RED).show(ui, |ui| {
-                ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
-
-                ui.horizontal(|ui| {
-                    ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                    ui.label(format!(
-                        "{:.1}°C / {}",
-                        status.temp_nozzle.unwrap_or(0.),
-                        status.temp_tgt_nozzle.unwrap_or(0.) as i64,
-                    ));
-                });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                    ui.label(format!(
-                        "{:.1}°C / {}",
-                        status.temp_bed.unwrap_or(0.),
-                        status.temp_tgt_bed.unwrap_or(0.) as i64
-                    ));
-                });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.add(thumbnail_chamber());
-                    ui.label(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64));
-                });
-
-                ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-                ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
-                // });
-            });
-        });
-        ui.separator();
-
-        let mut rect = ui.cursor();
-        rect.set_height(40.);
-        rect.set_width(frame_size.x - 12.);
-
-        ui.allocate_ui_at_rect(rect, |ui| {
-            ui.columns(3, |uis| {
-                let font_size = 10.;
-                uis[0].horizontal(|ui| {
-                    ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                    ui.label(
-                        RichText::new(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.)))
-                            .size(font_size),
-                    );
-                });
-                uis[1].horizontal(|ui| {
-                    ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                    ui.label(
-                        RichText::new(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)))
-                            .size(font_size),
-                    );
-                });
-                uis[2].horizontal(|ui| {
-                    ui.add(thumbnail_chamber());
-                    ui.label(
-                        RichText::new(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64))
-                            .size(font_size),
-                    );
-                });
-            });
-        });
-
-        /// temperatures
-        #[cfg(feature = "nope")]
-        ui.allocate_ui_at_rect(rect, |ui| {
-            egui::Frame::none().show(ui, |ui| {
-                let size = (frame_size.x / 3.) - 4.;
-                egui_extras::StripBuilder::new(ui)
-                    .size(egui_extras::Size::exact(size))
-                    .size(egui_extras::Size::exact(size))
-                    .size(egui_extras::Size::exact(size))
-                    .horizontal(|mut strip| {
-                        strip.cell(|ui| {
-                            ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                            ui.small(format!("{:.1}°C", status.temp_nozzle.unwrap_or(0.),));
-                        });
-                        strip.cell(|ui| {
-                            ui.add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-                            ui.small(format!("{:.1}°C", status.temp_bed.unwrap_or(0.)));
-                        });
-                        strip.cell(|ui| {
-                            ui.add(thumbnail_chamber());
-                            ui.small(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64));
-                        });
-                    });
-            });
-        });
-
-        /// temperatures
-        #[cfg(feature = "nope")]
-        ui.columns(3, |uis| {
-            uis[0].horizontal(|ui| {
-                ui.add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-                ui.small(format!(
-                    "{:.1}°C / {}",
-                    status.temp_nozzle.unwrap_or(0.),
-                    status.temp_tgt_nozzle.unwrap_or(0.) as i64,
-                ));
-            });
-            uis[1].horizontal(|ui| {
-                //
-            });
-            uis[2].horizontal(|ui| {
-                ui.add(thumbnail_chamber());
-                ui.small(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64));
-            });
-        });
-
-        #[cfg(feature = "nope")]
-        /// temperatures
-        ui.columns(3, |uis| {
-            uis[0].add(thumbnail_nozzle(status.temp_tgt_nozzle.is_some()));
-            uis[0].label(format!(
-                "{:.1}°C / {}",
-                status.temp_nozzle.unwrap_or(0.),
-                status.temp_tgt_nozzle.unwrap_or(0.) as i64,
-            ));
-
-            uis[1].add(thumbnail_bed(status.temp_tgt_bed.is_some()));
-            uis[1].vertical(|ui| {
-                ui.add(egui::Label::new(RichText::new(format!(
-                    "{:.1}°C",
-                    status.temp_bed.unwrap_or(0.)
-                ))));
-                ui.add(egui::Label::new(RichText::new(format!(
-                    "{:.1}",
-                    status.temp_tgt_bed.unwrap_or(0.)
-                ))));
-            });
-            // uis[1].label(format!(
-            //     "{:.1}°C",
-            //     status.temp_bed.unwrap_or(0.),
-            //     status.temp_tgt_bed.unwrap_or(0.) as i64
-            // ));
-
-            uis[2].add(thumbnail_chamber());
-            uis[2].label(format!("{}°C", status.temp_chamber.unwrap_or(0.) as i64));
-        });
-
-        /// fans
-        #[cfg(feature = "nope")]
-        ui.columns(3, |uis| {
-            uis[0].label(RichText::new("Part:").text_style(egui::TextStyle::Small));
-            uis[0].label(&format!("{: >4}%", status.cooling_fan_speed.unwrap_or(0)));
-
-            uis[1].label(RichText::new("Aux:").text_style(egui::TextStyle::Small));
-            uis[1].label(&format!("{: >4}%", status.aux_fan_speed.unwrap_or(0)));
-
-            uis[2].label(RichText::new("Cham:").text_style(egui::TextStyle::Small));
-            uis[2].label(&format!("{: >4}%", status.chamber_fan_speed.unwrap_or(0)));
-        });
-
-        /// fans
-        #[cfg(feature = "nope")]
-        ui.horizontal(|ui| {
-            ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
-
-            ui.vertical(|ui| {
-                ui.label(RichText::new("Part:").text_style(egui::TextStyle::Small));
-                ui.label(&format!("{: >4}%", status.cooling_fan_speed.unwrap_or(0)))
-            });
-
-            ui.separator();
-            ui.vertical(|ui| {
-                ui.label(RichText::new("Aux:").text_style(egui::TextStyle::Small));
-                ui.label(&format!("{: >4}%", status.aux_fan_speed.unwrap_or(0)))
-            });
-
-            ui.separator();
-            ui.vertical(|ui| {
-                ui.label(RichText::new("Cham:").text_style(egui::TextStyle::Small));
-                ui.label(&format!("{: >4}%", status.chamber_fan_speed.unwrap_or(0)))
-            });
-
-            // ui.label(
-            //     RichText::new(format!("Part: {}%", status.cooling_fan_speed.unwrap_or(0)))
-            //         .text_style(egui::TextStyle::Small),
-            // );
-            // // ui.label(&format!("Part: {}%", status.cooling_fan_speed.unwrap_or(0)));
-            // ui.separator();
-            // ui.label(&format!("Aux: {}%", status.aux_fan_speed.unwrap_or(0)));
-            // ui.separator();
-            // ui.label(&format!("Cham: {}%", status.chamber_fan_speed.unwrap_or(0)));
-            // ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-            ui.style_mut().spacing.item_spacing = Vec2::new(8., 3.);
-        });
-        ui.separator();
-
-        /// current print
-        self.show_current_print(frame_size, ui, &status, &printer, &printer_state);
-        #[cfg(feature = "nope")]
-        if let PrinterState::Printing = status.state {
-            self.show_current_print(frame_size, ui, &status, printer.clone(), &printer_state);
-        } else {
-            egui::Grid::new(format!("grid_{}", printer.serial)).show(ui, |ui| {
-                ui.label("No print in progress");
-                ui.end_row();
-                ui.label("--:--");
-                ui.end_row();
-                ui.label("--:--");
-                ui.end_row();
-            });
-            ui.allocate_space(Vec2::new(ui.available_width(), 0.));
-        }
-
-        ui.separator();
-        self.show_controls(frame_size, ui, &status, printer, &printer_state);
-
-        ui.separator();
-        // self.show_ams(frame_size, ui, &status, printer, &printer_state);
-        drop(status);
-        drop(printer_state);
-        self.show_ams(
-            frame_size, ui, // &status,
-            printer,
-            // &mut self.selected_ams,
-        );
-
-        ui.separator();
-
-        //
         resp
     }
 }
@@ -1173,17 +563,20 @@ impl App {
         //     return;
         // };
 
+        let current = ams.current_tray;
+
         if num_ams == 0 {
             ui.label("No AMS Connected");
             return;
         } else if num_ams == 1 {
-            ams_icons_single(ui, size, true, ams.units.get(&0).unwrap())
+            ams_icons_single(ui, size, true, ams.units.get(&0).unwrap(), current)
         } else if num_ams == 2 {
             ams_icons_double(
                 ui,
                 size,
                 ams.units.get(&0).unwrap(),
                 ams.units.get(&1).unwrap(),
+                current,
             );
         } else if num_ams == 3 {
             ams_icons_double(
@@ -1191,8 +584,9 @@ impl App {
                 size,
                 ams.units.get(&0).unwrap(),
                 ams.units.get(&1).unwrap(),
+                current,
             );
-            ams_icons_single(ui, size, false, ams.units.get(&2).unwrap())
+            ams_icons_single(ui, size, false, ams.units.get(&2).unwrap(), current)
             // ams_icons(ui, false, ams.units.get(0).unwrap());
             // ams_icons(ui, false, ams.units.get(1).unwrap());
             // ams_icons(ui, false, ams.units.get(2).unwrap());
@@ -1202,12 +596,14 @@ impl App {
                 size,
                 ams.units.get(&0).unwrap(),
                 ams.units.get(&1).unwrap(),
+                current,
             );
             ams_icons_double(
                 ui,
                 size,
                 ams.units.get(&2).unwrap(),
                 ams.units.get(&3).unwrap(),
+                current,
             );
         } else {
             ui.label(format!("Too many AMS units: {}", num_ams));
