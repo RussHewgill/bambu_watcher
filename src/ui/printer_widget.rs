@@ -13,6 +13,7 @@ use crate::{
     },
 };
 
+/// show_printer
 impl App {
     /// Wide layout
     // #[cfg(feature = "nope")]
@@ -349,9 +350,9 @@ impl App {
                     };
 
                     builder
-                        .size(egui_extras::Size::relative(0.4))
+                        .size(egui_extras::Size::relative(0.3))
                         .size(egui_extras::Size::remainder())
-                        .size(egui_extras::Size::relative(0.4))
+                        .size(egui_extras::Size::relative(0.3))
                         .horizontal(|mut strip| {
                             strip.cell(|ui| {
                                 // ui.ctx().debug_painter().debug_rect(
@@ -365,6 +366,7 @@ impl App {
                                 ));
                             });
                             strip.cell(|ui| {
+                                /// TODO: status instead of layers during prepare
                                 if let (Some(layer), Some(max)) =
                                     (status.layer_num, status.total_layer_num)
                                 {
@@ -404,16 +406,67 @@ impl App {
             panic!();
         };
 
-        // // if cfg!(debug_assertions) {
-        // ui.label(&format!("stage: {:?}", status.stage));
-        // ui.label(&format!("sub_stage: {:?}", status.sub_stage));
-        // ui.label(&format!("ams_status: {:?}", status.ams_status));
-        // if let Some(ams) = &status.ams {
-        //     ui.label(&format!("ams_state: {:?}", ams.state));
+        // if cfg!(debug_assertions) {
+
+        // let s = status
+        //     .stage
+        //     .as_ref()
+        //     .parse::<u8>()
+        //     .unwrap_or(0);
+
+        if let Some(s) = status.stage {
+            ui.label(&format!(
+                "stage: {:?}",
+                super::ui_types::PrintStage::new(s as u8)
+            ));
+        }
+
+        // ui.label(&format!("light: {:?}", status.chamber_light));
+
+        ui.label(&format!("sub_stage: {:?}", status.sub_stage));
+        ui.label(&format!("ams_status: {:?}", status.ams_status));
+        if let Some(ams) = &status.ams {
+            ui.label(&format!("ams_state: {:?}", ams.state));
+        }
+
+        ui.label(&format!("stg_cur: {:?}", status.stg_cur));
+
         // }
-        // // }
 
         resp
+    }
+}
+
+/// fullscreen
+impl App {
+    pub fn show_fullscreen_printer(
+        &mut self,
+        ui: &mut egui::Ui,
+        id: PrinterId,
+        // id: PrinterId,
+    ) {
+        let Some(entry) = self.printer_textures.get(&id) else {
+            return;
+        };
+        if !entry.enabled {
+            self.selected_stream = None;
+        }
+        let entry = entry.handle.clone();
+
+        let size = ui.available_size();
+
+        // let size = Vec2::new(thumbnail_width, thumbnail_height);
+        let img = egui::Image::from_texture((entry.id(), entry.size_vec2()))
+            // .fit_to_exact_size(size)
+            .max_size(size)
+            .maintain_aspect_ratio(true)
+            .rounding(Rounding::same(4.))
+            .sense(Sense::click());
+        if ui.add(img).clicked() {
+            self.selected_stream = None;
+        }
+
+        //
     }
 }
 

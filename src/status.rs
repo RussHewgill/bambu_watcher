@@ -13,20 +13,64 @@ use crate::{
 };
 use std::{
     collections::HashMap,
+    option,
     time::{Duration, Instant},
 };
 
 // use crate::app_types::StatusIcon;
 
+#[derive(Debug, Clone, strum::EnumDiscriminants)]
+#[strum_discriminants(name(PrinterStatusType))]
+pub enum PrinterStatus {
+    Bambu(PrinterStatusBambu),
+    Klipper(PrinterStatusKlipper),
+    Prusa(PrinterStatusPrusa),
+}
+
+impl PrinterStatus {
+    pub fn empty(printer_type: PrinterStatusType) -> Self {
+        match printer_type {
+            PrinterStatusType::Bambu => PrinterStatus::Bambu(PrinterStatusBambu::default()),
+            PrinterStatusType::Klipper => todo!(),
+            PrinterStatusType::Prusa => todo!(),
+        }
+    }
+
+    pub fn state(&self) -> &PrinterState {
+        match self {
+            PrinterStatus::Bambu(s) => &s.state,
+            PrinterStatus::Klipper(_) => todo!(),
+            PrinterStatus::Prusa(_) => todo!(),
+        }
+    }
+
+    pub fn is_error(&self) -> bool {
+        unimplemented!()
+    }
+}
+
 #[derive(Default, Debug, Clone)]
-pub struct PrinterStatus {
+pub struct PrinterStatusKlipper {
+    //
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct PrinterStatusPrusa {
+    //
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct PrinterStatusBambu {
     /// X1, P1, A1, etc
     pub printer_type: Option<PrinterType>,
 
     pub state: PrinterState,
     // pub stage: Option<PrintStage>,
-    pub stage: Option<String>,
+    pub stage: Option<i64>,
     pub sub_stage: Option<i64>,
+
+    pub stg: Vec<i64>,
+    pub stg_cur: i64,
 
     // pub last_report: Option<PrinterStatusReport>,
     pub last_report: Option<Instant>,
@@ -50,6 +94,8 @@ pub struct PrinterStatus {
     pub total_layer_num: Option<i64>,
     pub line_number: Option<i64>,
 
+    pub chamber_light: Option<bool>,
+
     pub temp_nozzle: Option<f64>,
     pub temp_tgt_nozzle: Option<f64>,
     pub temp_bed: Option<f64>,
@@ -63,13 +109,13 @@ pub struct PrinterStatus {
     pub chamber_fan_speed: Option<i64>,
 }
 
-impl PrinterStatus {
+impl PrinterStatusBambu {
     pub fn is_error(&self) -> bool {
-        matches!(self.state, PrinterState::Error(_))
+        matches!(self.state(), &PrinterState::Error(_))
     }
 
     pub fn reset(&mut self) {
-        *self = Self::default();
+        *self = Self::empty();
     }
 
     fn get_state(report: &PrintData) -> Option<PrinterState> {
@@ -97,6 +143,16 @@ impl PrinterStatus {
         }
     }
 
+    pub fn get_print_stage(&self) -> PrintStage {
+        if self.stage == Some(768) {
+            // return PrintStage::
+        }
+        //
+        unimplemented!()
+    }
+}
+
+impl PrinterStatusBambu {
     pub fn update(&mut self, printer: &PrinterConfig, report: &PrintData) -> Result<()> {
         self.last_report = Some(Instant::now());
 
@@ -123,11 +179,23 @@ impl PrinterStatus {
         }
 
         if let Some(s) = report.mc_print_stage.as_ref() {
-            self.stage = Some(s.clone());
+            // self.stage = Some(s.clone());
+            if let Some(s) = s.parse::<i64>().ok() {
+                self.stage = Some(s);
+            } else {
+                warn!("Failed to parse stage: {:?}", s);
+            }
         }
 
         if let Some(s) = report.mc_print_sub_stage {
             self.sub_stage = Some(s);
+        }
+
+        if let Some(s) = report.stg.as_ref() {
+            self.stg = s.clone();
+        }
+        if let Some(s) = report.stg_cur {
+            self.stg_cur = s;
         }
 
         // if let Some(s) = report.gcode_state.as_ref() {
@@ -174,6 +242,14 @@ impl PrinterStatus {
         if let Some(l) = report.mc_print_line_number.as_ref() {
             if let Some(l) = l.parse::<i64>().ok() {
                 self.line_number = Some(l);
+            }
+        }
+
+        if let Some(lights) = report.lights_report.as_ref() {
+            for light in lights.iter() {
+                if light.node == "chamber_light" {
+                    self.chamber_light = Some(light.mode == "on");
+                }
             }
         }
 

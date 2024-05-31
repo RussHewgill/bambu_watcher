@@ -253,7 +253,7 @@ impl PrinterConnManager {
                     .entry(printer.serial.clone())
                     .or_default();
 
-                let prev_state = entry.state.clone();
+                let prev_state = entry.state().clone();
                 let prev_error = entry.is_error();
 
                 entry.update(&printer, &report.print)?;

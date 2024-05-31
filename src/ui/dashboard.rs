@@ -274,7 +274,7 @@ impl App {
         };
 
         let color = if let Some(status) = self.printer_states.get(&id) {
-            match status.state {
+            match status.state() {
                 PrinterState::Paused => Color32::from_rgb(173, 125, 90),
                 PrinterState::Printing => Color32::from_rgb(121, 173, 116),
                 PrinterState::Error(_) => Color32::from_rgb(173, 125, 90),

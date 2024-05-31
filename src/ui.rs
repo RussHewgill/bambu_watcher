@@ -221,7 +221,11 @@ impl eframe::App for App {
         match self.current_tab {
             Tab::Dashboard => {
                 if let Some(id) = self.selected_stream.as_ref() {
-                    self.show_stream(ctx, id.clone());
+                    // self.show_stream(ctx, id.clone());
+                    let id = id.clone();
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        self.show_fullscreen_printer(ui, id);
+                    });
                 } else {
                     self.show_dashboard(ctx);
                 }

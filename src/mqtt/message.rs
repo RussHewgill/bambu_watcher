@@ -62,7 +62,7 @@ pub struct PrintData {
     pub subtask_id: Option<String>,
     pub subtask_name: Option<String>,
     pub gcode_file: Option<String>,
-    pub stg: Option<Vec<Value>>,
+    pub stg: Option<Vec<i64>>,
     pub stg_cur: Option<i64>,
     pub print_type: Option<String>,
     pub home_flag: Option<i64>,

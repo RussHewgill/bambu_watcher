@@ -2,6 +2,7 @@ pub mod cloud_types;
 pub mod errors;
 pub mod projects;
 pub mod streaming;
+pub mod rtsp;
 
 use std::collections::HashMap;
 

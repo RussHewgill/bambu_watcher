@@ -96,6 +96,7 @@ rand = "0.8.5"
 base64 = "0.22.1"
 regex = "1.10.4"
 egui-data-table = "0.2.2"
+strum = { version = "0.26.2", features = ["derive"] }
 
 # relm4 = { version = "0.8.0", features = ["macros"] }
 # relm4-components = "0.8.0"

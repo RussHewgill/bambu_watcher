@@ -23,16 +23,15 @@ pub mod ui;
 // pub mod ui2;
 // pub mod ui3;
 // pub mod ui4;
+pub mod klipper;
 pub mod utils;
 // pub mod mqtt_types;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use cloud::streaming::{StreamCmd, WebcamTexture};
-use config::ConfigArc;
-use parking_lot::RwLock;
 use tracing::{debug, error, info, trace, warn};
 
 use futures::StreamExt;
+use parking_lot::RwLock;
 // use rumqttc::{Client, MqttOptions, QoS};
 use dashmap::DashMap;
 use rumqttc::tokio_rustls::rustls;
@@ -41,6 +40,8 @@ use std::{collections::HashMap, env, sync::Arc, time::Duration, usize};
 // use bambulab::{Command, Message};
 
 use crate::{
+    cloud::streaming::{StreamCmd, WebcamTexture},
+    config::ConfigArc,
     conn_manager::{PrinterConnCmd, PrinterConnManager, PrinterConnMsg, PrinterId},
     status::PrinterStatus,
 };
@@ -191,6 +192,23 @@ fn main() -> iced::Result {
     // ui3::ui3_main().unwrap();
 }
 
+/// klipper test
+// #[cfg(feature = "nope")]
+#[tokio::main]
+async fn main() -> Result<()> {
+    dotenvy::dotenv()?;
+    logging::init_logs();
+
+    let host = env::var("KLIPPER_HOST")?;
+
+    // let s: serde_json::Value =
+    //     crate::klipper::get_response(&format!("http://{}/server/info", host)).await?;
+
+    // debug!("s = {:#?}", s);
+
+    Ok(())
+}
+
 /// cloud test
 #[cfg(feature = "nope")]
 // #[tokio::main]
@@ -201,260 +219,12 @@ async fn main() -> Result<()> {
     let username = env::var("CLOUD_USERNAME")?;
     let password = env::var("CLOUD_PASSWORD")?;
 
-    // let username = "test_user";
-    // let password = "test_pass";
-
-    // debug!("username = {}", username);
-    // debug!("password = {}", password);
-
-    #[cfg(feature = "nope")]
-    {
-        let url = "https://bambulab.com/api/sign-in/form";
-
-        let mut map = HashMap::new();
-        map.insert("account", username);
-        map.insert("password", password);
-        // map.insert("apiError", "".to_string());
-
-        // let client = reqwest::blocking::Client::new();
-        let client = reqwest::blocking::ClientBuilder::new()
-            .use_rustls_tls()
-            // .use_na
-            // .use_rustls_tls()
-            .build()?;
-
-        // let req = client.post(url).json(&map);
-
-        // let json = serde_json::to_string(&map)?;
-        // debug!("json = {}", json);
-        let req = client
-            .post(url)
-            .header("content-type", "application/json")
-            // .header("content-length", format!("{}", json.len()))
-            // .body(json);
-            .json(&map);
-
-        // let req = req.build()?;
-
-        // debug!("req = {:#?}", req);
-
-        // let body = req.body().unwrap().as_bytes().unwrap();
-        // let body = std::str::from_utf8(body).unwrap();
-
-        // debug!("body = {}", body);
-
-        let res = req.send()?;
-
-        debug!("res = {:#?}", res);
-
-        if !res.status().is_success() {
-            debug!("failure");
-            panic!();
-        } else {
-            debug!("success");
-        }
-
-        // debug!("headers = {:#?}", res.headers());
-
-        // let cookies = res.headers().get_all("set-cookie");
-
-        // let mut token = None;
-        // let mut refresh_token = None;
-
-        // for cookie in cookies.iter() {
-        //     let cookie = cookie::Cookie::parse(cookie.to_str()?).unwrap();
-
-        //     if cookie.name() == "token" {
-        //         debug!("expires = {:?}", cookie.expires());
-        //         token = Some(auth::Token::from_cookie(&cookie)?);
-        //     } else if cookie.name() == "refreshToken" {
-        //         refresh_token = Some(auth::Token::from_cookie(&cookie)?);
-        //     }
-        // }
-
-        // let token = token.unwrap();
-        // debug!("token = {:#?}", token.get_token());
-
-        // let refresh_token = refresh_token.unwrap();
-
-        // let set_cookie = res.headers().get("set-cookie").unwrap().to_str()?;
-        // let set_cookie = cookie::Cookie::parse(set_cookie).unwrap();
-
-        // debug!("cookie = {:#?}", set_cookie);
-
-        // let set_cookie = res.headers().get("set-cookie").unwrap().to_str()?;
-        // let set_cookie = cookie::Cookie::parse(set_cookie).unwrap();
-
-        // let token = auth::Token::from_cookie(&cloud_cookie)?;
-
-        // debug!("token = {:#?}", token.get_token());
-
-        //
-    }
-
-    #[cfg(feature = "nope")]
-    {
-        let cloud_cookie = env::var("CLOUD_COOKIE")?;
-        let cloud_cookie = cookie::Cookie::parse(cloud_cookie).unwrap();
-        // debug!("cookie = {:#?}", cloud_cookie);
-        // debug!("token = {}", cloud_cookie.value());
-        // debug!("expires = {:?}", cloud_cookie.expires());
-
-        let token = auth::Token::from_cookie(&cloud_cookie)?;
-
-        let _ = cloud::get_machines_list(&token)?;
-
-        // let
-    }
-
-    #[cfg(feature = "nope")]
-    {
-        debug!("making auth file");
-        let mut db = auth::AuthDb::read_or_create("auth.db")?;
-
-        // let inner = db.get_inner()?;
-
-        // db.set_credentials(&username, &password)?;
-        // debug!("set credentials");
-
-        debug!("reading auth file");
-        let mut db = auth::AuthDb::read_or_create("auth.db")?;
-
-        debug!("logging in");
-
-        db.login_and_get_token(&username, &password)?;
-
-        // debug!("getting auth");
-        // let creds = db.get_auth()?;
-
-        // debug!("creds = {:#?}", creds);
-
-        // debug!("getting token");
-        // let token = db.get_token()?;
-
-        // debug!("token = {:#?}", token);
-    }
-
-    /// cloud test
-    #[cfg(feature = "nope")]
-    {
-        debug!("reading auth file");
-        let mut db = auth::AuthDb::read_or_create()?;
-
-        let (username, password) = db.get_cloud_mqtt_creds()?;
-
-        let client_id = format!("bambu-watcher-{}", nanoid::nanoid!(8));
-
-        let host = "us.mqtt.bambulab.com";
-
-        let mut mqttoptions = rumqttc::MqttOptions::new(client_id, host, 8883);
-        mqttoptions.set_keep_alive(Duration::from_secs(5));
-        mqttoptions.set_credentials(&username, &password);
-
-        let mut root_cert_store = rustls::RootCertStore::empty();
-        root_cert_store.add_parsable_certificates(
-            rustls_native_certs::load_native_certs().expect("could not load platform certs"),
-        );
-
-        let client_config = rustls::ClientConfig::builder()
-            .with_root_certificates(root_cert_store)
-            .with_no_client_auth();
-
-        let transport = rumqttc::Transport::tls_with_config(rumqttc::TlsConfiguration::Rustls(
-            Arc::new(client_config),
-        ));
-
-        mqttoptions.set_transport(transport);
-        mqttoptions.set_clean_session(true);
-
-        debug!("connecting");
-        let (mut client, mut eventloop) = rumqttc::AsyncClient::new(mqttoptions, 10);
-        debug!("connected");
-
-        let serial = env::var("BAMBU_IDENT")?;
-        let topic_device_request = format!("device/{}/request", &serial);
-        let topic_device_report = format!("device/{}/report", &serial);
-
-        let (tx, mut rx) = tokio::sync::broadcast::channel::<mqtt::message::Message>(50);
-
-        use rumqttc::{Event, Incoming};
-
-        let client2 = client.clone();
-        loop {
-            debug!("looping");
-            match eventloop.poll().await.unwrap() {
-                Event::Outgoing(event) => {
-                    // debug!("outgoing event: {:?}", event);
-                }
-                Event::Incoming(Incoming::PingResp) => {}
-                Event::Incoming(Incoming::ConnAck(c)) => {
-                    debug!("got ConnAck: {:?}", c.code);
-                    if c.code == rumqttc::ConnectReturnCode::Success {
-                        // debug!("Connected to MQTT");
-                        client2
-                            .subscribe(&topic_device_report, rumqttc::QoS::AtMostOnce)
-                            .await
-                            .unwrap();
-                        debug!("sent subscribe to topic");
-                        // self.send_pushall().await?;
-                    } else {
-                        error!("Failed to connect to MQTT: {:?}", c.code);
-                    }
-                }
-                Event::Incoming(Incoming::SubAck(s)) => {
-                    debug!("got SubAck");
-                    if s.return_codes
-                        .iter()
-                        .any(|&r| r == rumqttc::SubscribeReasonCode::Failure)
-                    {
-                        error!("Failed to subscribe to topic");
-                    } else {
-                        debug!("sending pushall");
-                        // self.send_pushall().await?;
-                        client2
-                            .publish(
-                                &topic_device_request,
-                                rumqttc::QoS::AtMostOnce,
-                                false,
-                                mqtt::command::Command::PushAll.get_payload(),
-                            )
-                            .await
-                            .unwrap();
-                        debug!("sent");
-                        // debug!("sending get version");
-                        // self.send_get_version().await?;
-                        // debug!("sent");
-                    }
-                }
-                Event::Incoming(Incoming::Publish(p)) => {
-                    // debug!("incoming publish");
-                    let msg = mqtt::parse::parse_message(&p);
-                    debug!("incoming publish: {:?}", msg);
-                    // self.tx.send((self.printer_cfg.serial.clone(), msg))?;
-                }
-                Event::Incoming(event) => {
-                    debug!("incoming other event: {:?}", event);
-                }
-            }
-        }
-    }
-
     debug!("reading auth file");
     let mut db = auth::AuthDb::read_or_create()?;
 
     // // // db.login_and_get_token(&username, &password).await?;
 
     let token = db.get_token()?.unwrap();
-
-    // let projects = cloud::get_project_list(&token).await?;
-    // let s = serde_json::to_string_pretty(&projects)?;
-    // std::fs::write("projects.json", s)?;
-
-    // let tasks = cloud::get_task_list(&token).await?;
-    // debug!("tasks = {:#?}", tasks);
-
-    // let project_id = "82911955";
-    // let project_id = "79930702";
 
     /// projects list:
     ///     "project_id": 81857163
@@ -499,7 +269,7 @@ async fn main() -> Result<()> {
         serial: Arc::new(env::var("BAMBU_IDENT")?),
         color: [0; 3],
     };
-    crate::mqtt::debug_get_printer_report(printer.clone()).await?;
+    // crate::mqtt::debug_get_printer_report(printer.clone()).await?;
 
     let s = std::fs::read_to_string("printer_report.json")?;
     let report: mqtt::message::Print = serde_json::from_str(&s)?;
@@ -509,59 +279,25 @@ async fn main() -> Result<()> {
 
     // debug!("status = {:#?}", status);
 
-    // let ams_status = 768;
-    // let ams_status = 263;
-    let s =
-        crate::utils::parse_ams_status(&status.ams.as_ref().unwrap(), status.ams_status.unwrap());
-    debug!("s = {:#?}", s);
+    // // let ams_status = 768;
+    // // let ams_status = 263;
+    // let s =
+    //     crate::utils::parse_ams_status(&status.ams.as_ref().unwrap(), status.ams_status.unwrap());
+    // debug!("s = {:#?}", s);
+
+    let s = status.get_print_stage();
+
+    // if let Some(s) = status.stage {
+    //     debug!("stage: {:?}", s);
+    //     let s = ui::ui_types::PrintStage::new(s as u8);
+    //     debug!("s = {:#?}", s);
+    // }
+
+    // debug!("status.stg = {:#?}", status.stg);
 
     // let ams_status = 263;
     // let s = crate::utils::_parse_ams_status(ams_status);
     // debug!("s = {:#?}", s);
-
-    // let mut file = std::fs::File::open("projects.json")?;
-    // let s = std::fs::read_to_string("projects.json")?;
-    // let projects: cloud::projects::Root = serde_json::from_str(&s)?;
-
-    // // for project in projects.projects {
-    // //     debug!("project = {:#?}", project);
-    // // }
-    // let s = std::fs::read_to_string("project_data.json")?;
-
-    // let p: serde_json::Value = serde_json::from_str(&s)?;
-    // let p: cloud::projects::ProjectDataJson = serde_json::from_str(&s)?;
-    // let p = cloud::projects::ProjectData::from_json(p)?;
-
-    // debug!("p = {:#?}", p);
-
-    // let t = "2024-05-22 04:16:34";
-
-    // let t = chrono::NaiveDateTime::parse_from_str(t, "%Y-%m-%d %H:%M:%S").unwrap();
-
-    // let s = std::fs::read_to_string("task_list.json")?;
-    // let s: cloud::projects::TasksInfo = serde_json::from_str(&s)?;
-
-    // let t = &s.hits[0];
-
-    // let t = cloud::projects::TaskData::from_json(t);
-
-    // debug!("t = {:#?}", t);
-
-    /// 117473284 - fail to retract
-    let e = 117473284;
-
-    // let errors = cloud::errors::fetch_error_codes().await?;
-
-    // let s = format!("{:x}", e);
-    // debug!("s = {}", s);
-
-    // let errors = cloud::errors::ErrorMap::read_or_fetch().await?;
-
-    // let e = errors.get_error(e).unwrap();
-
-    // debug!("error = {}", e);
-
-    // let s = std::fs::read_to_string()
 
     Ok(())
 }
@@ -573,7 +309,7 @@ async fn main() -> Result<()> {
 /// threads:
 ///     main egui thread
 ///     tokio thread, listens for messages from the printer
-// #[cfg(feature = "nope")]
+#[cfg(feature = "nope")]
 fn main() -> eframe::Result<()> {
     let _ = dotenvy::dotenv();
     logging::init_logs();

@@ -7,5 +7,9 @@
         // "VCPKGRS_DYNAMIC": "1",
         // "PATH": "${env:PATH};C:\\Program Files\\NASM;C:\\Program Files\\CMake\\bin",
         // "LIBCLANG_PATH": "Q:\\Software\\LLVM\\bin",
-    }
+        "CARGO_TARGET_DIR": "target/analyzer"
+    },
+    "rust-analyzer.check.extraArgs": [
+        "--target-dir=target/analyzer"
+    ]
 }

@@ -371,6 +371,50 @@ pub enum PrintStage {
     NozzleClogPause = 35,
 }
 
+impl PrintStage {
+    pub fn new(code: u8) -> Self {
+        match code {
+            0 => Self::Printing,
+            1 => Self::AutoBedLeveling,
+            2 => Self::HeatbedPreheating,
+            3 => Self::SweepingXyMechMode,
+            4 => Self::ChangingFilament,
+            5 => Self::M400Pause,
+            6 => Self::PausedDueToFilamentRunout,
+            7 => Self::HeatingHotend,
+            8 => Self::CalibratingExtrusion,
+            9 => Self::ScanningBedSurface,
+            10 => Self::InspectingFirstLayer,
+            11 => Self::IdentifyingBuildPlateType,
+            12 => Self::CalibratingMicroLidar,
+            13 => Self::HomingToolhead,
+            14 => Self::CleaningNozzleTip,
+            15 => Self::CheckingExtruderTemperature,
+            16 => Self::PrintingWasPausedByTheUser,
+            17 => Self::PauseOfFrontCoverFalling,
+            18 => Self::CalibratingTheMicroLida,
+            19 => Self::CalibratingExtrusionFlow,
+            20 => Self::PausedDueToNozzleTemperatureMalfunction,
+            21 => Self::PausedDueToHeatBedTemperatureMalfunction,
+            22 => Self::FilamentUnloading,
+            23 => Self::SkipStepPause,
+            24 => Self::FilamentLoading,
+            25 => Self::MotorNoiseCalibration,
+            26 => Self::PausedDueToAmsLost,
+            27 => Self::PausedDueToLowSpeedOfTheHeatBreakFan,
+            28 => Self::PausedDueToChamberTemperatureControlError,
+            29 => Self::CoolingChamber,
+            30 => Self::PausedByTheGcodeInsertedByUser,
+            31 => Self::MotorNoiseShowoff,
+            32 => Self::NozzleFilamentCoveredDetectedPause,
+            33 => Self::CutterErrorPause,
+            34 => Self::FirstLayerErrorPause,
+            35 => Self::NozzleClogPause,
+            _ => Self::Printing,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 pub enum FilamentSwapStep {
     Idling,
