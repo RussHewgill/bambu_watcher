@@ -1,8 +1,8 @@
-use std::{collections::HashMap, sync::Arc, time::Duration};
-
 use anyhow::{anyhow, bail, ensure, Context, Result};
-use tokio::sync::RwLock;
 use tracing::{debug, error, info, trace, warn};
+
+use std::{collections::HashMap, sync::Arc, time::Duration};
+use tokio::sync::RwLock;
 
 // use bambulab::{Client as BambuClient, Message};
 use crate::{
@@ -31,7 +31,6 @@ pub type PrinterId = Arc<String>;
 /// messages from PrinterConnManager to UI
 #[derive(Debug)]
 pub enum PrinterConnMsg {
-    // Empty,
     /// The current status of a printer
     StatusReport(PrinterId, PrintData),
     LoggedIn,
@@ -105,7 +104,22 @@ pub struct PrinterConnManager {
     error_map: ErrorMap,
 }
 
+impl PrinterConnManager {
+    pub async fn new(
+        config: ConfigArc,
+        printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
+        cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
+        cmd_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnCmd>,
+        msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
+        ctx: egui::Context,
+        graphs: crate::ui::plotting::Graphs,
+        stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
+    ) -> Self {
+        unimplemented!()
+    }
+}
 /// new, start listeners
+#[cfg(feature = "nope")]
 impl PrinterConnManager {
     pub async fn new(
         config: ConfigArc,
@@ -229,6 +243,7 @@ impl PrinterConnManager {
 }
 
 /// handle messages, commands
+#[cfg(feature = "nope")]
 impl PrinterConnManager {
     async fn handle_printer_msg(
         &mut self,
@@ -608,7 +623,8 @@ async fn fetch_printer_task_thumbnail(
             // debug!("got subtask info");
             let url = info.context.plates[0].thumbnail.url.clone();
             if let Some(mut entry) = printer_states.get_mut(&id) {
-                entry.current_task_thumbnail_url = Some(url);
+                // entry.current_task_thumbnail_url = Some(url);
+                unimplemented!()
             }
 
             // let pick_picture = info.context.plates[0].pick_picture.url.clone();

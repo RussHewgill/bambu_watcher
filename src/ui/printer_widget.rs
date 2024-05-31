@@ -15,8 +15,18 @@ use crate::{
 
 /// show_printer
 impl App {
+    pub fn show_printer(
+        &mut self,
+        pos: (usize, usize),
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        printer: &PrinterConfig,
+    ) -> Response {
+        unimplemented!()
+    }
+
     /// Wide layout
-    // #[cfg(feature = "nope")]
+    #[cfg(feature = "nope")]
     pub fn show_printer(
         &mut self,
         pos: (usize, usize),
@@ -82,12 +92,12 @@ impl App {
                             row: pos.1,
                         },
                         |ui| {
-                            paint_icon(ui, 40., &status.state);
+                            paint_icon(ui, 40., status.state());
                             ui.add(
                                 egui::Label::new(&format!(
                                     "{} ({})",
                                     printer.name,
-                                    status.state.to_text()
+                                    status.state().to_text()
                                 ))
                                 .truncate(true),
                             );
@@ -480,7 +490,7 @@ impl App {
         printer: &PrinterConfig,
         printer_state: &PrinterStatus,
     ) {
-        let pause = match &status.state {
+        let pause = match status.state() {
             PrinterState::Printing => egui::Button::image_and_text(icon_pause(), "Pause"),
             _ => egui::Button::image_and_text(icon_resume(), "Resume"),
         };
@@ -536,6 +546,7 @@ impl App {
         //
     }
 
+    #[cfg(feature = "nope")]
     /// MARK: ams
     fn show_ams(
         &self,

@@ -15,7 +15,7 @@ use crate::{
     },
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
-    status::PrinterStatus,
+    status::{PrinterStatus, PrinterStatusExt},
 };
 
 pub use self::projects_list::ProjectsList;
