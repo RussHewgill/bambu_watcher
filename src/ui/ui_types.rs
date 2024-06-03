@@ -15,7 +15,7 @@ use crate::{
     },
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
-    status::{PrinterStatus, PrinterStatusExt},
+    status::bambu::PrinterStatus,
 };
 
 pub use self::projects_list::ProjectsList;
@@ -108,6 +108,7 @@ impl GridLocation {
         Self { col, row }
     }
 }
+
 // #[derive(Default)]
 pub struct AppLogin {
     pub username: String,
@@ -327,90 +328,6 @@ pub mod projects_list {
             //     }
             // });
             // self.sort = Some((0, reverse));
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
-pub enum PrintStage {
-    Printing = 0,
-    AutoBedLeveling = 1,
-    HeatbedPreheating = 2,
-    SweepingXyMechMode = 3,
-    ChangingFilament = 4,
-    M400Pause = 5,
-    PausedDueToFilamentRunout = 6,
-    HeatingHotend = 7,
-    CalibratingExtrusion = 8,
-    ScanningBedSurface = 9,
-    InspectingFirstLayer = 10,
-    IdentifyingBuildPlateType = 11,
-    CalibratingMicroLidar = 12,
-    HomingToolhead = 13,
-    CleaningNozzleTip = 14,
-    CheckingExtruderTemperature = 15,
-    PrintingWasPausedByTheUser = 16,
-    PauseOfFrontCoverFalling = 17,
-    CalibratingTheMicroLida = 18,
-    CalibratingExtrusionFlow = 19,
-    PausedDueToNozzleTemperatureMalfunction = 20,
-    PausedDueToHeatBedTemperatureMalfunction = 21,
-    FilamentUnloading = 22,
-    SkipStepPause = 23,
-    FilamentLoading = 24,
-    MotorNoiseCalibration = 25,
-    PausedDueToAmsLost = 26,
-    PausedDueToLowSpeedOfTheHeatBreakFan = 27,
-    PausedDueToChamberTemperatureControlError = 28,
-    CoolingChamber = 29,
-    PausedByTheGcodeInsertedByUser = 30,
-    MotorNoiseShowoff = 31,
-    NozzleFilamentCoveredDetectedPause = 32,
-    CutterErrorPause = 33,
-    FirstLayerErrorPause = 34,
-    NozzleClogPause = 35,
-}
-
-impl PrintStage {
-    pub fn new(code: u8) -> Self {
-        match code {
-            0 => Self::Printing,
-            1 => Self::AutoBedLeveling,
-            2 => Self::HeatbedPreheating,
-            3 => Self::SweepingXyMechMode,
-            4 => Self::ChangingFilament,
-            5 => Self::M400Pause,
-            6 => Self::PausedDueToFilamentRunout,
-            7 => Self::HeatingHotend,
-            8 => Self::CalibratingExtrusion,
-            9 => Self::ScanningBedSurface,
-            10 => Self::InspectingFirstLayer,
-            11 => Self::IdentifyingBuildPlateType,
-            12 => Self::CalibratingMicroLidar,
-            13 => Self::HomingToolhead,
-            14 => Self::CleaningNozzleTip,
-            15 => Self::CheckingExtruderTemperature,
-            16 => Self::PrintingWasPausedByTheUser,
-            17 => Self::PauseOfFrontCoverFalling,
-            18 => Self::CalibratingTheMicroLida,
-            19 => Self::CalibratingExtrusionFlow,
-            20 => Self::PausedDueToNozzleTemperatureMalfunction,
-            21 => Self::PausedDueToHeatBedTemperatureMalfunction,
-            22 => Self::FilamentUnloading,
-            23 => Self::SkipStepPause,
-            24 => Self::FilamentLoading,
-            25 => Self::MotorNoiseCalibration,
-            26 => Self::PausedDueToAmsLost,
-            27 => Self::PausedDueToLowSpeedOfTheHeatBreakFan,
-            28 => Self::PausedDueToChamberTemperatureControlError,
-            29 => Self::CoolingChamber,
-            30 => Self::PausedByTheGcodeInsertedByUser,
-            31 => Self::MotorNoiseShowoff,
-            32 => Self::NozzleFilamentCoveredDetectedPause,
-            33 => Self::CutterErrorPause,
-            34 => Self::FirstLayerErrorPause,
-            35 => Self::NozzleClogPause,
-            _ => Self::Printing,
         }
     }
 }

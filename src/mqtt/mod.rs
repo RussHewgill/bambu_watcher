@@ -497,9 +497,20 @@ pub async fn debug_get_printer_report(printer: PrinterConfig) -> Result<()> {
                 debug!("incoming publish: {:#?}", parsed_message);
 
                 let s = serde_json::to_string_pretty(&parsed_message).unwrap();
-                std::fs::write("printer_report.json", s)?;
+                // std::fs::write("printer_report.json", s)?;
+                let mut file = std::fs::OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open("printer_reports.json")
+                    .unwrap();
 
-                panic!()
+                use std::io::Write;
+
+                if let Err(e) = writeln!(&mut file, "{},", s) {
+                    eprintln!("Couldn't write to file: {}", e);
+                }
+
+                // panic!()
 
                 // let msg = parse::parse_message(&p);
                 // match msg {

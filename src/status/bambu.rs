@@ -13,15 +13,12 @@ use crate::{
     config::PrinterConfig,
     mqtt::message::{PrintAms, PrintData},
     status::PrinterState,
-    ui::ui_types::PrintStage,
 };
 
-use super::{
-    AmsCurrentSlot, AmsSlot, AmsStatus, AmsUnit, PrintError, PrinterStatusExt, PrinterType,
-};
+use super::{AmsCurrentSlot, AmsSlot, AmsStatus, AmsUnit, PrintError, PrinterType};
 
 #[derive(Default, Debug, Clone)]
-pub struct PrinterStatusBambu {
+pub struct PrinterStatus {
     /// X1, P1, A1, etc
     pub printer_type: Option<PrinterType>,
 
@@ -70,7 +67,8 @@ pub struct PrinterStatusBambu {
     pub chamber_fan_speed: Option<i64>,
 }
 
-impl PrinterStatusExt for PrinterStatusBambu {
+#[cfg(feature = "nope")]
+impl PrinterStatusExt for PrinterStatus {
     type UpdateMsg = PrintData;
 
     fn state(&self) -> &PrinterState {
@@ -81,7 +79,7 @@ impl PrinterStatusExt for PrinterStatusBambu {
     }
 }
 
-impl PrinterStatusBambu {
+impl PrinterStatus {
     pub fn is_error(&self) -> bool {
         matches!(self.state, PrinterState::Error(_))
     }
@@ -115,17 +113,17 @@ impl PrinterStatusBambu {
         }
     }
 
-    pub fn get_print_stage(&self) -> PrintStage {
-        if self.stage == Some(768) {
-            // return PrintStage::
-        }
-        //
-        unimplemented!()
-    }
+    // pub fn get_print_stage(&self) -> PrintStage {
+    //     if self.stage == Some(768) {
+    //         // return PrintStage::
+    //     }
+    //     //
+    //     unimplemented!()
+    // }
 }
 
-impl PrinterStatusBambu {
-    pub fn update(&mut self, report: &PrintData) -> Result<()> {
+impl PrinterStatus {
+    pub fn update(&mut self, printer: &PrinterConfig, report: &PrintData) -> Result<()> {
         self.last_report = Some(Instant::now());
 
         if let Some(f) = report.gcode_file.as_ref() {

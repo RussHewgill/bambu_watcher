@@ -26,7 +26,7 @@ use crate::{
     cloud::streaming::{StreamCmd, WebcamTexture},
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterConnMsg, PrinterId},
-    status::{PrinterState, PrinterStatus},
+    status::{bambu::PrinterStatus, PrinterState},
     ui::{
         icons::*,
         ui_types::{App, GridLocation, Tab},

@@ -13,7 +13,7 @@ use crate::{
         message::{Message, PrintData},
         BambuClient,
     },
-    status::PrinterType,
+    status::{bambu::PrinterStatus, PrinterType},
     ui::ui_types::{NewPrinterEntry, ProjectsList},
 };
 use dashmap::DashMap;
@@ -21,7 +21,7 @@ use dashmap::DashMap;
 
 use crate::{
     config::{Config, PrinterConfig},
-    status::{PrinterState, PrinterStatus},
+    status::PrinterState,
 };
 
 /// The serial number of a printer
@@ -104,22 +104,7 @@ pub struct PrinterConnManager {
     error_map: ErrorMap,
 }
 
-impl PrinterConnManager {
-    pub async fn new(
-        config: ConfigArc,
-        printer_states: Arc<DashMap<PrinterId, PrinterStatus>>,
-        cmd_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnCmd>,
-        cmd_rx: tokio::sync::mpsc::UnboundedReceiver<PrinterConnCmd>,
-        msg_tx: tokio::sync::mpsc::UnboundedSender<PrinterConnMsg>,
-        ctx: egui::Context,
-        graphs: crate::ui::plotting::Graphs,
-        stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
-    ) -> Self {
-        unimplemented!()
-    }
-}
 /// new, start listeners
-#[cfg(feature = "nope")]
 impl PrinterConnManager {
     pub async fn new(
         config: ConfigArc,
@@ -149,8 +134,6 @@ impl PrinterConnManager {
             cmd_rx,
             msg_tx,
             ctx,
-            // win_handle,
-            // alert_tx,
             tx,
             rx,
             kill_chans: HashMap::new(),
@@ -243,7 +226,6 @@ impl PrinterConnManager {
 }
 
 /// handle messages, commands
-#[cfg(feature = "nope")]
 impl PrinterConnManager {
     async fn handle_printer_msg(
         &mut self,
@@ -268,7 +250,7 @@ impl PrinterConnManager {
                     .entry(printer.serial.clone())
                     .or_default();
 
-                let prev_state = entry.state().clone();
+                let prev_state = entry.state.clone();
                 let prev_error = entry.is_error();
 
                 entry.update(&printer, &report.print)?;
@@ -623,8 +605,7 @@ async fn fetch_printer_task_thumbnail(
             // debug!("got subtask info");
             let url = info.context.plates[0].thumbnail.url.clone();
             if let Some(mut entry) = printer_states.get_mut(&id) {
-                // entry.current_task_thumbnail_url = Some(url);
-                unimplemented!()
+                entry.current_task_thumbnail_url = Some(url);
             }
 
             // let pick_picture = info.context.plates[0].pick_picture.url.clone();

@@ -6,7 +6,7 @@ use egui::{Color32, Label, Layout, Response, RichText, Rounding, Sense, Vec2};
 use crate::{
     config::{ConfigArc, PrinterConfig},
     conn_manager::{PrinterConnCmd, PrinterId},
-    status::{PrinterState, PrinterStatus},
+    status::{bambu::PrinterStatus, PrinterState},
     ui::{
         icons::*,
         ui_types::{App, GridLocation, Tab},
@@ -15,18 +15,7 @@ use crate::{
 
 /// show_printer
 impl App {
-    pub fn show_printer(
-        &mut self,
-        pos: (usize, usize),
-        frame_size: Vec2,
-        ui: &mut egui::Ui,
-        printer: &PrinterConfig,
-    ) -> Response {
-        unimplemented!()
-    }
-
     /// Wide layout
-    #[cfg(feature = "nope")]
     pub fn show_printer(
         &mut self,
         pos: (usize, usize),
@@ -92,12 +81,12 @@ impl App {
                             row: pos.1,
                         },
                         |ui| {
-                            paint_icon(ui, 40., status.state());
+                            paint_icon(ui, 40., &status.state);
                             ui.add(
                                 egui::Label::new(&format!(
                                     "{} ({})",
                                     printer.name,
-                                    status.state().to_text()
+                                    status.state.to_text()
                                 ))
                                 .truncate(true),
                             );
@@ -377,6 +366,23 @@ impl App {
                             });
                             strip.cell(|ui| {
                                 /// TODO: status instead of layers during prepare
+                                if let Some(stage) = status.stage {
+                                    let state =
+                                        crate::status::PrintStage::new(status.layer_num, stage);
+
+                                    let idle = matches!(status.state, PrinterState::Idle)
+                                        || matches!(status.state, PrinterState::Finished);
+                                    if !idle
+                                        && !matches!(state, crate::status::PrintStage::Printing)
+                                    {
+                                        ui.add(Label::new(
+                                            RichText::new(state.to_string())
+                                                .size(text_size_eta - 2.),
+                                        ));
+
+                                        return;
+                                    }
+                                }
                                 if let (Some(layer), Some(max)) =
                                     (status.layer_num, status.total_layer_num)
                                 {
@@ -424,12 +430,12 @@ impl App {
         //     .parse::<u8>()
         //     .unwrap_or(0);
 
-        if let Some(s) = status.stage {
-            ui.label(&format!(
-                "stage: {:?}",
-                super::ui_types::PrintStage::new(s as u8)
-            ));
-        }
+        // if let Some(s) = status.stage {
+        //     ui.label(&format!(
+        //         "stage: {:?}",
+        //         crate::status::PrintStage::new(status.layer_num.unwrap_or(0), s as u8)
+        //     ));
+        // }
 
         // ui.label(&format!("light: {:?}", status.chamber_light));
 
@@ -490,7 +496,7 @@ impl App {
         printer: &PrinterConfig,
         printer_state: &PrinterStatus,
     ) {
-        let pause = match status.state() {
+        let pause = match status.state {
             PrinterState::Printing => egui::Button::image_and_text(icon_pause(), "Pause"),
             _ => egui::Button::image_and_text(icon_resume(), "Resume"),
         };
@@ -546,7 +552,6 @@ impl App {
         //
     }
 
-    #[cfg(feature = "nope")]
     /// MARK: ams
     fn show_ams(
         &self,
