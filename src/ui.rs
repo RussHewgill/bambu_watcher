@@ -6,6 +6,7 @@ pub mod printer_widget;
 pub mod printers;
 pub mod project_view;
 pub mod ui_types;
+pub mod ui_utils;
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use tracing::{debug, error, info, trace, warn};
@@ -285,19 +286,19 @@ impl App {
     fn show_debugging(&mut self, ui: &mut egui::Ui) {
         ui.label("Debugging");
 
-        egui::Grid::new("debugging_grid").show(ui, |ui| {
-            ui.label("Host:");
-            ui.text_edit_singleline(&mut self.debug_host);
-            ui.end_row();
+        // egui::Grid::new("debugging_grid").show(ui, |ui| {
+        //     ui.label("Host:");
+        //     ui.text_edit_singleline(&mut self.debug_host);
+        //     ui.end_row();
 
-            ui.label("Serial:");
-            ui.text_edit_singleline(&mut self.debug_serial);
-            ui.end_row();
+        //     ui.label("Serial:");
+        //     ui.text_edit_singleline(&mut self.debug_serial);
+        //     ui.end_row();
 
-            ui.label("Access Code:");
-            ui.text_edit_singleline(&mut self.debug_code);
-            ui.end_row();
-        });
+        //     ui.label("Access Code:");
+        //     ui.text_edit_singleline(&mut self.debug_code);
+        //     ui.end_row();
+        // });
 
         if ui.button("Fetch info").clicked() {
             // MARK: TODO

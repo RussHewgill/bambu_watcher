@@ -66,16 +66,6 @@ impl PrinterStatus {
     }
 }
 
-// #[derive(Default, Debug, Clone)]
-// pub struct PrinterStatusKlipper {
-//     //
-// }
-
-// #[derive(Default, Debug, Clone)]
-// pub struct PrinterStatusPrusa {
-//     //
-// }
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PrinterType {
     X1C,
@@ -164,7 +154,6 @@ impl PrintError {
 
 #[derive(Debug, Default, Clone)]
 pub struct AmsStatus {
-    // pub units: Vec<AmsUnit>,
     pub units: HashMap<i64, AmsUnit>,
     pub current_tray: Option<AmsCurrentSlot>,
     // pub id: Option<i64>,

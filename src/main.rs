@@ -454,11 +454,82 @@ fn main() -> eframe::Result<()> {
             //     }),
             // });
 
+            status.ams = Some(status::AmsStatus {
+                units: vec![
+                    status::AmsUnit {
+                        id: 0,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::RED,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::WHITE,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::BLACK,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::from_rgb(255, 0, 255),
+                            }),
+                        ],
+                    },
+                    status::AmsUnit {
+                        id: 1,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::YELLOW,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::WHITE,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::BLACK,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::PLACEHOLDER,
+                            }),
+                        ],
+                    },
+                ]
+                .into_iter()
+                .enumerate()
+                .map(|(i, unit)| (i as i64, unit))
+                .collect(),
+                current_tray: None,
+                ams_exist_bits: None,
+                tray_exist_bits: None,
+                tray_now: None,
+                tray_pre: None,
+                tray_tar: None,
+                version: None,
+                state: None,
+            });
+
             let serial = config.printers()[0].blocking_read().serial.clone();
             printer_states.insert(serial, status);
         }
 
-        // #[cfg(feature = "nope")]
+        #[cfg(feature = "nope")]
         {
             let mut status = PrinterStatus::default();
             status.temp_nozzle = Some(200.0);

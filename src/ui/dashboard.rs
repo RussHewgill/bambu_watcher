@@ -42,8 +42,9 @@ impl App {
             });
         }
 
-        let width = 250.0;
-        let height = 340.0;
+        // let width = 250.0;
+        // let height = 340.0;
+        let (width, height) = super::printer_widget::PRINTER_WIDGET_SIZE;
 
         // let frame_size = Vec2::new(width, width * (3. / 2.));
         let frame_size = Vec2::new(width, height);
@@ -119,6 +120,8 @@ impl App {
 
                             // #[cfg(feature = "nope")]
                             ui.allocate_ui_at_rect(max_rect_row, |ui| {
+                                let prev_inactive = ui.visuals().widgets.inactive.bg_stroke;
+                                let prev_active = ui.visuals().widgets.active.bg_stroke;
                                 if let Some(color) = color {
                                     ui.visuals_mut().widgets.inactive.bg_stroke =
                                         Stroke::new(4., color);
@@ -135,26 +138,14 @@ impl App {
 
                                 let (_, dropped_payload) =
                                     ui.dnd_drop_zone::<GridLocation, ()>(frame, |ui| {
+                                        ui.visuals_mut().widgets.inactive.bg_stroke = prev_inactive;
+                                        ui.visuals_mut().widgets.active.bg_stroke = prev_active;
+
                                         let Some(id) = id else {
                                             ui.label("Empty");
                                             ui.allocate_space(ui.available_size());
                                             return;
                                         };
-
-                                        // let id = if let Some(id) = self.printer_order.get(&pos) {
-                                        //     id.clone()
-                                        // } else {
-                                        //     /// if no printer at this location, try to place one
-                                        //     let Some(id) = self.unplaced_printers.pop() else {
-                                        //         ui.label("Empty");
-                                        //         ui.allocate_space(ui.available_size());
-                                        //         return;
-                                        //     };
-
-                                        //     self.printer_order.insert(pos, id.clone());
-                                        //     // self.printer_order.get(&pos).unwrap()
-                                        //     id
-                                        // };
 
                                         let Some(printer) = self.config.get_printer(&id) else {
                                             warn!("Printer not found: {}", id);
@@ -163,26 +154,6 @@ impl App {
 
                                         if self.printer_states.contains_key(&id) {
                                             let resp = if let Ok(printer) = printer.try_read() {
-                                                // egui::Frame::none()
-                                                //     // .fill(color)
-                                                //     // .fill(color)
-                                                //     .inner_margin(Margin::same(6.))
-                                                //     // .inner_margin(0.)
-                                                //     .outer_margin(0.)
-                                                //     .rounding(6.)
-                                                //     .show(ui, |ui| {
-                                                //         let resp = self.show_printer(
-                                                //             (x, y),
-                                                //             frame_size,
-                                                //             ui,
-                                                //             // id,
-                                                //             &printer,
-                                                //             // &printer_state,
-                                                //         );
-                                                //         ui.allocate_space(ui.available_size());
-                                                //         resp
-                                                //     })
-
                                                 self.show_printer(
                                                     (x, y),
                                                     frame_size,
@@ -200,35 +171,6 @@ impl App {
                                             // ui.allocate_space(Vec2::new(w, h));
                                             ui.allocate_space(ui.available_size());
                                             return;
-                                        }
-
-                                        #[cfg(feature = "nope")]
-                                        match self.printer_states.get(id) {
-                                            Some(_printer_state) => {
-                                                let resp = self.show_printer(
-                                                    (x, y),
-                                                    frame_size,
-                                                    ui,
-                                                    // id,
-                                                    printer.clone(),
-                                                    // &printer_state,
-                                                );
-
-                                                // /// TODO: Preview
-                                                // if let (Some(pointer), Some(hovered_payload)) = (
-                                                //     ui.input(|i| i.pointer.interact_pos()),
-                                                //     resp.response.dnd_hover_payload::<GridLocation>(),
-                                                // ) {
-                                                //     // debug!("dropped from {:?}", hovered_payload);
-                                                //     //
-                                                // }
-                                            }
-                                            None => {
-                                                ui.label("Printer not found");
-                                                // ui.allocate_space(Vec2::new(w, h));
-                                                ui.allocate_space(ui.available_size());
-                                                return;
-                                            }
                                         }
 
                                         // ui.label("Frame");

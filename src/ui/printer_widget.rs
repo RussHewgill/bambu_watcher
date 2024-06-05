@@ -13,6 +13,8 @@ use crate::{
     },
 };
 
+pub const PRINTER_WIDGET_SIZE: (f32, f32) = (250., 340.);
+
 /// show_printer
 impl App {
     /// Wide layout
@@ -61,6 +63,7 @@ impl App {
                     }
                 }
 
+                /// printer controls button
                 #[cfg(feature = "nope")]
                 if ui
                     .add(egui::Button::image(super::icons::icon_controls()).selected(selected))
@@ -73,26 +76,7 @@ impl App {
                     }
                 }
 
-                let resp = ui
-                    .dnd_drag_source(
-                        egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
-                        GridLocation {
-                            col: pos.0,
-                            row: pos.1,
-                        },
-                        |ui| {
-                            paint_icon(ui, 40., &status.state);
-                            ui.add(
-                                egui::Label::new(&format!(
-                                    "{} ({})",
-                                    printer.name,
-                                    status.state.to_text()
-                                ))
-                                .truncate(true),
-                            );
-                        },
-                    )
-                    .response;
+                let resp = self.printer_header(ui, &status, &printer, pos);
 
                 resp
             })
@@ -439,17 +423,118 @@ impl App {
 
         // ui.label(&format!("light: {:?}", status.chamber_light));
 
-        ui.label(&format!("sub_stage: {:?}", status.sub_stage));
-        ui.label(&format!("ams_status: {:?}", status.ams_status));
-        if let Some(ams) = &status.ams {
-            ui.label(&format!("ams_state: {:?}", ams.state));
-        }
+        // ui.label(&format!("sub_stage: {:?}", status.sub_stage));
+        // ui.label(&format!("ams_status: {:?}", status.ams_status));
+        // if let Some(ams) = &status.ams {
+        //     ui.label(&format!("ams_state: {:?}", ams.state));
+        // }
 
-        ui.label(&format!("stg_cur: {:?}", status.stg_cur));
+        // ui.label(&format!("stg_cur: {:?}", status.stg_cur));
 
         // }
 
         resp
+    }
+
+    fn printer_header(
+        &self,
+        ui: &mut egui::Ui,
+        status: &PrinterStatus,
+        printer: &PrinterConfig,
+        pos: (usize, usize),
+    ) -> Response {
+        let icon_size = 24.;
+
+        let size = Vec2::new(ui.available_width() - 12., icon_size);
+        // let size = Vec2::new(ui.available_size_before_wrap().x, icon_size + 4.);
+
+        super::ui_utils::put_ui(ui, size, |ui| {
+            let layout = Layout::left_to_right(egui::Align::Center)
+                .with_cross_justify(true)
+                .with_main_justify(true)
+                .with_cross_align(egui::Align::Center);
+
+            ui.with_layout(layout, |ui| {
+                ui.horizontal(|ui| {
+                    let resp = ui.dnd_drag_source(
+                        egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
+                        GridLocation {
+                            col: pos.0,
+                            row: pos.1,
+                        },
+                        |ui| {
+                            printer_state_icon(ui, icon_size, &status.state);
+                            ui.add(
+                                Label::new(&format!(
+                                    "{} ({})",
+                                    printer.name,
+                                    status.state.to_text()
+                                ))
+                                .truncate(true),
+                            );
+                            ui.allocate_space(Vec2::new(ui.available_width() - icon_size, 0.));
+                        },
+                    );
+                    ui.menu_image_button(icon_menu_with_size(icon_size - 4.), |ui| {
+                        self.printer_menu();
+                    });
+
+                    resp.response
+                })
+                .response
+            })
+            .response
+        })
+    }
+
+    #[cfg(feature = "nope")]
+    fn printer_header(
+        &self,
+        ui: &mut egui::Ui,
+        status: &PrinterStatus,
+        printer: &PrinterConfig,
+        pos: (usize, usize),
+    ) -> Response {
+        ui.dnd_drag_source(
+            egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
+            GridLocation {
+                col: pos.0,
+                row: pos.1,
+            },
+            |ui| {
+                egui_extras::StripBuilder::new(ui)
+                    .size(egui_extras::Size::exact(40.))
+                    .size(egui_extras::Size::remainder())
+                    .size(egui_extras::Size::exact(24.))
+                    .horizontal(|mut strip| {
+                        strip.cell(|ui| {
+                            printer_state_icon(ui, 40., &status.state);
+                        });
+
+                        strip.cell(|ui| {
+                            ui.add(
+                                Label::new(&format!(
+                                    "{} ({})",
+                                    printer.name,
+                                    status.state.to_text()
+                                ))
+                                .truncate(true),
+                            );
+                        });
+
+                        strip.cell(|ui| {
+                            ui.menu_image_button(icon_menu(), |ui| {
+                                self.printer_menu();
+                            });
+                        });
+                    });
+            },
+        )
+        .response
+    }
+
+    fn printer_menu(&self) {
+        //
     }
 }
 
@@ -557,10 +642,67 @@ impl App {
         &self,
         frame_size: Vec2,
         ui: &mut egui::Ui,
-        // status: &PrinterStatus,
         printer: &PrinterConfig,
-        // selected_ams: &mut HashMap<PrinterId, usize>,
-        // printer_state: &PrinterStatus,
+        // printer: &PrinterConfig,
+    ) {
+        // let swapping = {
+        //     let Some(status) = self.printer_states.get(&printer.serial) else {
+        //         warn!("Printer not found: {}", printer.serial);
+        //         panic!();
+        //     };
+
+        //     let Some(ams) = status.ams.as_ref() else {
+        //         return;
+        //     };
+
+        //     matches!(
+        //         ams.state,
+        //         Some(crate::ui::ui_types::AmsState::FilamentChange(_))
+        //     )
+        // };
+
+        let mut frame = egui::Frame::none();
+
+        // if swapping {
+        //     // frame = frame.stroke();
+        // }
+
+        frame.show(ui, |ui| {
+            self._show_ams(frame_size, ui, printer);
+        });
+        //
+    }
+
+    fn _show_ams(
+        &self,
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        printer: &PrinterConfig,
+        // printer: &PrinterConfig,
+    ) {
+        let Some(status) = self.printer_states.get(&printer.serial) else {
+            warn!("Printer not found: {}", printer.serial);
+            panic!();
+        };
+
+        let Some(ams) = status.ams.as_ref() else {
+            return;
+        };
+
+        let size = 62.;
+
+        crate::ui::icons::paint_ams(ui, size, ams);
+
+        //
+    }
+
+    #[cfg(feature = "nope")]
+    fn _show_ams(
+        &self,
+        frame_size: Vec2,
+        ui: &mut egui::Ui,
+        printer: &PrinterConfig,
+        // printer: &PrinterConfig,
     ) {
         let Some(status) = self.printer_states.get(&printer.serial) else {
             warn!("Printer not found: {}", printer.serial);
@@ -680,7 +822,7 @@ impl App {
             return;
         }
 
-        ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
+        // ui.style_mut().spacing.item_spacing = Vec2::new(1., 1.);
         #[cfg(feature = "nope")]
         ui.horizontal(|ui| {
             let n = 4 * ams.units.len();
