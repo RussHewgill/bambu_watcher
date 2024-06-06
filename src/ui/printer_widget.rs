@@ -661,15 +661,15 @@ impl App {
         //     )
         // };
 
-        let mut frame = egui::Frame::none();
+        // let mut frame = egui::Frame::none();
 
         // if swapping {
         //     // frame = frame.stroke();
         // }
 
-        frame.show(ui, |ui| {
-            self._show_ams(frame_size, ui, printer);
-        });
+        // frame.show(ui, |ui| {
+        // });
+        self._show_ams(frame_size, ui, printer);
         //
     }
 

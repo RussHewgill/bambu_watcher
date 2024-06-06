@@ -312,6 +312,24 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "nope")]
+fn main() {
+    let circle_r = 12;
+    let spacing = circle_r + 2;
+    let center_spacing = 4;
+
+    for unit in 0..2 {
+        let d = if unit == 0 { -1 } else { 1 };
+        for slot in 0..4 {
+            let x = center_spacing * d + spacing * slot * d;
+
+            eprintln!("unit, slot, x = {}, {}, {}", unit, slot, x);
+        }
+    }
+
+    //
+}
+
 /// MARK: Main:
 ///     fan speeds
 ///     AMS status
@@ -483,6 +501,7 @@ fn main() -> eframe::Result<()> {
                             }),
                         ],
                     },
+                    // #[cfg(feature = "nope")]
                     status::AmsUnit {
                         id: 1,
                         humidity: 0,
@@ -510,12 +529,71 @@ fn main() -> eframe::Result<()> {
                             }),
                         ],
                     },
+                    // #[cfg(feature = "nope")]
+                    status::AmsUnit {
+                        id: 2,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::BLUE,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::WHITE,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::BLACK,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::from_rgb(0, 255, 255),
+                            }),
+                        ],
+                    },
+                    // #[cfg(feature = "nope")]
+                    status::AmsUnit {
+                        id: 3,
+                        humidity: 0,
+                        temp: 0.,
+                        slots: [
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::PLACEHOLDER,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::WHITE,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::BLACK,
+                            }),
+                            Some(status::AmsSlot {
+                                material: "PLA".to_string(),
+                                k: 0.03,
+                                color: egui::Color32::PLACEHOLDER,
+                            }),
+                        ],
+                    },
                 ]
                 .into_iter()
                 .enumerate()
                 .map(|(i, unit)| (i as i64, unit))
                 .collect(),
-                current_tray: None,
+                current_tray: Some(status::AmsCurrentSlot::Tray {
+                    ams_id: 0,
+                    tray_id: 1,
+                }),
                 ams_exist_bits: None,
                 tray_exist_bits: None,
                 tray_now: None,
