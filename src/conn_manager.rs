@@ -41,8 +41,7 @@ pub enum PrinterConnMsg {
 /// messages from UI to PrinterConnManager
 #[derive(Debug)]
 pub enum PrinterConnCmd {
-    Crash,
-
+    // Crash,
     SyncPrinters,
     AddPrinter(PrinterConfig),
     RemovePrinter(PrinterId),
@@ -438,9 +437,9 @@ impl PrinterConnManager {
 
     async fn handle_command(&mut self, cmd: PrinterConnCmd) -> Result<()> {
         match cmd {
-            PrinterConnCmd::Crash => {
-                bail!("crash");
-            }
+            // PrinterConnCmd::Crash => {
+            //     bail!("crash");
+            // }
             PrinterConnCmd::AddPrinter(printer) => {
                 self.add_printer(Arc::new(RwLock::new(printer)), false)
                     .await?;
