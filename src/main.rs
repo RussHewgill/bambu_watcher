@@ -686,6 +686,8 @@ fn main() -> eframe::Result<()> {
             .await;
             // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
 
+            manager.init().await.unwrap();
+
             debug!("running PrinterConnManager");
             // manager.run().await.unwrap();
             loop {

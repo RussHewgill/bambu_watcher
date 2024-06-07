@@ -41,6 +41,8 @@ pub enum PrinterConnMsg {
 /// messages from UI to PrinterConnManager
 #[derive(Debug)]
 pub enum PrinterConnCmd {
+    Crash,
+
     SyncPrinters,
     AddPrinter(PrinterConfig),
     RemovePrinter(PrinterId),
@@ -143,13 +145,16 @@ impl PrinterConnManager {
         }
     }
 
-    pub async fn run(&mut self) -> Result<()> {
+    pub async fn init(&mut self) -> Result<()> {
         for printer in self.config.printers() {
             // let client = Self::start_printer_listener(self.tx.clone(), printer).await?;
             // self.printers.insert(printer.serial.clone(), client);
             self.add_printer(printer.clone(), true).await?;
         }
+        Ok(())
+    }
 
+    pub async fn run(&mut self) -> Result<()> {
         loop {
             tokio::select! {
                 Some(cmd) = self.cmd_rx.recv() => {
@@ -433,6 +438,9 @@ impl PrinterConnManager {
 
     async fn handle_command(&mut self, cmd: PrinterConnCmd) -> Result<()> {
         match cmd {
+            PrinterConnCmd::Crash => {
+                bail!("crash");
+            }
             PrinterConnCmd::AddPrinter(printer) => {
                 self.add_printer(Arc::new(RwLock::new(printer)), false)
                     .await?;

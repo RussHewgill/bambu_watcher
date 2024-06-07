@@ -11,6 +11,14 @@ impl App {
     pub fn show_options(&mut self, ui: &mut egui::Ui) {
         // ui.label("TODO: Options");
 
+        if ui.button("test crash").clicked() {
+            self.cmd_tx
+                .as_ref()
+                .unwrap()
+                .send(crate::conn_manager::PrinterConnCmd::Crash)
+                .unwrap();
+        }
+
         if cfg!(debug_assertions) {
             ui.label(format!("Git commit: {}", env!("VERGEN_GIT_SHA")));
 
