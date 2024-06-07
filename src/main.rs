@@ -687,7 +687,14 @@ fn main() -> eframe::Result<()> {
             // PrinterConnManager::new(config2, printer_states2, cmd_rx, msg_tx, ctx, alert_tx);
 
             debug!("running PrinterConnManager");
-            manager.run().await.unwrap();
+            // manager.run().await.unwrap();
+            loop {
+                if let Err(e) = manager.run().await {
+                    error!("manager error: {:?}", e);
+                }
+                tokio::time::sleep(Duration::from_secs(3)).await;
+                debug!("restarting PrinterConnManager");
+            }
         });
     });
 
