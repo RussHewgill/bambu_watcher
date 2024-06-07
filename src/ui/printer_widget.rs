@@ -239,6 +239,7 @@ impl App {
                                                 status.temp_nozzle.unwrap_or(0.),
                                                 status.temp_tgt_nozzle.unwrap_or(0.0) as i64
                                             ))
+                                            .strong()
                                             .size(font_size),
                                         )
                                         .truncate(true),
@@ -255,6 +256,7 @@ impl App {
                                                 status.temp_bed.unwrap_or(0.),
                                                 status.temp_tgt_bed.unwrap_or(0.0) as i64
                                             ))
+                                            .strong()
                                             .size(font_size),
                                         )
                                         .truncate(true),
@@ -269,6 +271,7 @@ impl App {
                                             "{}°C",
                                             status.temp_chamber.unwrap_or(0.) as i64
                                         ))
+                                        .strong()
                                         .size(font_size),
                                     );
                                 });
@@ -297,6 +300,7 @@ impl App {
                                         .map(|s| s.as_str())
                                         .unwrap_or("--"),
                                 ))
+                                .strong()
                                 .size(text_size_title),
                             )
                             .truncate(true),
