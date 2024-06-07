@@ -5,8 +5,15 @@ Bambu Watcher is a dashboard for monitoring the status of multiple bambulab prin
 
 ## Features
 
-- Notifications on print error
-- Currently only tested with P1S
+- Drag and drop printers to arrange your dashboard
+- Notifications on print error, completion, and pause
+- Webcam stream for P1 and A1 series
+- Bamub cloud login (Password not saved)
+- Print preview thumbnails (only when logged in)
+
+## Download
+
+Get the latest build from the [releases page](https://github.com/RussHewgill/bambu_watcher/releases)
 
 ## Instructions
 
@@ -29,9 +36,7 @@ printers:
 
 ## Known issues
 
-- Untested with P1P, X1C, X1E, A1, and A1 Mini
-- Pause and Stop buttons are **disabled** and do nothing
-- Needs much more testing of various printer states other than mid-print
+- X1C has problems connecting
 
 ## Credits
 

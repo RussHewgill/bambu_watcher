@@ -127,6 +127,9 @@ impl App {
                                         Stroke::new(4., color);
                                     ui.visuals_mut().widgets.active.bg_stroke =
                                         Stroke::new(4., color);
+                                } else {
+                                    ui.visuals_mut().widgets.inactive.bg_stroke.width = 4.;
+                                    ui.visuals_mut().widgets.active.bg_stroke.width = 4.;
                                 }
                                 let frame = egui::Frame::group(ui.style())
                                     .inner_margin(4.)
