@@ -345,6 +345,8 @@ impl App {
                                 // );
                                 ui.add(Label::new(
                                     RichText::new(&time.format("%-I:%M %p").to_string())
+                                        .strong()
+                                        // .text_style(Text)
                                         .size(text_size_eta),
                                 ));
                             });
@@ -372,6 +374,7 @@ impl App {
                                 {
                                     ui.add(Label::new(
                                         RichText::new(&format!("{}/{}", layer, max))
+                                            .strong()
                                             .size(text_size_eta),
                                     ));
                                 }
@@ -383,6 +386,7 @@ impl App {
                                         dt.num_hours(),
                                         dt.num_minutes() % 60
                                     ))
+                                    .strong()
                                     .size(text_size_eta),
                                 ));
                             });
@@ -436,6 +440,7 @@ impl App {
         resp
     }
 
+    /// MARK: Header
     fn printer_header(
         &self,
         ui: &mut egui::Ui,
@@ -465,11 +470,14 @@ impl App {
                         |ui| {
                             printer_state_icon(ui, icon_size, &status.state);
                             ui.add(
-                                Label::new(&format!(
-                                    "{} ({})",
-                                    printer.name,
-                                    status.state.to_text()
-                                ))
+                                Label::new(
+                                    RichText::new(&format!(
+                                        "{} ({})",
+                                        printer.name,
+                                        status.state.to_text()
+                                    ))
+                                    .strong(),
+                                )
                                 .truncate(true),
                             );
                             ui.allocate_space(Vec2::new(ui.available_width() - icon_size, 0.));
@@ -485,52 +493,6 @@ impl App {
             })
             .response
         })
-    }
-
-    #[cfg(feature = "nope")]
-    fn printer_header(
-        &self,
-        ui: &mut egui::Ui,
-        status: &PrinterStatus,
-        printer: &PrinterConfig,
-        pos: (usize, usize),
-    ) -> Response {
-        ui.dnd_drag_source(
-            egui::Id::new(format!("{}_drag_src_{}_{}", printer.serial, pos.0, pos.1)),
-            GridLocation {
-                col: pos.0,
-                row: pos.1,
-            },
-            |ui| {
-                egui_extras::StripBuilder::new(ui)
-                    .size(egui_extras::Size::exact(40.))
-                    .size(egui_extras::Size::remainder())
-                    .size(egui_extras::Size::exact(24.))
-                    .horizontal(|mut strip| {
-                        strip.cell(|ui| {
-                            printer_state_icon(ui, 40., &status.state);
-                        });
-
-                        strip.cell(|ui| {
-                            ui.add(
-                                Label::new(&format!(
-                                    "{} ({})",
-                                    printer.name,
-                                    status.state.to_text()
-                                ))
-                                .truncate(true),
-                            );
-                        });
-
-                        strip.cell(|ui| {
-                            ui.menu_image_button(icon_menu(), |ui| {
-                                self.printer_menu();
-                            });
-                        });
-                    });
-            },
-        )
-        .response
     }
 
     fn printer_menu(&self, ui: &mut egui::Ui, status: &PrinterStatus, printer: &PrinterConfig) {

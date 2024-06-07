@@ -394,15 +394,20 @@ impl JpegStreamViewer {
                 img_buf.extend_from_slice(&self.buf[..n]);
 
                 if img_buf.len() > payload_size {
-                    warn!(
+                    trace!(
                         "unexpected image payload received: {} > {}",
                         img_buf.len(),
                         payload_size,
                     );
-                    got_header = false;
-                    img_buf.clear();
+                    // got_header = false;
+                    // img_buf.clear();
+
+                    /// not sure what the extra data is?
+                    img_buf.truncate(payload_size);
+
                     // break;
-                } else if img_buf.len() == payload_size {
+                }
+                if img_buf.len() == payload_size {
                     if &img_buf[0..4] != &Self::JPEG_START {
                         warn!("missing jpeg start bytes");
                         break;
