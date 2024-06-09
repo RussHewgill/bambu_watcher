@@ -695,6 +695,7 @@ fn main() -> eframe::Result<()> {
                     error!("manager error: {:?}", e);
                 }
                 tokio::time::sleep(Duration::from_secs(3)).await;
+                /// MARK: TODO: reinit
                 debug!("restarting PrinterConnManager");
             }
         });

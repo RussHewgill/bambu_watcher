@@ -394,7 +394,7 @@ impl JpegStreamViewer {
                 img_buf.extend_from_slice(&self.buf[..n]);
 
                 if img_buf.len() > payload_size {
-                    trace!(
+                    warn!(
                         "unexpected image payload received: {} > {}",
                         img_buf.len(),
                         payload_size,

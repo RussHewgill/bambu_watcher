@@ -103,6 +103,8 @@ pub struct PrinterConnManager {
     stream_cmd_tx: tokio::sync::mpsc::UnboundedSender<StreamCmd>,
     graphs: crate::ui::plotting::Graphs,
     error_map: ErrorMap,
+
+    num_none_msgs: u32,
 }
 
 /// new, start listeners
@@ -141,6 +143,7 @@ impl PrinterConnManager {
             stream_cmd_tx,
             graphs,
             error_map,
+            num_none_msgs: 0,
         }
     }
 
@@ -241,7 +244,24 @@ impl PrinterConnManager {
             bail!("printer not found: {:?}", id);
         };
 
+        if !matches!(msg, Message::Unknown(None)) {
+            if self.num_none_msgs > 0 {
+                self.num_none_msgs -= 1;
+            }
+        }
+
         match msg {
+            Message::Unknown(unknown) => match unknown {
+                Some(unknown) => warn!("unknown message: {:?}", unknown),
+                _ => {
+                    self.num_none_msgs += 1;
+                    if self.num_none_msgs > 2 {
+                        warn!("too many unknown messages");
+                        bail!("too many unknown messages");
+                    }
+                    trace!("unknown message: None");
+                }
+            },
             Message::Print(report) => {
                 // debug!("got print report");
 
@@ -395,10 +415,6 @@ impl PrinterConnManager {
                 //
             }
             Message::System(system) => debug!("printer system: {:?}", system),
-            Message::Unknown(unknown) => match unknown {
-                Some(unknown) => warn!("unknown message: {:?}", unknown),
-                _ => trace!("unknown message: None"),
-            },
             Message::Connecting => debug!("printer connecting: {:?}", &printer.read().await.name),
             Message::Connected => {
                 let name = &printer.read().await.name;

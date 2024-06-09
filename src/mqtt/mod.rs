@@ -133,7 +133,8 @@ impl BambuClient {
         const CLOUD_HOST: &'static str = "us.mqtt.bambulab.com";
 
         let mut mqttoptions = rumqttc::MqttOptions::new(client_id, CLOUD_HOST, 8883);
-        mqttoptions.set_keep_alive(Duration::from_secs(5));
+        /// XXX: does this matter?
+        mqttoptions.set_keep_alive(Duration::from_secs(15));
         mqttoptions.set_credentials(&username, &password);
 
         let mut root_cert_store = rustls::RootCertStore::empty();
